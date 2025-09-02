@@ -1,0 +1,472 @@
+/* Dentist Receipt Calculator - Mobile Responsive CSS */
+/* Optimized for mobile devices with touch-friendly interface */
+
+/* Mobile First - Base mobile styles (320px and up) */
+@media screen and (max-width: 768px) {
+    
+    /* Container adjustments for mobile */
+    .container {
+        padding: 10px;
+        max-width: 100%;
+    }
+
+    /* Header mobile optimization */
+    .header {
+        padding: 20px 15px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+    }
+
+    .header h1 {
+        font-size: 1.8rem;
+        margin-bottom: 8px;
+    }
+
+    .header p {
+        font-size: 1rem;
+    }
+
+    /* Calculator main container mobile */
+    .calculator {
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+
+    /* Section mobile styles */
+    section {
+        padding: 20px 15px;
+    }
+
+    section h2 {
+        font-size: 1.3rem;
+        margin-bottom: 15px;
+    }
+
+    /* Form elements mobile optimization */
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group input {
+        padding: 15px 12px;
+        font-size: 16px; /* Prevents zoom on iOS */
+        border-radius: 6px;
+    }
+
+    /* Base cost mobile styling */
+    .base-cost-group {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .base-cost-group input {
+        font-size: 18px;
+        padding: 15px;
+        text-align: center;
+    }
+
+    /* Services grid mobile layout */
+    .services-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .service-item {
+        padding: 15px 12px;
+        border-radius: 6px;
+        min-height: 60px;
+        display: flex;
+        align-items: center;
+    }
+
+    .service-item input[type="checkbox"] {
+        width: 24px;
+        height: 24px;
+        margin-right: 15px;
+        min-width: 24px;
+    }
+
+    .service-item label {
+        font-size: 15px;
+        line-height: 1.4;
+        touch-action: manipulation;
+    }
+
+    /* Other charges mobile layout */
+    #other-charges-container {
+        gap: 12px;
+        margin-bottom: 15px;
+    }
+
+    .charge-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .charge-item label {
+        min-width: auto;
+        margin-bottom: 5px;
+        font-size: 14px;
+    }
+
+    .charge-item input {
+        padding: 15px 12px;
+        font-size: 16px;
+    }
+
+    /* Payment options mobile layout */
+    .payment-options {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .payment-item {
+        padding: 15px 12px;
+        border-radius: 6px;
+        min-height: 60px;
+    }
+
+    .payment-item input[type="radio"] {
+        width: 24px;
+        height: 24px;
+        margin-right: 15px;
+        min-width: 24px;
+    }
+
+    .payment-item label {
+        font-size: 15px;
+        line-height: 1.4;
+        touch-action: manipulation;
+    }
+
+    /* Terminal charge mobile styling */
+    .terminal-charge {
+        padding: 15px;
+        border-radius: 6px;
+        margin-top: 15px;
+    }
+
+    .terminal-charge input[type="checkbox"] {
+        width: 24px;
+        height: 24px;
+        margin-right: 15px;
+        min-width: 24px;
+    }
+
+    .terminal-charge label {
+        font-size: 15px;
+        line-height: 1.4;
+    }
+
+    /* Button mobile optimization */
+    .btn-primary, .btn-secondary {
+        padding: 18px 25px;
+        font-size: 16px;
+        width: 100%;
+        justify-content: center;
+        border-radius: 6px;
+        min-height: 56px; /* Touch target size */
+        touch-action: manipulation;
+    }
+
+    /* Calculate section mobile */
+    .calculate-section {
+        padding: 20px 15px;
+    }
+
+    #calculate-btn {
+        font-size: 18px;
+        padding: 20px 30px;
+        width: 100%;
+        min-height: 60px;
+    }
+
+    /* Receipt section mobile */
+    .receipt-section {
+        border-radius: 10px;
+        margin-top: 20px;
+    }
+
+    .receipt-section h2 {
+        padding: 15px 20px;
+        font-size: 1.3rem;
+    }
+
+    .receipt-content {
+        padding: 20px 15px;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .receipt-actions {
+        padding: 15px;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    /* Receipt mobile layout */
+    .receipt-header h3 {
+        font-size: 1.3rem;
+        margin-bottom: 8px;
+    }
+
+    .receipt-info {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        padding: 15px;
+        margin-bottom: 25px;
+    }
+
+    .receipt-info div {
+        flex-direction: column;
+        gap: 5px;
+        padding: 8px 0;
+        border-bottom: 1px dotted var(--border-color);
+    }
+
+    .receipt-info div:last-child {
+        border-bottom: none;
+    }
+
+    .receipt-services h4, .receipt-charges h4, .receipt-payment h4 {
+        font-size: 1.1rem;
+        margin-bottom: 12px;
+    }
+
+    .service-line, .charge-line, .payment-line {
+        padding: 10px 0;
+        font-size: 14px;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    .receipt-total {
+        padding: 20px 15px;
+        margin-top: 25px;
+    }
+
+    .receipt-total h3 {
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+    }
+
+    /* Add charge button mobile */
+    #add-charge {
+        width: 100%;
+        margin-top: 10px;
+        padding: 15px;
+        font-size: 15px;
+    }
+}
+
+/* Small mobile devices (320px to 480px) */
+@media screen and (max-width: 480px) {
+    
+    .header h1 {
+        font-size: 1.6rem;
+    }
+
+    .header p {
+        font-size: 0.9rem;
+    }
+
+    section h2 {
+        font-size: 1.2rem;
+    }
+
+    .base-cost-group input {
+        font-size: 20px;
+        padding: 18px;
+    }
+
+    .service-item, .payment-item {
+        padding: 18px 15px;
+        min-height: 70px;
+    }
+
+    .service-item label, .payment-item label {
+        font-size: 16px;
+    }
+
+    #calculate-btn {
+        font-size: 20px;
+        padding: 22px 30px;
+        min-height: 70px;
+    }
+
+    .receipt-content {
+        font-size: 13px;
+        padding: 15px 10px;
+    }
+}
+
+/* Large mobile/small tablet (481px to 768px) */
+@media screen and (min-width: 481px) and (max-width: 768px) {
+    
+    .services-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .payment-options {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .receipt-actions {
+        flex-direction: row;
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .receipt-actions button {
+        flex: 1;
+        max-width: 200px;
+    }
+}
+
+/* Tablet landscape (769px to 1024px) */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+    
+    .container {
+        padding: 20px;
+        max-width: 90%;
+    }
+
+    .services-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+    }
+
+    .payment-options {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+    }
+
+    .receipt-info {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .receipt-actions button {
+        flex: none;
+        width: auto;
+    }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+    
+    /* Remove hover effects on touch devices */
+    .service-item:hover,
+    .payment-item:hover {
+        transform: none;
+        box-shadow: none;
+    }
+
+    /* Increase touch targets */
+    .service-item, .payment-item {
+        min-height: 60px;
+        padding: 18px 15px;
+    }
+
+    .btn-primary, .btn-secondary {
+        min-height: 56px;
+        padding: 18px 25px;
+    }
+
+    /* Better focus states for touch */
+    .service-item:active,
+    .payment-item:active {
+        background: var(--light-blue);
+        border-color: var(--primary-blue);
+    }
+
+    .btn-primary:active {
+        background: var(--dark-blue);
+    }
+
+    .btn-secondary:active {
+        background: var(--primary-blue);
+        color: var(--white);
+    }
+}
+
+/* High DPI displays */
+@media screen and (-webkit-min-device-pixel-ratio: 2),
+       screen and (min-resolution: 192dpi) {
+    
+    .receipt-content {
+        font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+}
+
+/* Landscape mobile orientation */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    
+    .header {
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+
+    .header h1 {
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+    }
+
+    section {
+        padding: 15px;
+    }
+
+    .calculate-section {
+        padding: 15px;
+    }
+
+    .receipt-section {
+        margin-top: 15px;
+    }
+}
+
+/* Dark mode support for mobile */
+@media (prefers-color-scheme: dark) and (max-width: 768px) {
+    
+    :root {
+        --primary-blue: #60a5fa;
+        --light-blue: #1e3a8a;
+        --accent-blue: #3b82f6;
+        --dark-blue: #1d4ed8;
+        --white: #1f2937;
+        --light-gray: #374151;
+        --text-dark: #f9fafb;
+        --text-medium: #d1d5db;
+        --border-color: #4b5563;
+    }
+
+    body {
+        background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+    }
+}
+
+/* Reduced motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+    
+    .service-item,
+    .payment-item,
+    .btn-primary,
+    .btn-secondary {
+        transition: none;
+    }
+
+    .service-item:hover,
+    .payment-item:hover,
+    .btn-primary:hover,
+    .btn-secondary:hover {
+        transform: none;
+    }
+}
