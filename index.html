@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dentist Receipt Calculator</title>
+    <meta name="description" content="Professional dental service cost calculator with payment processing">
+    
+    <!-- Desktop CSS -->
+    <link rel="stylesheet" href="assets/css/style.css">
+    <!-- Mobile Responsive CSS -->
+    <link rel="stylesheet" href="assets/css/mobile.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <header class="header">
+            <div class="logo">
+                <h1>🦷 Dental Calculator</h1>
+                <p>Professional Service Cost Calculator</p>
+            </div>
+        </header>
+
+        <!-- Main Calculator Form -->
+        <main class="calculator">
+            <!-- Invoice Details Section -->
+            <section class="invoice-section">
+                <h2>📋 Invoice Information</h2>
+                <div class="form-group">
+                    <label for="invoice-date">Date:</label>
+                    <input type="date" id="invoice-date" name="invoiceDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="member-invoice">Member Invoice:</label>
+                    <input type="text" id="member-invoice" name="memberInvoice" placeholder="INV-001">
+                </div>
+                <div class="form-group">
+                    <label for="customer-name">Customer Name:</label>
+                    <input type="text" id="customer-name" name="customerName" placeholder="Patient Name" required>
+                </div>
+            </section>
+
+            <!-- Dental Services Section -->
+            <section class="services-section">
+                <h2>🦷 Dental Services</h2>
+                <div class="base-cost-group">
+                    <label for="base-cost">Base Cost (RM):</label>
+                    <input type="number" id="base-cost" name="baseCost" min="0" step="0.01" placeholder="0.00" required>
+                </div>
+                
+                <div class="services-grid">
+                    <div class="service-item">
+                        <input type="checkbox" id="consult" name="services" value="30" data-service="Consult">
+                        <label for="consult">Consult (30%)</label>
+                    </div>
+                    <div class="service-item">
+                        <input type="checkbox" id="filling" name="services" value="30" data-service="Filling">
+                        <label for="filling">Filling (30%)</label>
+                    </div>
+                    <div class="service-item">
+                        <input type="checkbox" id="composite" name="services" value="50" data-service="Composite">
+                        <label for="composite">Composite (50%)</label>
+                    </div>
+                    <div class="service-item">
+                        <input type="checkbox" id="implant" name="services" value="60" data-service="Implant">
+                        <label for="implant">Implant (60%)</label>
+                    </div>
+                    <div class="service-item">
+                        <input type="checkbox" id="denture" name="services" value="60" data-service="Denture">
+                        <label for="denture">Denture (60%)</label>
+                    </div>
+                    <div class="service-item">
+                        <input type="checkbox" id="bridgework" name="services" value="30" data-service="Bridgework">
+                        <label for="bridgework">Bridgework (30%)</label>
+                    </div>
+                    <div class="service-item">
+                        <input type="checkbox" id="package" name="services" value="30" data-service="Package">
+                        <label for="package">Package (30%)</label>
+                    </div>
+                    <div class="service-item">
+                        <input type="checkbox" id="oral-surgery" name="services" value="30" data-service="Oral Surgery">
+                        <label for="oral-surgery">Oral Surgery (30%)</label>
+                    </div>
+                    <div class="service-item">
+                        <input type="checkbox" id="xray" name="services" value="30" data-service="X-ray">
+                        <label for="xray">X-ray (30%)</label>
+                    </div>
+                    <div class="service-item">
+                        <input type="checkbox" id="trauma" name="services" value="40" data-service="Trauma">
+                        <label for="trauma">Trauma (40%)</label>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Other Charges Section -->
+            <section class="charges-section">
+                <h2>💰 Other Charges</h2>
+                <div id="other-charges-container">
+                    <div class="charge-item">
+                        <label for="other-charge-1">Other Charge:</label>
+                        <input type="number" id="other-charge-1" name="otherCharge" min="0" step="0.01" placeholder="0.00">
+                    </div>
+                </div>
+                <button type="button" id="add-charge" class="btn-secondary">+ Add Another Charge</button>
+            </section>
+
+            <!-- Payment Method Section -->
+            <section class="payment-section">
+                <h2>💳 Payment Method</h2>
+                <div class="payment-options">
+                    <div class="payment-item">
+                        <input type="radio" id="cash" name="paymentMethod" value="0" data-method="Cash" checked>
+                        <label for="cash">💵 Cash (0%)</label>
+                    </div>
+                    <div class="payment-item">
+                        <input type="radio" id="union" name="paymentMethod" value="0" data-method="Union">
+                        <label for="union">🏦 Union (0%)</label>
+                    </div>
+                    <div class="payment-item">
+                        <input type="radio" id="debit-card" name="paymentMethod" value="6.5" data-method="Debit Card">
+                        <label for="debit-card">💳 Debit Card (6.5%)</label>
+                    </div>
+                    <div class="payment-item">
+                        <input type="radio" id="credit-card" name="paymentMethod" value="1.7" data-method="Credit Card">
+                        <label for="credit-card">💳 Credit Card (1.7%)</label>
+                    </div>
+                    <div class="payment-item">
+                        <input type="radio" id="mastercard" name="paymentMethod" value="2.5" data-method="Mastercard">
+                        <label for="mastercard">💳 Mastercard (2.5%)</label>
+                    </div>
+                </div>
+                <div class="terminal-charge">
+                    <input type="checkbox" id="terminal-charge" name="terminalCharge" checked>
+                    <label for="terminal-charge">📱 Terminal Service Charge (8%)</label>
+                </div>
+            </section>
+
+            <!-- Calculate Button -->
+            <div class="calculate-section">
+                <button type="button" id="calculate-btn" class="btn-primary">🧮 Calculate Total</button>
+            </div>
+        </main>
+
+        <!-- Receipt Display Section -->
+        <section id="receipt-section" class="receipt-section hidden">
+            <h2>🧾 Receipt</h2>
+            <div id="receipt-content" class="receipt-content">
+                <!-- Receipt content will be generated by JavaScript -->
+            </div>
+            <div class="receipt-actions">
+                <button type="button" id="print-btn" class="btn-primary">🖨️ Print Receipt</button>
+                <button type="button" id="new-calculation-btn" class="btn-secondary">🔄 New Calculation</button>
+            </div>
+        </section>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="assets/js/calculator.js"></script>
+</body>
+</html>

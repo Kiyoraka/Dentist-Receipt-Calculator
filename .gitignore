@@ -1,3 +1,5 @@
 # Basic gitignore
 /[Tt]emp/
 *.exe
+project-scope.md
+.claude/settings.local.json
