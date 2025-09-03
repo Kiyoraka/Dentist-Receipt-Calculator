@@ -1,6 +1,7 @@
 <?php
 $page_title = 'Patient Management - Dental Practice Management';
 require_once '../config/database.php';
+require_once '../config/config.php';
 
 // Add patient-specific CSS
 $additional_css = [CSS_URL . '/patients.css'];
