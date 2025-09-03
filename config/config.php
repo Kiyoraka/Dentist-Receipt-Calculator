@@ -9,15 +9,20 @@ function getBaseUrl() {
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
     $host = $_SERVER['HTTP_HOST'];
     
-    // Get the folder path dynamically
-    $scriptPath = dirname($_SERVER['SCRIPT_NAME']);
+    // Get the current script path
+    $scriptName = $_SERVER['SCRIPT_NAME'];
     
-    // If we're in a subdirectory (modules), go up one level
-    if (strpos($scriptPath, '/modules') !== false) {
-        $scriptPath = dirname(dirname($_SERVER['SCRIPT_NAME']));
+    // Find the project root (where index.php is located)
+    // Remove everything after the project folder name
+    if (strpos($scriptName, '/modules/') !== false) {
+        // We're in a module, get the base path before /modules/
+        $basePath = substr($scriptName, 0, strpos($scriptName, '/modules/'));
+    } else {
+        // We're in the root, just get the directory
+        $basePath = dirname($scriptName);
     }
     
-    return $protocol . $host . $scriptPath;
+    return $protocol . $host . $basePath;
 }
 
 // Define constants
