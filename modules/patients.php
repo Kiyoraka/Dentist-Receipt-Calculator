@@ -50,7 +50,7 @@ if ($_POST && isset($_POST['action'])) {
 $search = $_GET['search'] ?? '';
 
 // Pagination settings
-$records_per_page = 10;
+$records_per_page = 15;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $page = max(1, $page); // Ensure page is at least 1
 $offset = ($page - 1) * $records_per_page;
@@ -241,8 +241,8 @@ if (isset($_GET['patient_id'])) {
                         </tr>
                         <?php endforeach; 
                         
-                        // Fill empty rows to maintain consistent table height
-                        for ($i = $display_count; $i < min(10, $records_per_page); $i++):
+                        // Fill empty rows to maintain consistent table height and eliminate white space
+                        for ($i = $display_count; $i < $records_per_page; $i++):
                         ?>
                         <tr style="height: 52px;">
                             <td colspan="8" style="background: transparent; border: none;">&nbsp;</td>
