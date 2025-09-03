@@ -50,7 +50,7 @@ if ($_POST && isset($_POST['action'])) {
 $search = $_GET['search'] ?? '';
 
 // Pagination settings
-$records_per_page = 10;
+$records_per_page = 8;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $page = max(1, $page); // Ensure page is at least 1
 $offset = ($page - 1) * $records_per_page;
@@ -180,17 +180,17 @@ if (isset($_GET['patient_id'])) {
     <div class="content-section">
         <div class="table-responsive">
             <?php if (!empty($patients)): ?>
-                <table class="data-table" style="width: 100%; border-collapse: separate; border-spacing: 0;">
+                <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
                     <thead>
-                        <tr style="background: #f8fafc;">
-                            <th style="width: 5%; padding: 16px 12px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #4b5563;">ID</th>
-                            <th style="width: 20%; padding: 16px 12px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #4b5563;">Patient Name</th>
-                            <th style="width: 15%; padding: 16px 12px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #4b5563;">Phone</th>
-                            <th style="width: 20%; padding: 16px 12px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #4b5563;">Email</th>
-                            <th style="width: 8%; padding: 16px 12px; text-align: center; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #4b5563;">Visits</th>
-                            <th style="width: 12%; padding: 16px 12px; text-align: right; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #4b5563;">Total Spent</th>
-                            <th style="width: 10%; padding: 16px 12px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #4b5563;">Last Visit</th>
-                            <th style="width: 10%; padding: 16px 12px; text-align: center; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #4b5563;">Actions</th>
+                        <tr style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white;">
+                            <th style="width: 5%; padding: 12px 8px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">ID</th>
+                            <th style="width: 25%; padding: 12px 8px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Patient Name</th>
+                            <th style="width: 15%; padding: 12px 8px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Phone</th>
+                            <th style="width: 20%; padding: 12px 8px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Email</th>
+                            <th style="width: 7%; padding: 12px 8px; text-align: center; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Visits</th>
+                            <th style="width: 12%; padding: 12px 8px; text-align: right; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Total</th>
+                            <th style="width: 10%; padding: 12px 8px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Last Visit</th>
+                            <th style="width: 6%; padding: 12px 8px; text-align: center; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -208,38 +208,38 @@ if (isset($_GET['patient_id'])) {
                         ?>
                         <tr data-patient-id="<?php echo $patient['id']; ?>" style="border-bottom: 1px solid #e5e7eb; transition: background 0.2s;" 
                             onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'">
-                            <td style="padding: 18px 12px; text-align: center; font-size: 14px; color: #6b7280;">
+                            <td style="padding: 12px 8px; text-align: center; font-size: 13px; color: #6b7280;">
                                 <?php echo str_pad($patient['id'], 3, '0', STR_PAD_LEFT); ?>
                             </td>
-                            <td style="padding: 18px 12px;">
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <i class="fas fa-user-circle" style="color: #9ca3af; font-size: 20px;"></i>
-                                    <span style="font-size: 15px; font-weight: 500; color: #111827;"><?php echo htmlspecialchars($patient['name']); ?></span>
+                            <td style="padding: 12px 8px;">
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <i class="fas fa-user-circle" style="color: #9ca3af; font-size: 16px;"></i>
+                                    <span style="font-size: 13px; font-weight: 500; color: #111827;"><?php echo htmlspecialchars($patient['name']); ?></span>
                                 </div>
                             </td>
-                            <td style="padding: 18px 12px; font-size: 14px;">
+                            <td style="padding: 12px 8px; font-size: 13px;">
                                 <?php if($patient['phone']): ?>
                                     <span style="color: #374151;"><?php echo htmlspecialchars($patient['phone']); ?></span>
                                 <?php else: ?>
                                     <span style="color: #9ca3af;">-</span>
                                 <?php endif; ?>
                             </td>
-                            <td style="padding: 18px 12px; font-size: 14px;">
+                            <td style="padding: 12px 8px; font-size: 13px;">
                                 <?php if($patient['email']): ?>
                                     <span style="color: #374151;"><?php echo htmlspecialchars($patient['email']); ?></span>
                                 <?php else: ?>
                                     <span style="color: #9ca3af;">-</span>
                                 <?php endif; ?>
                             </td>
-                            <td style="padding: 18px 12px; text-align: center;">
-                                <span style="display: inline-block; background: #dbeafe; color: #1e40af; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600;">
+                            <td style="padding: 12px 8px; text-align: center;">
+                                <span style="display: inline-block; background: #dbeafe; color: #1e40af; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">
                                     <?php echo $patient['receipt_count']; ?>
                                 </span>
                             </td>
-                            <td style="padding: 18px 12px; text-align: right; font-size: 15px; font-weight: 600; color: #111827;">
+                            <td style="padding: 12px 8px; text-align: right; font-size: 13px; font-weight: 600; color: #111827;">
                                 RM <?php echo number_format($patient['total_spent'], 2); ?>
                             </td>
-                            <td style="padding: 18px 12px; font-size: 14px;">
+                            <td style="padding: 12px 8px; font-size: 12px;">
                                 <?php 
                                 if ($patient['last_visit']) {
                                     $days_ago = floor((time() - strtotime($patient['last_visit'])) / (60 * 60 * 24));
@@ -247,37 +247,37 @@ if (isset($_GET['patient_id'])) {
                                         echo '<span style="color: #059669; font-weight: 500;">Today</span>';
                                     } elseif ($days_ago == 1) {
                                         echo '<span style="color: #0891b2; font-weight: 500;">Yesterday</span>';
-                                    } elseif ($days_ago < 7) {
-                                        echo '<span style="color: #374151;">' . $days_ago . ' days ago</span>';
+                                    } elseif ($days_ago < 30) {
+                                        echo '<span style="color: #374151;">' . $days_ago . 'd ago</span>';
                                     } else {
-                                        echo '<span style="color: #374151;">' . date('M j, Y', strtotime($patient['last_visit'])) . '</span>';
+                                        echo '<span style="color: #374151;">' . date('M j', strtotime($patient['last_visit'])) . '</span>';
                                     }
                                 } else {
                                     echo '<span style="color: #9ca3af;">Never</span>';
                                 }
                                 ?>
                             </td>
-                            <td style="padding: 18px 12px;">
-                                <div style="display: flex; gap: 6px; justify-content: center;">
-                                    <button type="button" onclick="viewPatientDetails(<?php echo $patient['id']; ?>)" title="View Details"
-                                            style="padding: 8px 10px; border: none; background: #f3f4f6; color: #374151; border-radius: 6px; cursor: pointer; transition: all 0.2s;"
+                            <td style="padding: 12px 8px;">
+                                <div style="display: flex; gap: 2px; justify-content: center;">
+                                    <button type="button" onclick="viewPatientDetails(<?php echo $patient['id']; ?>)" title="View"
+                                            style="padding: 6px; border: none; background: #f3f4f6; color: #374151; border-radius: 4px; cursor: pointer;"
                                             onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='#f3f4f6'">
-                                        <i class="fas fa-eye" style="font-size: 13px;"></i>
+                                        <i class="fas fa-eye" style="font-size: 11px;"></i>
                                     </button>
                                     <button type="button" onclick="editPatient(<?php echo $patient['id']; ?>)" title="Edit"
-                                            style="padding: 8px 10px; border: none; background: #dbeafe; color: #1e40af; border-radius: 6px; cursor: pointer; transition: all 0.2s;"
+                                            style="padding: 6px; border: none; background: #dbeafe; color: #1e40af; border-radius: 4px; cursor: pointer;"
                                             onmouseover="this.style.background='#bfdbfe'" onmouseout="this.style.background='#dbeafe'">
-                                        <i class="fas fa-edit" style="font-size: 13px;"></i>
+                                        <i class="fas fa-edit" style="font-size: 11px;"></i>
                                     </button>
                                     <button type="button" onclick="exportPatientData(<?php echo $patient['id']; ?>, '<?php echo htmlspecialchars($patient['name']); ?>')" title="Export"
-                                            style="padding: 8px 10px; border: none; background: #d1fae5; color: #065f46; border-radius: 6px; cursor: pointer; transition: all 0.2s;"
+                                            style="padding: 6px; border: none; background: #d1fae5; color: #065f46; border-radius: 4px; cursor: pointer;"
                                             onmouseover="this.style.background='#a7f3d0'" onmouseout="this.style.background='#d1fae5'">
-                                        <i class="fas fa-download" style="font-size: 13px;"></i>
+                                        <i class="fas fa-download" style="font-size: 11px;"></i>
                                     </button>
                                     <button type="button" onclick="deletePatient(<?php echo $patient['id']; ?>, '<?php echo htmlspecialchars($patient['name']); ?>')" title="Delete"
-                                            style="padding: 8px 10px; border: none; background: #fee2e2; color: #991b1b; border-radius: 6px; cursor: pointer; transition: all 0.2s;"
+                                            style="padding: 6px; border: none; background: #fee2e2; color: #991b1b; border-radius: 4px; cursor: pointer;"
                                             onmouseover="this.style.background='#fecaca'" onmouseout="this.style.background='#fee2e2'">
-                                        <i class="fas fa-trash" style="font-size: 13px;"></i>
+                                        <i class="fas fa-trash" style="font-size: 11px;"></i>
                                     </button>
                                 </div>
                             </td>
@@ -285,9 +285,9 @@ if (isset($_GET['patient_id'])) {
                         <?php endforeach; 
                         
                         // Fill empty rows to maintain consistent table height
-                        for ($i = $display_count; $i < min(10, $records_per_page); $i++):
+                        for ($i = $display_count; $i < min(8, $records_per_page); $i++):
                         ?>
-                        <tr style="height: 68px;">
+                        <tr style="height: 44px;">
                             <td colspan="8" style="background: transparent; border: none;">&nbsp;</td>
                         </tr>
                         <?php endfor; ?>
