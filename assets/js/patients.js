@@ -1,0 +1,535 @@
+// Patient Management JavaScript
+// Professional dental practice management system with export functionality
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializePatientManagement();
+});
+
+function initializePatientManagement() {
+    // Initialize event listeners
+    setupPatientEventListeners();
+    
+    // Initialize search functionality
+    initializePatientSearch();
+    
+    console.log('Patient management initialized');
+}
+
+function setupPatientEventListeners() {
+    // Patient form submission
+    const patientForm = document.getElementById('patient-form');
+    if (patientForm) {
+        patientForm.addEventListener('submit', handlePatientFormSubmission);
+    }
+    
+    // Modal close events
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('modal')) {
+            closeAllModals();
+        }
+    });
+    
+    // Keyboard events
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeAllModals();
+        }
+    });
+}
+
+function initializePatientSearch() {
+    const searchInput = document.querySelector('.search-input');
+    if (searchInput) {
+        // Auto-submit search after typing stops
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                this.closest('form').submit();
+            }, 500);
+        });
+    }
+}
+
+function openAddPatientModal() {
+    document.getElementById('modal-title').textContent = 'Add New Patient';
+    document.getElementById('form-action').value = 'add_patient';
+    document.getElementById('patient-id-input').value = '';
+    document.getElementById('save-patient-btn').innerHTML = '<i class=\"fas fa-save\"></i> Save Patient';
+    
+    // Clear form
+    document.getElementById('patient-form').reset();
+    
+    // Show modal
+    document.getElementById('patient-modal').classList.remove('hidden');
+    document.getElementById('patient-name').focus();
+}
+
+function editPatient(patientId) {
+    // Get patient data from the card
+    const patientCard = document.querySelector(`[data-patient-id=\"${patientId}\"]`);
+    const patientName = patientCard.querySelector('.patient-name').textContent;
+    
+    // Set modal for editing
+    document.getElementById('modal-title').textContent = 'Edit Patient';
+    document.getElementById('form-action').value = 'update_patient';
+    document.getElementById('patient-id-input').value = patientId;
+    document.getElementById('save-patient-btn').innerHTML = '<i class=\"fas fa-save\"></i> Update Patient';
+    
+    // Load patient data (you might want to fetch this via AJAX)
+    document.getElementById('patient-name').value = patientName;
+    
+    // Show modal
+    document.getElementById('patient-modal').classList.remove('hidden');
+    document.getElementById('patient-name').focus();
+}
+
+function deletePatient(patientId, patientName) {
+    if (confirm(`Are you sure you want to delete patient \"${patientName}\"? This action cannot be undone.`)) {
+        // Create and submit delete form
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.innerHTML = `
+            <input type=\"hidden\" name=\"action\" value=\"delete_patient\">
+            <input type=\"hidden\" name=\"patient_id\" value=\"${patientId}\">
+        `;
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function viewPatientDetails(patientId) {
+    showLoading();
+    
+    // Fetch patient details via AJAX
+    fetch(`patients.php?patient_id=${patientId}`)
+        .then(response => response.text())
+        .then(html => {
+            // Parse the response to extract patient data
+            // For now, we'll create a placeholder
+            displayPatientDetails(patientId);
+            hideLoading();
+        })
+        .catch(error => {
+            console.error('Error fetching patient details:', error);
+            hideLoading();
+            showNotification('Error loading patient details', 'error');
+        });
+}
+
+function displayPatientDetails(patientId) {
+    const patientCard = document.querySelector(`[data-patient-id=\"${patientId}\"]`);
+    const patientName = patientCard.querySelector('.patient-name').textContent;
+    const stats = patientCard.querySelectorAll('.stat-value');
+    
+    const detailsHTML = `
+        <div class=\"patient-details-content\">
+            <div class=\"patient-overview\">
+                <div class=\"overview-header\">
+                    <div class=\"patient-avatar-large\">
+                        <i class=\"fas fa-user-circle\"></i>
+                    </div>
+                    <div class=\"patient-summary\">
+                        <h3>${patientName}</h3>
+                        <div class=\"summary-stats\">
+                            <span><i class=\"fas fa-calendar-check\"></i> ${stats[0].textContent} Visits</span>
+                            <span><i class=\"fas fa-money-bill-wave\"></i> ${stats[1].textContent} Total</span>
+                            <span><i class=\"fas fa-clock\"></i> Last visit: ${stats[2].textContent}</span>
+                        </div>
+                    </div>
+                    <div class=\"overview-actions\">
+                        <button type=\"button\" class=\"btn btn-primary\" onclick=\"exportPatientData(${patientId}, '${patientName}')\">
+                            <i class=\"fas fa-download\"></i> Export PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class=\"treatment-history\">
+                <h4><i class=\"fas fa-history\"></i> Treatment History</h4>
+                <div class=\"treatment-timeline\">
+                    <div class=\"timeline-item\">
+                        <div class=\"timeline-date\">Loading treatment history...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('patient-details-content').innerHTML = detailsHTML;
+    document.getElementById('patient-details-modal').classList.remove('hidden');
+}
+
+function closePatientModal() {
+    document.getElementById('patient-modal').classList.add('hidden');
+}
+
+function closePatientDetailsModal() {
+    document.getElementById('patient-details-modal').classList.add('hidden');
+}
+
+function closeAllModals() {
+    closePatientModal();
+    closePatientDetailsModal();
+}
+
+function handlePatientFormSubmission(e) {
+    e.preventDefault();
+    
+    // Validate form
+    if (!validatePatientForm()) {
+        return false;
+    }
+    
+    // Show loading
+    showLoading();
+    
+    // Submit form
+    e.target.submit();
+}
+
+function validatePatientForm() {
+    const patientName = document.getElementById('patient-name');
+    const patientEmail = document.getElementById('patient-email');
+    const patientPhone = document.getElementById('patient-phone');
+    
+    let isValid = true;
+    
+    // Validate name
+    if (!patientName.value.trim()) {
+        patientName.classList.add('error');
+        isValid = false;
+    } else {
+        patientName.classList.remove('error');
+    }
+    
+    // Validate email if provided
+    if (patientEmail.value && !validateEmail(patientEmail.value)) {
+        patientEmail.classList.add('error');
+        showNotification('Please enter a valid email address', 'error');
+        isValid = false;
+    } else {
+        patientEmail.classList.remove('error');
+    }
+    
+    // Validate phone if provided
+    if (patientPhone.value && !validatePhone(patientPhone.value)) {
+        patientPhone.classList.add('error');
+        showNotification('Please enter a valid phone number', 'error');
+        isValid = false;
+    } else {
+        patientPhone.classList.remove('error');
+    }
+    
+    return isValid;
+}
+
+function exportPatientData(patientId, patientName) {
+    showLoading();
+    
+    // Get patient data from the DOM
+    const patientCard = document.querySelector(`[data-patient-id=\"${patientId}\"]`);
+    const stats = patientCard.querySelectorAll('.stat-value');
+    const contactInfo = patientCard.querySelector('.patient-contact');
+    
+    // Create patient report HTML
+    const reportHTML = generatePatientReportHTML({
+        id: patientId,
+        name: patientName,
+        visits: stats[0].textContent,
+        totalSpent: stats[1].textContent,
+        lastVisit: stats[2].textContent,
+        contact: contactInfo ? contactInfo.textContent : ''
+    });
+    
+    // Create and download PDF
+    downloadPatientReport(reportHTML, patientName);
+    
+    hideLoading();
+    showNotification(`Patient report for ${patientName} exported successfully!`, 'success');
+}
+
+function generatePatientReportHTML(patient) {
+    return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Patient Report - ${patient.name}</title>
+            <meta charset=\"utf-8\">
+            <style>
+                body { 
+                    font-family: Arial, sans-serif; 
+                    max-width: 800px; 
+                    margin: 0 auto; 
+                    padding: 20px; 
+                    line-height: 1.6;
+                    color: #333;
+                }
+                .header { 
+                    text-align: center; 
+                    border-bottom: 3px solid #2563eb; 
+                    padding-bottom: 20px; 
+                    margin-bottom: 30px; 
+                }
+                .header h1 { 
+                    color: #2563eb; 
+                    margin: 0; 
+                    font-size: 2.5em;
+                }
+                .header h2 { 
+                    color: #64748b; 
+                    margin: 10px 0 0 0; 
+                    font-weight: normal;
+                }
+                .patient-info {
+                    background: #f8fafc;
+                    padding: 20px;
+                    border-radius: 10px;
+                    margin-bottom: 30px;
+                }
+                .patient-info h3 {
+                    margin-top: 0;
+                    color: #2563eb;
+                    font-size: 1.5em;
+                }
+                .info-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 20px;
+                    margin-top: 15px;
+                }
+                .info-item {
+                    padding: 15px;
+                    background: white;
+                    border-radius: 8px;
+                    border-left: 4px solid #2563eb;
+                }
+                .info-item label {
+                    display: block;
+                    font-weight: bold;
+                    color: #64748b;
+                    margin-bottom: 5px;
+                    font-size: 0.9em;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+                .info-item value {
+                    display: block;
+                    font-size: 1.2em;
+                    color: #1e293b;
+                    font-weight: 600;
+                }
+                .statistics {
+                    margin: 30px 0;
+                }
+                .statistics h3 {
+                    color: #2563eb;
+                    border-bottom: 2px solid #e2e8f0;
+                    padding-bottom: 10px;
+                }
+                .stats-grid {
+                    display: grid;
+                    grid-template-columns: repeat(3, 1fr);
+                    gap: 20px;
+                    margin-top: 20px;
+                }
+                .stat-card {
+                    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+                    color: white;
+                    padding: 20px;
+                    border-radius: 10px;
+                    text-align: center;
+                }
+                .stat-card .stat-number {
+                    font-size: 2em;
+                    font-weight: bold;
+                    margin-bottom: 5px;
+                }
+                .stat-card .stat-label {
+                    font-size: 0.9em;
+                    opacity: 0.9;
+                }
+                .treatment-history {
+                    margin: 30px 0;
+                }
+                .treatment-history h3 {
+                    color: #2563eb;
+                    border-bottom: 2px solid #e2e8f0;
+                    padding-bottom: 10px;
+                }
+                .treatment-placeholder {
+                    background: #f8fafc;
+                    padding: 30px;
+                    border-radius: 10px;
+                    text-align: center;
+                    color: #64748b;
+                    border: 2px dashed #e2e8f0;
+                }
+                .footer { 
+                    margin-top: 50px; 
+                    text-align: center; 
+                    font-size: 12px; 
+                    color: #64748b;
+                    border-top: 1px solid #e2e8f0;
+                    padding-top: 20px;
+                }
+                .footer .generated-info {
+                    background: #f1f5f9;
+                    padding: 10px;
+                    border-radius: 5px;
+                    margin-top: 10px;
+                }
+                @media print {
+                    body { margin: 0; padding: 15px; }
+                    .header h1 { font-size: 2em; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class=\"header\">
+                <h1>🦷 DENTAL PRACTICE</h1>
+                <h2>Patient Treatment Report</h2>
+            </div>
+            
+            <div class=\"patient-info\">
+                <h3>Patient Information</h3>
+                <div class=\"info-grid\">
+                    <div class=\"info-item\">
+                        <label>Patient Name</label>
+                        <value>${patient.name}</value>
+                    </div>
+                    <div class=\"info-item\">
+                        <label>Patient ID</label>
+                        <value>#${patient.id.toString().padStart(6, '0')}</value>
+                    </div>
+                    <div class=\"info-item\">
+                        <label>Contact Information</label>
+                        <value>${patient.contact || 'Not provided'}</value>
+                    </div>
+                    <div class=\"info-item\">
+                        <label>Last Visit</label>
+                        <value>${patient.lastVisit}</value>
+                    </div>
+                </div>
+            </div>
+            
+            <div class=\"statistics\">
+                <h3>Treatment Statistics</h3>
+                <div class=\"stats-grid\">
+                    <div class=\"stat-card\">
+                        <div class=\"stat-number\">${patient.visits}</div>
+                        <div class=\"stat-label\">Total Visits</div>
+                    </div>
+                    <div class=\"stat-card\">
+                        <div class=\"stat-number\">${patient.totalSpent}</div>
+                        <div class=\"stat-label\">Total Amount</div>
+                    </div>
+                    <div class=\"stat-card\">
+                        <div class=\"stat-number\">${patient.lastVisit}</div>
+                        <div class=\"stat-label\">Last Visit</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class=\"treatment-history\">
+                <h3>Treatment History</h3>
+                <div class=\"treatment-placeholder\">
+                    <i class=\"fas fa-history\" style=\"font-size: 2em; margin-bottom: 10px; display: block;\"></i>
+                    <h4>Treatment History Available</h4>
+                    <p>Detailed treatment records and receipt history for this patient are maintained in the system database. Contact the practice administration for complete treatment timeline and detailed service records.</p>
+                </div>
+            </div>
+            
+            <div class=\"footer\">
+                <p><strong>Confidential Medical Report</strong></p>
+                <p>This report contains confidential patient information and should be handled according to medical privacy regulations.</p>
+                <div class=\"generated-info\">
+                    <p><strong>Generated:</strong> ${new Date().toLocaleString()}</p>
+                    <p><strong>System:</strong> Dental Practice Management System v1.0</p>
+                </div>
+            </div>
+        </body>
+        </html>
+    `;
+}
+
+function downloadPatientReport(html, patientName) {
+    // Create a blob with the HTML content
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    
+    // Create download link
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Patient_Report_${patientName.replace(/[^a-z0-9]/gi, '_')}_${new Date().toISOString().split('T')[0]}.html`;
+    a.style.display = 'none';
+    
+    // Trigger download
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    
+    // Clean up
+    URL.revokeObjectURL(url);
+}
+
+function exportAllPatients() {
+    showLoading();
+    
+    // Get all patient data
+    const patientCards = document.querySelectorAll('.patient-card');
+    const patients = [];
+    
+    patientCards.forEach(card => {
+        const name = card.querySelector('.patient-name').textContent;
+        const id = card.dataset.patientId;
+        const stats = card.querySelectorAll('.stat-value');
+        const contact = card.querySelector('.patient-contact');
+        
+        patients.push({
+            id: id,
+            name: name,
+            visits: stats[0].textContent,
+            totalSpent: stats[1].textContent,
+            lastVisit: stats[2].textContent,
+            contact: contact ? contact.textContent : ''
+        });
+    });
+    
+    // Generate CSV report
+    const csvData = generatePatientsCSV(patients);
+    downloadCSV(csvData, `All_Patients_Report_${new Date().toISOString().split('T')[0]}.csv`);
+    
+    hideLoading();
+    showNotification(`Exported ${patients.length} patients successfully!`, 'success');
+}
+
+function generatePatientsCSV(patients) {
+    const headers = ['Patient ID', 'Name', 'Total Visits', 'Total Spent', 'Last Visit', 'Contact Info'];
+    let csv = headers.join(',') + '\\n';
+    
+    patients.forEach(patient => {
+        const row = [
+            `#${patient.id.padStart(6, '0')}`,
+            `\"${patient.name}\"`,
+            patient.visits,
+            `\"${patient.totalSpent}\"`,
+            `\"${patient.lastVisit}\"`,
+            `\"${patient.contact.replace(/"/g, '""')}\"`
+        ];
+        csv += row.join(',') + '\\n';
+    });
+    
+    return csv;
+}
+
+// Utility functions (if not already defined in dashboard.js)
+function validateEmail(email) {
+    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+    return emailRegex.test(email);
+}
+
+function validatePhone(phone) {
+    const phoneRegex = /^[0-9+\\-\\s()]+$/;
+    return phoneRegex.test(phone) && phone.length >= 10;
+}
