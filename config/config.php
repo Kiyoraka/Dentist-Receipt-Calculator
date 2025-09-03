@@ -25,23 +25,47 @@ function getBaseUrl() {
     return $protocol . $host . $basePath;
 }
 
-// Define constants
-define('BASE_URL', getBaseUrl());
-define('ASSETS_URL', BASE_URL . '/assets');
-define('CSS_URL', ASSETS_URL . '/css');
-define('JS_URL', ASSETS_URL . '/js');
-define('IMAGES_URL', ASSETS_URL . '/images');
+// Define constants only if not already defined
+if (!defined('BASE_URL')) {
+    define('BASE_URL', getBaseUrl());
+}
+if (!defined('ASSETS_URL')) {
+    define('ASSETS_URL', BASE_URL . '/assets');
+}
+if (!defined('CSS_URL')) {
+    define('CSS_URL', ASSETS_URL . '/css');
+}
+if (!defined('JS_URL')) {
+    define('JS_URL', ASSETS_URL . '/js');
+}
+if (!defined('IMAGES_URL')) {
+    define('IMAGES_URL', ASSETS_URL . '/images');
+}
 
 // Database configuration (if needed in future)
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'dental_system');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+if (!defined('DB_HOST')) {
+    define('DB_HOST', 'localhost');
+}
+if (!defined('DB_NAME')) {
+    define('DB_NAME', 'dental_system');
+}
+if (!defined('DB_USER')) {
+    define('DB_USER', 'root');
+}
+if (!defined('DB_PASS')) {
+    define('DB_PASS', '');
+}
 
 // System configuration
-define('SITE_NAME', 'Dental Practice Management System');
-define('SITE_VERSION', '1.0.0');
-define('TIMEZONE', 'Asia/Kuala_Lumpur');
+if (!defined('SITE_NAME')) {
+    define('SITE_NAME', 'Dental Practice Management System');
+}
+if (!defined('SITE_VERSION')) {
+    define('SITE_VERSION', '1.0.0');
+}
+if (!defined('TIMEZONE')) {
+    define('TIMEZONE', 'Asia/Kuala_Lumpur');
+}
 
 // Set timezone
 date_default_timezone_set(TIMEZONE);

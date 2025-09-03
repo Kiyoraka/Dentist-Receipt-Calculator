@@ -1,6 +1,10 @@
 <?php
 $page_title = 'Patient Management - Dental Practice Management';
 require_once '../config/database.php';
+
+// Add patient-specific CSS
+$additional_css = [CSS_URL . '/patients.css'];
+
 require_once '../includes/header.php';
 
 // Database connection
@@ -150,67 +154,61 @@ if (isset($_GET['patient_id'])) {
         </div>
     </div>
 
-    <!-- Patients Grid -->
-    <div class="patients-grid">
+    <!-- Patients Table -->
+    <div class="patients-table-container">
         <?php if (!empty($patients)): ?>
-            <?php foreach ($patients as $patient): ?>
-            <div class="patient-card" data-patient-id="<?php echo $patient['id']; ?>">
-                <div class="patient-header">
-                    <div class="patient-avatar">
-                        <i class="fas fa-user-circle"></i>
-                    </div>
-                    <div class="patient-info">
-                        <h3 class="patient-name"><?php echo htmlspecialchars($patient['name']); ?></h3>
-                        <p class="patient-contact">
-                            <?php if ($patient['phone']): ?>
-                                <i class="fas fa-phone"></i> <?php echo htmlspecialchars($patient['phone']); ?>
-                            <?php endif; ?>
-                            <?php if ($patient['email']): ?>
-                                <i class="fas fa-envelope"></i> <?php echo htmlspecialchars($patient['email']); ?>
-                            <?php endif; ?>
-                        </p>
-                    </div>
-                </div>
-
-                <div class="patient-stats">
-                    <div class="stat-item">
-                        <div class="stat-value"><?php echo $patient['receipt_count']; ?></div>
-                        <div class="stat-label">Visits</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">RM <?php echo number_format($patient['total_spent'], 2); ?></div>
-                        <div class="stat-label">Total Spent</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">
+            <table class="patients-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Email</th>
+                        <th>Visits</th>
+                        <th>Total Spent</th>
+                        <th>Last Visit</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($patients as $patient): ?>
+                    <tr data-patient-id="<?php echo $patient['id']; ?>">
+                        <td><?php echo $patient['id']; ?></td>
+                        <td class="patient-name-cell">
+                            <i class="fas fa-user-circle"></i>
+                            <?php echo htmlspecialchars($patient['name']); ?>
+                        </td>
+                        <td><?php echo htmlspecialchars($patient['phone'] ?: '-'); ?></td>
+                        <td><?php echo htmlspecialchars($patient['email'] ?: '-'); ?></td>
+                        <td class="text-center"><?php echo $patient['receipt_count']; ?></td>
+                        <td class="text-right">RM <?php echo number_format($patient['total_spent'], 2); ?></td>
+                        <td>
                             <?php 
                             if ($patient['last_visit']) {
-                                echo date('M j', strtotime($patient['last_visit']));
+                                echo date('M j, Y', strtotime($patient['last_visit']));
                             } else {
                                 echo 'Never';
                             }
                             ?>
-                        </div>
-                        <div class="stat-label">Last Visit</div>
-                    </div>
-                </div>
-
-                <div class="patient-actions">
-                    <button type="button" class="btn btn-outline btn-sm" onclick="viewPatientDetails(<?php echo $patient['id']; ?>)">
-                        <i class="fas fa-eye"></i> View
-                    </button>
-                    <button type="button" class="btn btn-primary btn-sm" onclick="editPatient(<?php echo $patient['id']; ?>)">
-                        <i class="fas fa-edit"></i> Edit
-                    </button>
-                    <button type="button" class="btn btn-info btn-sm" onclick="exportPatientData(<?php echo $patient['id']; ?>, '<?php echo htmlspecialchars($patient['name']); ?>')">
-                        <i class="fas fa-download"></i> Export
-                    </button>
-                    <button type="button" class="btn btn-danger btn-sm" onclick="deletePatient(<?php echo $patient['id']; ?>, '<?php echo htmlspecialchars($patient['name']); ?>')">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </div>
-            <?php endforeach; ?>
+                        </td>
+                        <td class="actions-cell">
+                            <button type="button" class="btn btn-outline btn-sm" onclick="viewPatientDetails(<?php echo $patient['id']; ?>)" title="View">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="editPatient(<?php echo $patient['id']; ?>)" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-info btn-sm" onclick="exportPatientData(<?php echo $patient['id']; ?>, '<?php echo htmlspecialchars($patient['name']); ?>')" title="Export">
+                                <i class="fas fa-download"></i>
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="deletePatient(<?php echo $patient['id']; ?>, '<?php echo htmlspecialchars($patient['name']); ?>')" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
         <?php else: ?>
             <div class="empty-state">
                 <i class="fas fa-users"></i>

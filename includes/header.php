@@ -15,6 +15,13 @@ require_once __DIR__ . '/../config/config.php';
     <link rel="stylesheet" href="<?php echo CSS_URL; ?>/style.css">
     <link rel="stylesheet" href="<?php echo CSS_URL; ?>/mobile.css">
     
+    <!-- Additional page-specific CSS -->
+    <?php if(isset($additional_css) && is_array($additional_css)): ?>
+        <?php foreach($additional_css as $css_file): ?>
+            <link rel="stylesheet" href="<?php echo $css_file; ?>">
+        <?php endforeach; ?>
+    <?php endif; ?>
+    
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
