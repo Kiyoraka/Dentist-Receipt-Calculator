@@ -7,9 +7,9 @@
     <meta name="description" content="Professional dental practice management system with financial tracking">
     
     <!-- Enhanced CSS for Dashboard -->
-    <link rel="stylesheet" href="assets/css/dashboard.css">
-    <link rel="stylesheet" href="assets/css/style.css">
-    <link rel="stylesheet" href="assets/css/mobile.css">
+    <link rel="stylesheet" href="/Dentist%20Receipt%20Calculator/assets/css/dashboard.css">
+    <link rel="stylesheet" href="/Dentist%20Receipt%20Calculator/assets/css/style.css">
+    <link rel="stylesheet" href="/Dentist%20Receipt%20Calculator/assets/css/mobile.css">
     
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">

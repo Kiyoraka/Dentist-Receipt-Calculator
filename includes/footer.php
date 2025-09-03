@@ -2,8 +2,8 @@
     </div>
 
     <!-- JavaScript -->
-    <script src="assets/js/dashboard.js"></script>
-    <script src="assets/js/calculator.js"></script>
+    <script src="/Dentist%20Receipt%20Calculator/assets/js/dashboard.js"></script>
+    <script src="/Dentist%20Receipt%20Calculator/assets/js/calculator.js"></script>
     
     <!-- Additional page-specific JavaScript -->
     <?php if(isset($additional_js)): ?>
