@@ -50,7 +50,7 @@ if ($_POST && isset($_POST['action'])) {
 $search = $_GET['search'] ?? '';
 
 // Pagination settings
-$records_per_page = 15;
+$records_per_page = 12;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $page = max(1, $page); // Ensure page is at least 1
 $offset = ($page - 1) * $records_per_page;
