@@ -1,9 +1,9 @@
         </main>
     </div>
 
-    <!-- JavaScript -->
-    <script src="/Dentist%20Receipt%20Calculator/assets/js/dashboard.js"></script>
-    <script src="/Dentist%20Receipt%20Calculator/assets/js/calculator.js"></script>
+    <!-- JavaScript with Dynamic Paths -->
+    <script src="<?php echo JS_URL; ?>/dashboard.js"></script>
+    <script src="<?php echo JS_URL; ?>/calculator.js"></script>
     
     <!-- Additional page-specific JavaScript -->
     <?php if(isset($additional_js)): ?>

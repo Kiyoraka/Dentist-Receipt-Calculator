@@ -1,5 +1,10 @@
 <?php
 $current_page = basename($_SERVER['PHP_SELF']);
+
+// Check if config.php exists, if not, include it
+if (!defined('BASE_URL')) {
+    require_once __DIR__ . '/../config/config.php';
+}
 ?>
 
 <!-- Sidebar Navigation -->
@@ -15,21 +20,21 @@ $current_page = basename($_SERVER['PHP_SELF']);
     <nav class="sidebar-nav">
         <ul>
             <li class="nav-item <?php echo ($current_page == 'index.php') ? 'active' : ''; ?>">
-                <a href="index.php" class="nav-link">
+                <a href="<?php echo BASE_URL; ?>/index.php" class="nav-link">
                     <i class="fas fa-chart-dashboard"></i>
                     <span>Main Dashboard</span>
                 </a>
             </li>
             
             <li class="nav-item <?php echo ($current_page == 'financial.php') ? 'active' : ''; ?>">
-                <a href="modules/financial.php" class="nav-link">
+                <a href="<?php echo BASE_URL; ?>/modules/financial.php" class="nav-link">
                     <i class="fas fa-calculator"></i>
                     <span>Financial Management</span>
                 </a>
             </li>
             
             <li class="nav-item <?php echo ($current_page == 'patients.php') ? 'active' : ''; ?>">
-                <a href="modules/patients.php" class="nav-link">
+                <a href="<?php echo BASE_URL; ?>/modules/patients.php" class="nav-link">
                     <i class="fas fa-users"></i>
                     <span>Patient Management</span>
                 </a>
