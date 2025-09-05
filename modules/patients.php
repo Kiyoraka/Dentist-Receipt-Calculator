@@ -1,16 +1,85 @@
 <?php
-$page_title = 'Patient Management - Dental Practice Management';
 require_once '../config/database.php';
 require_once '../config/config.php';
+
+// Database connection
+$db = new Database();
+$conn = $db->getConnection();
+
+// Handle AJAX requests FIRST, before any HTML output
+if (isset($_GET['action']) && $_GET['action'] === 'get_patient') {
+    header('Content-Type: application/json');
+    
+    if (!isset($_GET['patient_id'])) {
+        echo json_encode(['error' => 'Patient ID required']);
+        exit;
+    }
+    
+    try {
+        $stmt = $conn->prepare("SELECT * FROM patients WHERE id = ?");
+        $stmt->execute([$_GET['patient_id']]);
+        $patient = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($patient) {
+            echo json_encode($patient);
+        } else {
+            echo json_encode(['error' => 'Patient not found']);
+        }
+    } catch (PDOException $e) {
+        echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+    }
+    exit;
+}
+
+// Handle AJAX requests for patient receipts
+if (isset($_GET['action']) && $_GET['action'] === 'get_patient_receipts') {
+    header('Content-Type: application/json');
+    
+    if (!isset($_GET['patient_id'])) {
+        echo json_encode(['error' => 'Patient ID required']);
+        exit;
+    }
+    
+    try {
+        // Get receipts for the specific patient
+        $stmt = $conn->prepare("SELECT * FROM receipts WHERE patient_id = ? ORDER BY created_at DESC LIMIT 10");
+        $stmt->execute([$_GET['patient_id']]);
+        $receipts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // If we have receipts, try to get services info
+        if (!empty($receipts)) {
+            try {
+                $stmt = $conn->prepare("
+                    SELECT r.*, 
+                           GROUP_CONCAT(rs.service_name SEPARATOR ', ') as services
+                    FROM receipts r 
+                    LEFT JOIN receipt_services rs ON r.id = rs.receipt_id 
+                    WHERE r.patient_id = ? 
+                    GROUP BY r.id 
+                    ORDER BY r.created_at DESC
+                    LIMIT 10
+                ");
+                $stmt->execute([$_GET['patient_id']]);
+                $receipts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            } catch (PDOException $e2) {
+                // If receipt_services has issues, just use basic receipts
+            }
+        }
+        
+        echo json_encode(['receipts' => $receipts]);
+    } catch (PDOException $e) {
+        echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+    }
+    exit;
+}
+
+// Regular page rendering starts here
+$page_title = 'Patient Management - Dental Practice Management';
 
 // Add financial management CSS for consistent styling
 $additional_css = ['../assets/css/charge-calculator.css', CSS_URL . '/patients.css'];
 
 require_once '../includes/header.php';
-
-// Database connection
-$db = new Database();
-$conn = $db->getConnection();
 
 // Handle actions
 if ($_POST && isset($_POST['action'])) {
@@ -60,12 +129,14 @@ try {
     $total_records = $count_stmt->fetch(PDO::FETCH_ASSOC)['total'];
     $total_pages = ceil($total_records / $records_per_page);
     
-    // Get patients with their receipt counts and total spending (with pagination)
+    // Get patients with their receipt counts, total spending, and fee breakdowns (with pagination)
     $sql = "
         SELECT 
             p.*,
             COUNT(r.id) as receipt_count,
             COALESCE(SUM(r.total_amount), 0) as total_spent,
+            COALESCE(SUM(r.doctor_fee), 0) as total_doctor_fee,
+            COALESCE(SUM(r.clinic_fee), 0) as total_clinic_fee,
             MAX(r.created_at) as last_visit
         FROM patients p 
         LEFT JOIN receipts r ON p.id = r.patient_id 
@@ -175,11 +246,11 @@ if (isset($_GET['patient_id'])) {
                             <tr>
                                 <th class="patient-id-col">ID</th>
                                 <th class="patient-name-col">Patient Name</th>
-                                <th class="phone-col">Phone</th>
-                                <th class="email-col">Email</th>
                                 <th class="visits-col">Visits</th>
-                                <th class="spent-col">Total Spent</th>
                                 <th class="lastvisit-col">Last Visit</th>
+                                <th class="clinic-fee-col">Clinic Fee</th>
+                                <th class="doctor-fee-col">Doctor Fee</th>
+                                <th class="spent-col">Total Spent</th>
                                 <th class="action-col">Actions</th>
                             </tr>
                         </thead>
@@ -202,10 +273,7 @@ if (isset($_GET['patient_id'])) {
                                 <i class="fas fa-user-circle" style="margin-right: 8px;"></i>
                                 <?php echo htmlspecialchars($patient['name']); ?>
                             </td>
-                            <td style="text-align: center; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9; color: #374151;"><?php echo htmlspecialchars($patient['phone'] ?: '-'); ?></td>
-                            <td style="text-align: center; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9; color: #374151;"><?php echo htmlspecialchars($patient['email'] ?: '-'); ?></td>
                             <td class="charge-amount" style="text-align: center; font-weight: bold; color: #374151; font-size: 15px; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9;"><?php echo $patient['receipt_count']; ?></td>
-                            <td class="charge-doctor" style="text-align: center; font-weight: bold; color: #059669; font-size: 14px; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9;">RM <?php echo number_format($patient['total_spent'], 2); ?></td>
                             <td style="text-align: center; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9; color: #374151;">
                                 <?php 
                                 if ($patient['last_visit']) {
@@ -215,16 +283,21 @@ if (isset($_GET['patient_id'])) {
                                 }
                                 ?>
                             </td>
+                            <td class="charge-clinic" style="text-align: center; font-weight: bold; color: #dc2626; font-size: 14px; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9;">RM <?php echo number_format($patient['total_clinic_fee'], 2); ?></td>
+                            <td class="charge-doctor" style="text-align: center; font-weight: bold; color: #059669; font-size: 14px; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9;">RM <?php echo number_format($patient['total_doctor_fee'], 2); ?></td>
+                            <td class="charge-doctor" style="text-align: center; font-weight: bold; color: #059669; font-size: 14px; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9;">RM <?php echo number_format($patient['total_spent'], 2); ?></td>
                             <td class="charge-action">
-                                <button type="button" class="btn-remove" onclick="viewPatientDetails(<?php echo $patient['id']; ?>)" title="View" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); margin-right: 5px;">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button type="button" class="btn-remove" onclick="editPatient(<?php echo $patient['id']; ?>)" title="Edit" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); margin-right: 5px;">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button type="button" class="btn-remove" onclick="deletePatient(<?php echo $patient['id']; ?>, '<?php echo htmlspecialchars($patient['name']); ?>')" title="Delete">
-                                    <i class="fas fa-trash"></i>
-                                </button>
+                                <div class="action-buttons-row">
+                                    <button type="button" class="btn-action btn-view" onclick="viewPatientDetails(<?php echo $patient['id']; ?>)" title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button type="button" class="btn-action btn-edit" onclick="editPatient(<?php echo $patient['id']; ?>)" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button type="button" class="btn-action btn-delete" onclick="deletePatient(<?php echo $patient['id']; ?>, '<?php echo htmlspecialchars($patient['name']); ?>')" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         <?php endforeach; 
@@ -373,6 +446,9 @@ if (isset($_GET['patient_id'])) {
                 <i class="fas fa-user-times" style="font-size: 3em; color: #ef4444; margin-bottom: 20px;"></i>
                 <p style="font-size: 16px; margin-bottom: 10px;">Are you sure you want to delete patient:</p>
                 <h3 id="delete-patient-name" style="color: #1e293b; margin: 10px 0;"></h3>
+                <div class="delete-patient-info" style="background: #f8fafc; padding: 16px; border-radius: 8px; margin: 16px 0; border: 1px solid #e2e8f0;">
+                    <p style="color: #64748b; margin: 0;">Patient information will be loaded here</p>
+                </div>
                 <p style="color: #ef4444; font-weight: 500; margin-top: 15px;">
                     <i class="fas fa-exclamation-circle"></i> This action cannot be undone!
                 </p>

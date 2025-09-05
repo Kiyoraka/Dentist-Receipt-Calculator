@@ -141,100 +141,176 @@ function initializePatientSearch() {
 // Add patient functionality removed - patients are created automatically from financial management
 
 function editPatient(patientId) {
-    // Get patient data from the table row
-    const patientRow = document.querySelector(`[data-patient-id=\"${patientId}\"]`);
-    const patientName = patientRow.querySelector('.patient-name-cell').textContent.trim();
-    const phone = patientRow.children[3].textContent;
-    const email = patientRow.children[4].textContent;
+    showLoading();
     
-    // Set modal for editing
-    document.getElementById('modal-title').textContent = 'Edit Patient';
-    document.getElementById('form-action').value = 'update_patient';
-    document.getElementById('patient-id-input').value = patientId;
-    document.getElementById('save-patient-btn').innerHTML = '<i class=\"fas fa-save\"></i> Update Patient';
-    
-    // Load patient data
-    document.getElementById('patient-name').value = patientName.replace('👤', '').trim();
-    document.getElementById('patient-phone').value = phone !== '-' ? phone : '';
-    document.getElementById('patient-email').value = email !== '-' ? email : '';
-    
-    // Show modal
-    document.getElementById('patient-modal').classList.remove('hidden');
-    document.getElementById('patient-name').focus();
+    // Fetch patient details via AJAX for accurate data
+    fetch(`patients.php?action=get_patient&patient_id=${patientId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(patient => {
+            hideLoading();
+            
+            if (patient.error) {
+                showNotification(patient.error, 'error');
+                return;
+            }
+            
+            // Set modal for editing
+            document.getElementById('modal-title').textContent = 'Edit Patient Information';
+            document.getElementById('form-action').value = 'update_patient';
+            document.getElementById('patient-id-input').value = patientId;
+            document.getElementById('save-patient-btn').innerHTML = '<i class="fas fa-save"></i> Update Patient';
+            
+            // Load patient data
+            document.getElementById('patient-name').value = patient.name || '';
+            document.getElementById('patient-phone').value = patient.phone || '';
+            document.getElementById('patient-email').value = patient.email || '';
+            document.getElementById('patient-address').value = patient.address || '';
+            
+            // Show modal with smooth animation
+            document.getElementById('patient-modal').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('patient-name').focus();
+            }, 100);
+            
+            showNotification('Patient information loaded successfully', 'success');
+        })
+        .catch(error => {
+            hideLoading();
+            showNotification('Error loading patient information: ' + error.message, 'error');
+        });
 }
 
 function deletePatient(patientId, patientName) {
-    // Set patient details in modal
+    // Set patient details in modal with enhanced confirmation info
     document.getElementById('delete-patient-name').textContent = patientName;
     document.getElementById('delete-patient-id').value = patientId;
     
-    // Show the delete confirmation modal
+    // Add patient ID to confirmation for extra clarity
+    const patientInfo = document.querySelector('.delete-patient-info');
+    if (patientInfo) {
+        patientInfo.innerHTML = `
+            <strong>Patient ID:</strong> #${patientId.toString().padStart(6, '0')}<br>
+            <strong>Patient Name:</strong> ${patientName}
+        `;
+    }
+    
+    // Show the delete confirmation modal with smooth animation
     document.getElementById('delete-confirmation-modal').classList.remove('hidden');
+    
+    showNotification('Please confirm patient deletion', 'info');
 }
 
 function confirmDeletePatient() {
+    showLoading();
+    
+    const patientId = document.getElementById('delete-patient-id').value;
+    const patientName = document.getElementById('delete-patient-name').textContent;
+    
+    // Show confirmation message
+    showNotification(`Deleting patient: ${patientName}...`, 'info');
+    
     // Submit the delete form
     document.getElementById('delete-patient-form').submit();
 }
 
 function closeDeleteModal() {
-    // Hide the delete confirmation modal
-    document.getElementById('delete-confirmation-modal').classList.add('hidden');
+    // Hide the delete confirmation modal with smooth animation
+    const modal = document.getElementById('delete-confirmation-modal');
+    modal.classList.add('hidden');
+    
+    showNotification('Deletion cancelled', 'info');
 }
 
 function viewPatientDetails(patientId) {
     showLoading();
     
-    // Fetch patient details via AJAX
-    fetch(`patients.php?patient_id=${patientId}`)
-        .then(response => response.text())
-        .then(html => {
-            // Parse the response to extract patient data
-            // For now, we'll create a placeholder
-            displayPatientDetails(patientId);
-            hideLoading();
-        })
-        .catch(error => {
-            console.error('Error fetching patient details:', error);
-            hideLoading();
-            showNotification('Error loading patient details', 'error');
-        });
+    // Get patient data directly from the current page table
+    const patientRow = document.querySelector(`[data-patient-id="${patientId}"]`);
+    
+    if (patientRow) {
+        displayPatientDetails(patientId);
+        hideLoading();
+    } else {
+        hideLoading();
+        showNotification('Patient information not found on page', 'error');
+    }
 }
 
 function displayPatientDetails(patientId) {
-    const patientCard = document.querySelector(`[data-patient-id=\"${patientId}\"]`);
-    const patientName = patientCard.querySelector('.patient-name').textContent;
-    const stats = patientCard.querySelectorAll('.stat-value');
+    const patientRow = document.querySelector(`[data-patient-id="${patientId}"]`);
     
+    if (!patientRow) {
+        showNotification('Patient information not found', 'error');
+        return;
+    }
+    
+    // Extract data from table row - correct structure
+    const cells = patientRow.querySelectorAll('td');
+    const patientName = cells[1].textContent.replace('👤', '').trim();  // Patient name cell
+    const visits = cells[2].textContent.trim();  // Visits
+    const lastVisit = cells[3].textContent.trim();  // Last Visit
+    const clinicFee = cells[4].textContent.trim();  // Clinic Fee
+    const doctorFee = cells[5].textContent.trim();  // Doctor Fee
+    const totalSpent = cells[6].textContent.trim();  // Total Spent
+    
+    // Fetch actual treatment records for this patient
+    loadTreatmentRecords(patientId, patientName, visits, lastVisit, totalSpent);
+}
+
+function loadTreatmentRecords(patientId, patientName, visits, lastVisit, totalSpent) {
+    // Fetch patient receipts via AJAX
+    fetch(`patients.php?action=get_patient_receipts&patient_id=${patientId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            const receipts = data.receipts || [];
+            displayPatientWithRecords(patientId, patientName, visits, lastVisit, totalSpent, receipts);
+            
+            if (receipts.length > 0) {
+                showNotification(`Loaded ${receipts.length} treatment records`, 'success');
+            } else {
+                showNotification('No treatment records found for this patient', 'info');
+            }
+        })
+        .catch(error => {
+            showNotification('Error loading treatment records', 'error');
+            displayPatientWithRecords(patientId, patientName, visits, lastVisit, totalSpent, []);
+        });
+}
+
+function displayPatientWithRecords(patientId, patientName, visits, lastVisit, totalSpent, receipts) {
     const detailsHTML = `
-        <div class=\"patient-details-content\">
-            <div class=\"patient-overview\">
-                <div class=\"overview-header\">
-                    <div class=\"patient-avatar-large\">
-                        <i class=\"fas fa-user-circle\"></i>
+        <div class="patient-details-content">
+            <div class="patient-overview">
+                <div class="overview-header">
+                    <div class="patient-avatar-large">
+                        <i class="fas fa-user-circle"></i>
                     </div>
-                    <div class=\"patient-summary\">
+                    <div class="patient-summary">
                         <h3>${patientName}</h3>
-                        <div class=\"summary-stats\">
-                            <span><i class=\"fas fa-calendar-check\"></i> ${stats[0].textContent} Visits</span>
-                            <span><i class=\"fas fa-money-bill-wave\"></i> ${stats[1].textContent} Total</span>
-                            <span><i class=\"fas fa-clock\"></i> Last visit: ${stats[2].textContent}</span>
+                        <p style="color: #64748b; margin-bottom: 16px;">Patient ID: #${patientId.toString().padStart(6, '0')}</p>
+                        <div class="summary-stats">
+                            <span><i class="fas fa-calendar-check"></i> ${visits} Total Visits</span>
+                            <span><i class="fas fa-clock"></i> Last Visit: ${lastVisit}</span>
+                            <span><i class="fas fa-money-bill-wave"></i> Total Spent: ${totalSpent}</span>
                         </div>
-                    </div>
-                    <div class=\"overview-actions\">
-                        <button type=\"button\" class=\"btn btn-primary\" onclick=\"exportPatientData(${patientId}, '${patientName}')\">
-                            <i class=\"fas fa-download\"></i> Export PDF
-                        </button>
                     </div>
                 </div>
             </div>
             
-            <div class=\"treatment-history\">
-                <h4><i class=\"fas fa-history\"></i> Treatment History</h4>
-                <div class=\"treatment-timeline\">
-                    <div class=\"timeline-item\">
-                        <div class=\"timeline-date\">Loading treatment history...</div>
-                    </div>
+            <div class="treatment-history">
+                <h4><i class="fas fa-history"></i> Treatment Records</h4>
+                <div class="treatment-list">
+                    ${receipts.length > 0 ? generateReceiptsList(receipts) : generateNoRecordsMessage()}
                 </div>
             </div>
         </div>
@@ -242,6 +318,56 @@ function displayPatientDetails(patientId) {
     
     document.getElementById('patient-details-content').innerHTML = detailsHTML;
     document.getElementById('patient-details-modal').classList.remove('hidden');
+    
+    showNotification(`Patient details loaded: ${patientName}`, 'success');
+}
+
+function generateReceiptsList(receipts) {
+    return `
+        <div class="receipts-table" style="background: white; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0;">
+            <div class="receipts-header" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; padding: 16px 20px; font-weight: 600;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; align-items: center;">
+                    <div>Receipt #</div>
+                    <div>Date</div>
+                    <div>Services</div>
+                    <div>Amount</div>
+                </div>
+            </div>
+            <div class="receipts-body">
+                ${receipts.map(receipt => `
+                    <div class="receipt-row" style="padding: 16px 20px; border-bottom: 1px solid #f1f5f9; transition: all 0.2s ease;" 
+                         onmouseover="this.style.backgroundColor='#f8fafc'" onmouseout="this.style.backgroundColor='white'">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; align-items: center;">
+                            <div style="font-weight: 600; color: #2563eb;">#${receipt.invoice_number || receipt.id}</div>
+                            <div style="color: #64748b;">${formatDate(receipt.created_at)}</div>
+                            <div style="color: #374151; font-size: 14px;">${receipt.services || 'Treatment'}</div>
+                            <div style="font-weight: 700; color: #059669;">RM ${parseFloat(receipt.total_amount || 0).toFixed(2)}</div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+
+function generateNoRecordsMessage() {
+    return `
+        <div class="no-records" style="text-align: center; padding: 40px 20px; background: #f8fafc; border: 2px dashed #e2e8f0; border-radius: 12px;">
+            <i class="fas fa-file-medical-alt" style="font-size: 3rem; color: #94a3b8; margin-bottom: 16px;"></i>
+            <h5 style="margin-bottom: 8px; color: #64748b;">No Treatment Records Found</h5>
+            <p style="color: #9ca3af; margin: 0;">This patient has no recorded treatments yet. Records will appear here once treatments are processed through the Financial Management system.</p>
+        </div>
+    `;
+}
+
+function formatDate(dateString) {
+    if (!dateString) return 'Unknown';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+    });
 }
 
 function closePatientModal() {

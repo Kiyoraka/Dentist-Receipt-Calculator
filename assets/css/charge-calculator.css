@@ -481,3 +481,402 @@
     display: flex;
     gap: 10px;
 }
+
+/* Patient Table Column Optimization */
+.patients-table .patient-id-col {
+    width: 8% !important;
+    min-width: 60px;
+}
+
+.patients-table .patient-name-col {
+    width: 25% !important;
+    min-width: 200px;
+}
+
+.patients-table .clinic-fee-col {
+    width: 15% !important;
+    min-width: 120px;
+}
+
+.patients-table .doctor-fee-col {
+    width: 15% !important;
+    min-width: 120px;
+}
+
+.patients-table .visits-col {
+    width: 8% !important;
+    min-width: 70px;
+}
+
+.patients-table .spent-col {
+    width: 12% !important;
+    min-width: 100px;
+}
+
+.patients-table .lastvisit-col {
+    width: 12% !important;
+    min-width: 100px;
+}
+
+.patients-table .action-col {
+    width: 12% !important;
+    min-width: 140px;
+}
+
+/* Patient Table Action Buttons - Horizontal Layout */
+.action-buttons-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: nowrap;
+}
+
+.btn-action {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    border: none;
+    border-radius: 6px;
+    width: 28px;
+    height: 28px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    flex: 0 0 auto;
+}
+
+.btn-action:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.btn-action:active {
+    transform: translateY(0);
+}
+
+.btn-view {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+}
+
+.btn-view:hover {
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.4);
+}
+
+.btn-edit {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.btn-edit:hover {
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);
+}
+
+.btn-delete {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.btn-delete:hover {
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+}
+
+/* Professional Glassmorphism Modal System */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(12px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    opacity: 1;
+    transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.modal.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.95);
+}
+
+.modal-content {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    transform: scale(1);
+    transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+.modal-large {
+    max-width: 800px;
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: white;
+    padding: 20px 24px;
+    border-radius: 16px 16px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+}
+
+.modal-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.1);
+}
+
+.modal-body {
+    padding: 24px;
+}
+
+.modal-actions {
+    padding: 20px 24px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    background: rgba(248, 250, 252, 0.8);
+    border-radius: 0 0 16px 16px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+/* Form Styling in Modals */
+.modal .form-group {
+    margin-bottom: 20px;
+}
+
+.modal .form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: #374151;
+    font-size: 14px;
+}
+
+.modal .form-group input,
+.modal .form-group textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 16px;
+    background: white;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.modal .form-group input:focus,
+.modal .form-group textarea:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.modal .form-row {
+    display: flex;
+    gap: 16px;
+}
+
+.modal .form-row .form-group {
+    flex: 1;
+}
+
+/* Patient Details Modal Content */
+.patient-details-content {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.patient-overview {
+    background: linear-gradient(135deg, #f8f9ff 0%, #e0e7ff 100%);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(37, 99, 235, 0.1);
+}
+
+.overview-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.patient-avatar-large {
+    font-size: 3rem;
+    color: #2563eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.patient-summary {
+    flex: 1;
+}
+
+.patient-summary h3 {
+    margin: 0 0 12px 0;
+    color: #1e293b;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.summary-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.summary-stats span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.summary-stats i {
+    color: #2563eb;
+    width: 16px;
+}
+
+.overview-actions {
+    flex-shrink: 0;
+}
+
+.treatment-history {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid #e2e8f0;
+}
+
+.treatment-history h4 {
+    margin: 0 0 16px 0;
+    color: #1e293b;
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.treatment-timeline {
+    padding: 20px;
+    text-align: center;
+    color: #64748b;
+}
+
+.timeline-item {
+    padding: 16px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+/* Button Variants for Modals */
+.btn-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 120px;
+}
+
+.btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+/* Modal Animation Keyframes */
+@keyframes modalSlideIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Responsive Modal Design */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        margin: 20px;
+        max-height: 95vh;
+    }
+    
+    .modal .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    .overview-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 16px;
+    }
+    
+    .modal-actions {
+        flex-direction: column-reverse;
+    }
+    
+    .modal-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
