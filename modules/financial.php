@@ -10,7 +10,26 @@ $conn = $db->getConnection();
 // Handle form submission
 if ($_POST && isset($_POST['action'])) {
     try {
-        if ($_POST['action'] === 'save_receipt') {
+        if ($_POST['action'] === 'clear_all_receipts') {
+            // Begin transaction for safe deletion
+            $conn->beginTransaction();
+            
+            // Delete all receipt services first (foreign key constraint)
+            $stmt = $conn->prepare("DELETE FROM receipt_services");
+            $stmt->execute();
+            
+            // Delete all receipt charges
+            $stmt = $conn->prepare("DELETE FROM receipt_charges");
+            $stmt->execute();
+            
+            // Delete all receipts
+            $stmt = $conn->prepare("DELETE FROM receipts");
+            $stmt->execute();
+            
+            $conn->commit();
+            $success_message = "All receipts cleared successfully!";
+            
+        } elseif ($_POST['action'] === 'save_receipt') {
             // Begin transaction
             $conn->beginTransaction();
             
@@ -320,6 +339,9 @@ try {
                         <i class="fas fa-history"></i>
                         Recent Receipts
                     </h2>
+                    <button type="button" class="btn btn-danger" onclick="clearAllReceipts()" style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); border: none;">
+                        <i class="fas fa-trash-alt"></i> Clear All
+                    </button>
                 </div>
 
                 <div class="receipts-list">

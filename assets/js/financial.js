@@ -430,3 +430,75 @@ document.addEventListener('DOMContentLoaded', function() {
         input.addEventListener('input', updateOtherCharges);
     });
 });
+
+// Clear All Receipts Functionality
+function clearAllReceipts() {
+    // Show confirmation modal
+    const modalHTML = `
+        <div id="clear-receipts-modal" class="modal">
+            <div class="modal-content" style="max-width: 500px;">
+                <div class="modal-header" style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: white;">
+                    <h2><i class="fas fa-exclamation-triangle"></i> Clear All Receipts</h2>
+                    <button type="button" class="modal-close" onclick="closeClearModal()" style="color: white;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body" style="padding: 30px; text-align: center;">
+                    <div style="font-size: 48px; color: #dc2626; margin-bottom: 20px;">
+                        <i class="fas fa-trash-alt"></i>
+                    </div>
+                    <h3 style="margin-bottom: 20px; color: #dc2626;">⚠️ WARNING: This action cannot be undone!</h3>
+                    <p style="margin-bottom: 20px; font-size: 16px;">
+                        This will permanently delete <strong>ALL receipts</strong> and their associated data including:
+                    </p>
+                    <ul style="text-align: left; margin: 20px 0; padding-left: 40px;">
+                        <li>All invoice records</li>
+                        <li>All selected services</li>  
+                        <li>All additional charges</li>
+                        <li>All financial data</li>
+                    </ul>
+                    <p style="font-weight: bold; color: #dc2626; margin-top: 20px;">
+                        Are you absolutely sure you want to proceed?
+                    </p>
+                    <div style="margin-top: 30px;">
+                        <button type="button" class="btn btn-danger" onclick="confirmClearAllReceipts()" style="background: #dc2626; margin-right: 10px;">
+                            <i class="fas fa-trash-alt"></i> Yes, Clear All Receipts
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="closeClearModal()">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+function closeClearModal() {
+    const modal = document.getElementById('clear-receipts-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+function confirmClearAllReceipts() {
+    closeClearModal();
+    showLoading();
+    showNotification('Clearing all receipts...', 'info');
+    
+    // Create a form and submit it
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = 'financial.php';
+    
+    const actionInput = document.createElement('input');
+    actionInput.type = 'hidden';
+    actionInput.name = 'action';
+    actionInput.value = 'clear_all_receipts';
+    
+    form.appendChild(actionInput);
+    document.body.appendChild(form);
+    form.submit();
+}
