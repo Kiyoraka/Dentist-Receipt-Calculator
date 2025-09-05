@@ -287,12 +287,12 @@ class DentalCalculator {
     collectInvoiceData() {
         const dateField = document.getElementById('invoice-date');
         const invoiceField = document.getElementById('invoice-number');
-        const nameField = document.getElementById('customer-name');
+        const invoiceNameField = document.getElementById('customer-name');
         
         return {
             date: dateField ? dateField.value : '',
             memberInvoice: invoiceField ? invoiceField.value || 'N/A' : 'N/A',
-            customerName: nameField ? nameField.value.trim() : ''
+            customerName: invoiceNameField ? invoiceNameField.value.trim() : ''
         };
     }
 
@@ -453,12 +453,12 @@ class DentalCalculator {
         // Reset all form fields with null checks
         const dateField = document.getElementById('invoice-date');
         const invoiceField = document.getElementById('invoice-number');
-        const nameField = document.getElementById('customer-name');
+        const resetNameField = document.getElementById('customer-name');
         const feeField = document.getElementById('doctor-fee');
         
         if (dateField) dateField.value = new Date().toISOString().split('T')[0];
         if (invoiceField) invoiceField.value = '';
-        if (nameField) nameField.value = '';
+        if (resetNameField) resetNameField.value = '';
         if (feeField) feeField.value = '';
 
         // Uncheck all services
@@ -508,8 +508,8 @@ class DentalCalculator {
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
         // Focus on customer name if field exists
-        const nameField = document.getElementById('customer-name');
-        if (nameField) nameField.focus();
+        const customerNameField = document.getElementById('customer-name');
+        if (customerNameField) customerNameField.focus();
     }
 }
 

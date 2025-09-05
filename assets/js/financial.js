@@ -14,7 +14,21 @@ let calculationData = {
 };
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, initializing financial calculator...');
     initializeFinancialCalculator();
+    
+    // Verify critical elements exist
+    const chargesRows = document.getElementById('charges-rows');
+    const addChargeBtn = document.getElementById('add-charge-btn');
+    console.log('Charges rows element:', chargesRows);
+    console.log('Add charge button:', addChargeBtn);
+    
+    if (!chargesRows) {
+        console.error('ERROR: charges-rows element not found!');
+    }
+    if (!addChargeBtn) {
+        console.error('ERROR: add-charge-btn element not found!');
+    }
 });
 
 function initializeFinancialCalculator() {
@@ -199,29 +213,68 @@ function updateRunningTotals() {
 
 function updateChargesDisplay() {
     const chargesRows = document.getElementById('charges-rows');
-    chargesRows.innerHTML = '';
-    
-    if (calculationData.charges.length === 0) {
-        chargesRows.innerHTML = '<div class="no-charges">No charges added yet</div>';
+    if (!chargesRows) {
+        console.error('charges-rows tbody element not found');
         return;
     }
     
-    calculationData.charges.forEach(charge => {
-        const row = document.createElement('div');
+    // Clear existing rows
+    chargesRows.innerHTML = '';
+    
+    if (calculationData.charges.length === 0) {
+        // Hide both charges table and running totals when no charges
+        const chargesContainer = document.getElementById('charges-list');
+        const runningTotalsContainer = document.getElementById('running-totals');
+        
+        if (chargesContainer) chargesContainer.style.display = 'none';
+        if (runningTotalsContainer) runningTotalsContainer.style.display = 'none';
+        return;
+    }
+    
+    // Show both charges table and running totals when charges exist
+    const chargesContainer = document.getElementById('charges-list');
+    const runningTotalsContainer = document.getElementById('running-totals');
+    
+    if (chargesContainer) chargesContainer.style.display = 'block';
+    if (runningTotalsContainer) runningTotalsContainer.style.display = 'block';
+    
+    // Add charge rows
+    calculationData.charges.forEach((charge, index) => {
+        const row = document.createElement('tr');
         row.className = 'charge-row';
+        
+        // Apply inline styles to ensure they work
+        row.style.cssText = `
+            transition: all 0.3s ease;
+            background-color: ${index % 2 === 0 ? '#ffffff' : '#f8fafc'};
+        `;
+        
+        // Add hover effects
+        row.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = '#f0f9ff';
+        });
+        
+        row.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = index % 2 === 0 ? '#ffffff' : '#f8fafc';
+        });
+        
+        // Create table cells with proper classes and inline styles
         row.innerHTML = `
-            <span class="charge-service">${charge.service}</span>
-            <span class="charge-amount">RM ${charge.amount.toFixed(2)}</span>
-            <span class="charge-doctor">RM ${charge.doctorFee.toFixed(2)} (${charge.percentage}%)</span>
-            <span class="charge-clinic">RM ${charge.clinicFee.toFixed(2)} (${(100-charge.percentage)}%)</span>
-            <span class="charge-action">
-                <button type="button" class="btn-remove" onclick="removeCharge(${charge.id})" title="Remove">
+            <td class="charge-service" style="font-weight: bold; color: #2563eb; text-align: left; font-size: 15px; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9;">${charge.service}</td>
+            <td class="charge-amount" style="text-align: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-weight: bold; color: #374151; font-size: 15px; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9;">RM ${charge.amount.toFixed(2)}</td>
+            <td class="charge-doctor" style="text-align: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-weight: bold; color: #059669; font-size: 14px; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9;">RM ${charge.doctorFee.toFixed(2)} (${charge.percentage}%)</td>
+            <td class="charge-clinic" style="text-align: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-weight: bold; color: #dc2626; font-size: 14px; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9;">RM ${charge.clinicFee.toFixed(2)} (${(100-charge.percentage)}%)</td>
+            <td class="charge-action" style="text-align: center; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb;">
+                <button type="button" class="btn-remove" onclick="removeCharge(${charge.id})" title="Remove" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border: none; border-radius: 8px; width: 36px; height: 36px; color: white; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);">
                     <i class="fas fa-times"></i>
                 </button>
-            </span>
+            </td>
         `;
+        
         chargesRows.appendChild(row);
     });
+    
+    console.log('Updated charges display with', calculationData.charges.length, 'charges');
 }
 
 function updateFinalCalculation() {

@@ -51,8 +51,7 @@
     margin: 20px 0;
 }
 
-.charges-table {
-    width: 100%;
+.charges-table-wrapper {
     border: 2px solid #e5e7eb;
     border-radius: 12px;
     overflow: hidden;
@@ -61,61 +60,56 @@
     background: white;
 }
 
-.table-header {
-    display: table;
+.charges-table {
     width: 100%;
+    border-collapse: collapse;
     table-layout: fixed;
 }
 
 .table-header {
     background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+}
+
+.table-header th {
     color: white;
     font-weight: bold;
     font-size: 14px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-}
-
-.table-header span {
-    display: table-cell;
     padding: 18px 12px;
     text-align: center;
     vertical-align: middle;
     border-right: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.table-header span:first-child {
+.table-header th:first-child {
     text-align: left;
     width: 35%;
     padding-left: 20px;
 }
 
-.table-header span:nth-child(2) {
+.table-header th:nth-child(2) {
     width: 18%;
 }
 
-.table-header span:nth-child(3) {
+.table-header th:nth-child(3) {
     width: 20%;
 }
 
-.table-header span:nth-child(4) {
+.table-header th:nth-child(4) {
     width: 20%;
 }
 
-.table-header span:last-child {
+.table-header th:last-child {
     width: 7%;
     border-right: none;
 }
 
 #charges-rows {
     min-height: 60px;
-    display: table;
-    width: 100%;
-    table-layout: fixed;
 }
 
 .charge-row {
-    display: table-row;
     transition: all 0.3s ease;
 }
 
@@ -131,8 +125,7 @@
     background-color: #e0f2fe;
 }
 
-.charge-row > span {
-    display: table-cell;
+.charge-row td {
     padding: 16px 12px;
     vertical-align: middle;
     border-bottom: 1px solid #e5e7eb;
@@ -140,11 +133,11 @@
     transition: all 0.2s ease;
 }
 
-.charge-row:last-child > span {
+.charge-row:last-child td {
     border-bottom: none;
 }
 
-.charge-row > span:last-child {
+.charge-row td:last-child {
     border-right: none;
 }
 
@@ -152,7 +145,6 @@
     font-weight: bold;
     color: #2563eb;
     text-align: left;
-    padding-left: 20px;
     font-size: 15px;
 }
 
@@ -182,7 +174,6 @@
 
 .charge-action {
     text-align: center;
-    padding: 12px !important;
 }
 
 .btn-remove {
@@ -212,13 +203,16 @@
 }
 
 .no-charges {
-    display: table-cell;
     padding: 40px 20px;
     text-align: center;
     color: #6b7280;
     font-style: italic;
     font-size: 16px;
     vertical-align: middle;
+    background: #f9fafb;
+}
+
+.no-charges-row {
     background: #f9fafb;
 }
 

@@ -66,15 +66,16 @@ CREATE TABLE receipt_charges (
 
 -- Insert default dental services
 INSERT INTO dental_services (service_name, percentage) VALUES
-('Consult', 30.00),
-('Filling', 30.00),
-('Composite', 50.00),
+('Consult', 80.00),
+('Filling', 40.00),
+('Scaling', 40.00),
 ('Implant', 60.00),
-('Denture', 60.00),
-('Bridgework', 30.00),
+('Crown', 40.00),
+('Extraction', 40.00),
 ('Package', 30.00),
-('Oral Surgery', 30.00),
-('X-ray', 30.00),
+('Braces', 60.00),
+('Denture', 40.00),
+('X-ray', 20.00),
 ('Trauma', 40.00);
 
 -- Insert sample patients for testing

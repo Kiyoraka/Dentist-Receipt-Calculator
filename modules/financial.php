@@ -229,22 +229,28 @@ try {
                         </div>
                         
                         <!-- Charges List -->
-                        <div id="charges-list" class="charges-container">
+                        <div id="charges-list" class="charges-container" style="display: none;">
                             <h4>Added Charges:</h4>
-                            <div class="charges-table">
-                                <div class="table-header">
-                                    <span>Service</span>
-                                    <span>Charge</span>
-                                    <span>Doctor Fee</span>
-                                    <span>Clinic Fee</span>
-                                    <span>Action</span>
-                                </div>
-                                <div id="charges-rows"></div>
+                            <div class="charges-table-wrapper">
+                                <table class="charges-table" id="charges-table">
+                                    <thead class="table-header">
+                                        <tr>
+                                            <th class="service-col">Service</th>
+                                            <th class="charge-col">Charge</th>
+                                            <th class="doctor-col">Doctor Fee</th>
+                                            <th class="clinic-col">Clinic Fee</th>
+                                            <th class="action-col">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="charges-rows">
+                                        <!-- Table rows will be added dynamically -->
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
 
                         <!-- Running Totals -->
-                        <div class="running-totals">
+                        <div id="running-totals" class="running-totals" style="display: none;">
                             <div class="totals-grid">
                                 <div class="total-item">
                                     <label>Total Charges:</label>
@@ -341,7 +347,7 @@ try {
                             <span id="subtotal-amount">RM 0.00</span>
                         </div>
                         <div class="summary-row total">
-                            <span><strong>GRAND TOTAL (Patient Pays):</strong></span>
+                            <span><strong>GRAND TOTAL:</strong></span>
                             <span id="total-amount"><strong>RM 0.00</strong></span>
                         </div>
                     </div>
