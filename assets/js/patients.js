@@ -742,19 +742,6 @@ function showExportOptionsModal() {
                         <button type="button" class="btn btn-success" onclick="exportAllReceiptsPDF()" style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); border: none;">
                             <i class="fas fa-file-pdf"></i> All Receipts PDF
                         </button>
-                        <hr style="margin: 15px 0;">
-                        <button type="button" class="btn btn-primary" onclick="exportBasicPatients()">
-                            <i class="fas fa-users"></i> Patient Summary Report
-                        </button>
-                        <button type="button" class="btn btn-success" onclick="exportFinancialBreakdown()">
-                            <i class="fas fa-chart-line"></i> Financial Breakdown Report
-                        </button>
-                        <button type="button" class="btn btn-info" onclick="exportDoctorPayments()">
-                            <i class="fas fa-user-md"></i> Doctor Payment Report  
-                        </button>
-                        <button type="button" class="btn btn-warning" onclick="exportClinicRevenue()">
-                            <i class="fas fa-building"></i> Clinic Revenue Report
-                        </button>
                     </div>
                 </div>
             </div>
