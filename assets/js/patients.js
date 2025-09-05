@@ -434,8 +434,8 @@ function validatePatientForm() {
         patientName.classList.remove('error');
     }
     
-    // Validate email if provided
-    if (patientEmail.value && !validateEmail(patientEmail.value)) {
+    // Validate email if provided and not empty
+    if (patientEmail.value.trim() && !validateEmail(patientEmail.value.trim())) {
         patientEmail.classList.add('error');
         showNotification('Please enter a valid email address', 'error');
         isValid = false;
@@ -443,8 +443,8 @@ function validatePatientForm() {
         patientEmail.classList.remove('error');
     }
     
-    // Validate phone if provided
-    if (patientPhone.value && !validatePhone(patientPhone.value)) {
+    // Validate phone if provided and not empty
+    if (patientPhone.value.trim() && !validatePhone(patientPhone.value.trim())) {
         patientPhone.classList.add('error');
         showNotification('Please enter a valid phone number', 'error');
         isValid = false;
@@ -942,12 +942,12 @@ function generateClinicRevenueCSV(data) {
 
 // Utility functions (if not already defined in dashboard.js)
 function validateEmail(email) {
-    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
 }
 
 function validatePhone(phone) {
-    const phoneRegex = /^[0-9+\\-\\s()]+$/;
+    const phoneRegex = /^[0-9+\-\s()]+$/;
     return phoneRegex.test(phone) && phone.length >= 10;
 }
 
