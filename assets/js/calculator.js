@@ -256,19 +256,19 @@ class DentalCalculator {
         const baseCost = document.getElementById('base-cost').value;
 
         if (!customerName) {
-            alert('Please enter customer name');
+            showNotification('Please enter customer name', 'error');
             document.getElementById('customer-name').focus();
             return false;
         }
 
         if (!baseCost || parseFloat(baseCost) <= 0) {
-            alert('Please enter a valid base cost');
+            showNotification('Please enter a valid base cost', 'error');
             document.getElementById('base-cost').focus();
             return false;
         }
 
         if (this.selectedServices.length === 0 && this.otherCharges.filter(c => c > 0).length === 0) {
-            alert('Please select at least one service or add other charges');
+            showNotification('Please select at least one service or add other charges', 'error');
             return false;
         }
 
@@ -394,7 +394,7 @@ class DentalCalculator {
 
     printReceipt() {
         if (!this.receiptData) {
-            alert('No receipt to print. Please calculate first.');
+            showNotification('No receipt to print. Please calculate first.', 'error');
             return;
         }
 
