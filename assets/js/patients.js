@@ -112,14 +112,23 @@ function setupPatientEventListeners() {
     // Modal close events
     document.addEventListener('click', function(e) {
         if (e.target.classList.contains('modal')) {
-            closeAllModals();
+            // Close specific modals without notifications
+            if (e.target.id === 'patient-details-modal') {
+                closePatientDetailsModal();
+            } else if (e.target.id === 'patient-modal') {
+                closePatientModal();
+            } else if (e.target.id === 'delete-confirmation-modal') {
+                closeDeleteModal();
+            } else {
+                closeAllModalsQuietly();
+            }
         }
     });
     
     // Keyboard events
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-            closeAllModals();
+            closeAllModalsQuietly();
         }
     });
 }
@@ -224,6 +233,12 @@ function closeDeleteModal() {
     modal.classList.add('hidden');
     
     showNotification('Deletion cancelled', 'info');
+}
+
+function closeDeleteModalQuietly() {
+    // Hide the delete confirmation modal without notification
+    const modal = document.getElementById('delete-confirmation-modal');
+    modal.classList.add('hidden');
 }
 
 function viewPatientDetails(patientId) {
@@ -381,6 +396,12 @@ function closeAllModals() {
     closePatientModal();
     closePatientDetailsModal();
     closeDeleteModal();
+}
+
+function closeAllModalsQuietly() {
+    closePatientModal();
+    closePatientDetailsModal();
+    closeDeleteModalQuietly();
 }
 
 function handlePatientFormSubmission(e) {
