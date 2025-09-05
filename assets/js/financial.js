@@ -2,7 +2,7 @@
 // Professional dental practice management system
 
 let calculationData = {
-    baseCost: 0,
+    doctorFee: 0,
     selectedServices: [],
     otherCharges: [],
     paymentMethod: 'Cash',
@@ -164,13 +164,13 @@ function updateOtherCharges() {
 }
 
 function updateCalculation() {
-    // Get base cost
-    calculationData.baseCost = parseFloat(document.getElementById('base-cost').value) || 0;
+    // Get doctor fee
+    calculationData.doctorFee = parseFloat(document.getElementById('base-cost').value) || 0;
     
     // Calculate services total
     let servicesTotal = 0;
     calculationData.selectedServices.forEach(service => {
-        service.amount = calculationData.baseCost * (service.percentage / 100);
+        service.amount = calculationData.doctorFee * (service.percentage / 100);
         servicesTotal += service.amount;
     });
     
@@ -178,7 +178,7 @@ function updateCalculation() {
     const otherChargesTotal = calculationData.otherCharges.reduce((sum, charge) => sum + charge.amount, 0);
     
     // Calculate subtotal
-    const subtotal = calculationData.baseCost + servicesTotal + otherChargesTotal;
+    const subtotal = calculationData.doctorFee + servicesTotal + otherChargesTotal;
     
     // Calculate payment fee
     const paymentFeeAmount = subtotal * (calculationData.paymentFeePercentage / 100);
@@ -376,9 +376,9 @@ function generateReceiptHTML() {
                 </thead>
                 <tbody>
                     <tr>
-                        <td>Base Cost</td>
+                        <td>Doctor Fee</td>
                         <td>-</td>
-                        <td>RM ${calculationData.baseCost.toFixed(2)}</td>
+                        <td>RM ${calculationData.doctorFee.toFixed(2)}</td>
                     </tr>
                     ${servicesHTML}
                     ${chargesHTML}
@@ -408,7 +408,7 @@ function generateReceiptHTML() {
 function resetForm() {
     // Reset calculation data
     calculationData = {
-        baseCost: 0,
+        doctorFee: 0,
         selectedServices: [],
         otherCharges: [],
         paymentMethod: 'Cash',

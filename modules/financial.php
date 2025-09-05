@@ -33,13 +33,13 @@ if ($_POST && isset($_POST['action'])) {
             }
             
             // Insert receipt
-            $stmt = $conn->prepare("INSERT INTO receipts (patient_id, invoice_number, invoice_date, base_cost, services_total, other_charges, payment_method, payment_fee_percentage, payment_fee_amount, terminal_charge_percentage, terminal_charge_amount, subtotal, total_amount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt = $conn->prepare("INSERT INTO receipts (patient_id, invoice_number, invoice_date, doctor_fee, services_total, other_charges, payment_method, payment_fee_percentage, payment_fee_amount, terminal_charge_percentage, terminal_charge_amount, subtotal, total_amount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             
             $stmt->execute([
                 $patient_id,
                 $_POST['invoice_number'],
                 $_POST['invoice_date'],
-                $_POST['base_cost'],
+                $_POST['doctor_fee'],
                 $_POST['services_total'],
                 $_POST['other_charges'],
                 $_POST['payment_method'],
@@ -178,12 +178,12 @@ try {
                         </div>
                     </div>
 
-                    <!-- Base Cost -->
+                    <!-- Doctor Fee -->
                     <div class="form-section">
-                        <h3><i class="fas fa-money-bill"></i> Base Cost</h3>
+                        <h3><i class="fas fa-user-md"></i> Doctor Fee</h3>
                         <div class="form-group">
-                            <label for="base-cost">Base Cost (RM):</label>
-                            <input type="number" id="base-cost" name="base_cost" min="0" step="0.01" placeholder="0.00" required>
+                            <label for="base-cost">Doctor Fee (RM):</label>
+                            <input type="number" id="base-cost" name="doctor_fee" min="0" step="0.01" placeholder="0.00" required>
                         </div>
                     </div>
 
