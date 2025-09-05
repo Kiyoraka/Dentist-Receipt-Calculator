@@ -90,18 +90,6 @@ if (!document.getElementById('notification-styles')) {
 
 document.addEventListener('DOMContentLoaded', function() {
     initializePatientManagement();
-    
-    // Auto-hide success messages
-    const successAlert = document.querySelector('.alert-success');
-    if (successAlert) {
-        setTimeout(function() {
-            successAlert.style.opacity = '0';
-            successAlert.style.transform = 'translateY(-10px)';
-            setTimeout(function() {
-                successAlert.remove();
-            }, 300);
-        }, 3000); // Hide after 3 seconds
-    }
 });
 
 function initializePatientManagement() {
@@ -427,8 +415,30 @@ function handlePatientFormSubmission(e) {
     // Show loading
     showLoading();
     
-    // Submit form
-    e.target.submit();
+    // Get form data
+    const formData = new FormData(e.target);
+    const patientName = formData.get('name');
+    
+    // Submit via AJAX instead of form submission
+    fetch('patients.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.text())
+    .then(html => {
+        hideLoading();
+        closePatientModal();
+        showNotification(`Patient "${patientName}" updated successfully!`, 'success');
+        
+        // Reload the page to show updated data
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
+    })
+    .catch(error => {
+        hideLoading();
+        showNotification('Error updating patient', 'error');
+    });
 }
 
 function validatePatientForm() {
