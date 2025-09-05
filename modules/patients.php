@@ -29,7 +29,6 @@ if ($_POST && isset($_POST['action'])) {
         } elseif ($_POST['action'] === 'delete_patient') {
             $stmt = $conn->prepare("DELETE FROM patients WHERE id = ?");
             $stmt->execute([$_POST['patient_id']]);
-            $success_message = "Patient deleted successfully!";
         }
     } catch (Exception $e) {
         $error_message = "Error: " . $e->getMessage();
