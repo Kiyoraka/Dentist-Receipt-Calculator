@@ -3,13 +3,13 @@
 /* Chart Container Styles */
 .chart-container {
     position: relative;
-    height: 400px;
+    height: 480px;
     width: 100%;
     padding: 20px;
     background: white;
     border-radius: 12px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin: 20px 0;
+    margin: 10px 0 0 0;
 }
 
 .chart-container canvas {
@@ -250,7 +250,7 @@ body {
 .content-section {
     background: white;
     border-radius: 1rem;
-    padding: 1.5rem;
+    padding: 1.5rem 1.5rem 0.5rem 1.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     border: 1px solid #e2e8f0;
     margin-bottom: 1.5rem;

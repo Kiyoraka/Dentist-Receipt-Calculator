@@ -984,8 +984,23 @@ function exportAllReceipts() {
     
     showNotification('Opening comprehensive receipts report with pie chart...', 'info');
     
-    // Open export-all.php in new tab (simplified)
-    window.open('export-all.php', '_blank');
+    // Get current filter values
+    const filterMonth = document.querySelector('select[name="filter_month"]')?.value || '';
+    const filterYear = document.querySelector('select[name="filter_year"]')?.value || '';
+    
+    // Build export URL with filters
+    let exportUrl = 'export-all.php';
+    const params = new URLSearchParams();
+    
+    if (filterMonth) params.append('filter_month', filterMonth);
+    if (filterYear) params.append('filter_year', filterYear);
+    
+    if (params.toString()) {
+        exportUrl += '?' + params.toString();
+    }
+    
+    // Open export-all.php in new tab with filters
+    window.open(exportUrl, '_blank');
     
     hideLoading();
 }

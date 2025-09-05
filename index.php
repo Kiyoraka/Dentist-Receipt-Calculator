@@ -28,8 +28,19 @@ try {
     $stmt->execute();
     $patient_count = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
     
-    // Popular services for bar chart
-    $stmt = $conn->prepare("SELECT service_name, COUNT(*) as usage_count FROM receipt_services GROUP BY service_name ORDER BY usage_count DESC LIMIT 10");
+    // All services with their usage counts for bar chart
+    $stmt = $conn->prepare("
+        SELECT 
+            ds.service_name, 
+            COALESCE(rs.usage_count, 0) as usage_count 
+        FROM dental_services ds 
+        LEFT JOIN (
+            SELECT service_name, COUNT(*) as usage_count 
+            FROM receipt_services 
+            GROUP BY service_name
+        ) rs ON ds.service_name = rs.service_name 
+        ORDER BY ds.service_name ASC
+    ");
     $stmt->execute();
     $popular_services = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
@@ -102,21 +113,14 @@ try {
                 <div class="section-header">
                     <h2 class="section-title">
                         <i class="fas fa-chart-bar"></i>
-                        Popular Services
+                        Dental Services Usage
                     </h2>
                 </div>
                 
-                <div class="chart-container">
-                    <canvas id="servicesChart" style="max-height: 400px;"></canvas>
+                <div class="chart-container" style="padding: 20px 10px; height: 450px;">
+                    <canvas id="servicesChart"></canvas>
                 </div>
                 
-                <?php if (empty($popular_services)): ?>
-                    <div style="text-align: center; padding: 40px; color: #666;">
-                        <i class="fas fa-chart-bar" style="font-size: 48px; opacity: 0.3; margin-bottom: 20px;"></i>
-                        <p>No service data available</p>
-                        <p style="font-size: 14px; color: #999;">Start using services to see analytics</p>
-                    </div>
-                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -125,9 +129,8 @@ try {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <script>
-        // Popular Services Bar Chart
+        // Dental Services Usage Bar Chart
         document.addEventListener('DOMContentLoaded', function() {
-            <?php if (!empty($popular_services)): ?>
             const ctx = document.getElementById('servicesChart').getContext('2d');
             
             const servicesData = {
@@ -138,7 +141,7 @@ try {
                     echo implode(', ', $labels);
                 ?>],
                 datasets: [{
-                    label: 'Number of Services',
+                    label: 'Usage Count',
                     data: [<?php 
                         $counts = array_map(function($service) {
                             return $service['usage_count'];
@@ -239,7 +242,6 @@ try {
             };
 
             new Chart(ctx, config);
-            <?php endif; ?>
         });
     </script>
 

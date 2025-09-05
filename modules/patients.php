@@ -115,9 +115,9 @@ $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $page = max(1, $page); // Ensure page is at least 1
 $offset = ($page - 1) * $records_per_page;
 
-// Get total patient count for pagination
+// Get total visit records count for pagination (not patient count, but visit count)
 try {
-    $count_sql = "SELECT COUNT(DISTINCT p.id) as total FROM patients p";
+    $count_sql = "SELECT COUNT(r.id) as total FROM patients p INNER JOIN receipts r ON p.id = r.patient_id";
     $count_params = [];
     $where_conditions = [];
     
@@ -128,18 +128,15 @@ try {
     }
     
     // Add date filtering if month/year specified
-    if ($filter_month || $filter_year) {
-        $count_sql .= " LEFT JOIN receipts r ON p.id = r.patient_id";
-        if ($filter_month && $filter_year) {
-            $where_conditions[] = "DATE_FORMAT(r.created_at, '%m') = ? AND DATE_FORMAT(r.created_at, '%Y') = ?";
-            $count_params = array_merge($count_params, [$filter_month, $filter_year]);
-        } elseif ($filter_month) {
-            $where_conditions[] = "DATE_FORMAT(r.created_at, '%m') = ?";
-            $count_params[] = $filter_month;
-        } elseif ($filter_year) {
-            $where_conditions[] = "DATE_FORMAT(r.created_at, '%Y') = ?";
-            $count_params[] = $filter_year;
-        }
+    if ($filter_month && $filter_year) {
+        $where_conditions[] = "DATE_FORMAT(r.created_at, '%m') = ? AND DATE_FORMAT(r.created_at, '%Y') = ?";
+        $count_params = array_merge($count_params, [$filter_month, $filter_year]);
+    } elseif ($filter_month) {
+        $where_conditions[] = "DATE_FORMAT(r.created_at, '%m') = ?";
+        $count_params[] = $filter_month;
+    } elseif ($filter_year) {
+        $where_conditions[] = "DATE_FORMAT(r.created_at, '%Y') = ?";
+        $count_params[] = $filter_year;
     }
     
     if (!empty($where_conditions)) {
@@ -151,18 +148,43 @@ try {
     $total_records = $count_stmt->fetch(PDO::FETCH_ASSOC)['total'];
     $total_pages = ceil($total_records / $records_per_page);
     
-    // Get patients with their receipt counts, total spending, and fee breakdowns (with pagination)
-    $sql = "
-        SELECT 
-            p.*,
-            COUNT(r.id) as receipt_count,
-            COALESCE(SUM(r.total_amount), 0) as total_spent,
-            COALESCE(SUM(r.doctor_fee), 0) as total_doctor_fee,
-            COALESCE(SUM(r.clinic_fee), 0) as total_clinic_fee,
-            MAX(r.created_at) as last_visit
-        FROM patients p 
-        LEFT JOIN receipts r ON p.id = r.patient_id 
-    ";
+    // Get individual visit records instead of grouped patient data
+    // When filtering by date, show visits in that period. When no filter, show all individual visits
+    if ($filter_month || $filter_year) {
+        $sql = "
+            SELECT 
+                p.*,
+                r.id as receipt_id,
+                r.total_amount,
+                r.doctor_fee,
+                r.clinic_fee,
+                r.created_at as visit_date,
+                1 as receipt_count,
+                r.total_amount as total_spent,
+                r.doctor_fee as total_doctor_fee,
+                r.clinic_fee as total_clinic_fee,
+                r.created_at as last_visit
+            FROM patients p 
+            INNER JOIN receipts r ON p.id = r.patient_id 
+        ";
+    } else {
+        $sql = "
+            SELECT 
+                p.*,
+                r.id as receipt_id,
+                r.total_amount,
+                r.doctor_fee,
+                r.clinic_fee,
+                r.created_at as visit_date,
+                1 as receipt_count,
+                COALESCE(r.total_amount, 0) as total_spent,
+                COALESCE(r.doctor_fee, 0) as total_doctor_fee,
+                COALESCE(r.clinic_fee, 0) as total_clinic_fee,
+                r.created_at as last_visit
+            FROM patients p 
+            INNER JOIN receipts r ON p.id = r.patient_id 
+        ";
+    }
     
     $params = [];
     $where_conditions = [];
@@ -173,7 +195,7 @@ try {
         $params = array_merge($params, [$searchTerm, $searchTerm, $searchTerm]);
     }
     
-    // Add date filtering for receipts
+    // Add date filtering for receipts - same logic for both search and date filtering
     if ($filter_month && $filter_year) {
         $where_conditions[] = "DATE_FORMAT(r.created_at, '%m') = ? AND DATE_FORMAT(r.created_at, '%Y') = ?";
         $params = array_merge($params, [$filter_month, $filter_year]);
@@ -189,7 +211,7 @@ try {
         $sql .= " WHERE " . implode(" AND ", $where_conditions);
     }
     
-    $sql .= " GROUP BY p.id ORDER BY p.name ASC LIMIT $records_per_page OFFSET $offset";
+    $sql .= " ORDER BY r.created_at DESC, p.name ASC LIMIT $records_per_page OFFSET $offset";
     
     $stmt = $conn->prepare($sql);
     $stmt->execute($params);
@@ -315,8 +337,8 @@ if (isset($_GET['patient_id'])) {
                             <tr>
                                 <th class="patient-id-col">ID</th>
                                 <th class="patient-name-col">Patient Name</th>
-                                <th class="visits-col">Visits</th>
-                                <th class="lastvisit-col">Last Visit</th>
+                                <th class="visits-col">Visit Date</th>
+                                <th class="receipt-col">Receipt ID</th>
                                 <th class="clinic-fee-col">Clinic Fee</th>
                                 <th class="doctor-fee-col">Doctor Fee</th>
                                 <th class="spent-col">Total Spent</th>
@@ -337,20 +359,14 @@ if (isset($_GET['patient_id'])) {
                         foreach ($patients as $index => $patient): 
                         ?>
                         <tr class="charge-row" data-patient-id="<?php echo $patient['id']; ?>" style="transition: all 0.3s ease; background-color: <?php echo $index % 2 === 0 ? '#ffffff' : '#f8fafc'; ?>;" onmouseover="this.style.backgroundColor='#f0f9ff'" onmouseout="this.style.backgroundColor='<?php echo $index % 2 === 0 ? '#ffffff' : '#f8fafc'; ?>'">
-                            <td style="text-align: center; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9; font-weight: bold; color: #374151;"><?php echo $patient['id']; ?></td>
+                            <td style="text-align: center; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9; font-weight: bold; color: #374151;"><?php echo $index + 1; ?></td>
                             <td class="charge-service" style="font-weight: bold; color: #2563eb; text-align: left; font-size: 15px; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9;">
                                 <i class="fas fa-user-circle" style="margin-right: 8px;"></i>
                                 <?php echo htmlspecialchars($patient['name']); ?>
                             </td>
-                            <td class="charge-amount" style="text-align: center; font-weight: bold; color: #374151; font-size: 15px; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9;"><?php echo $patient['receipt_count']; ?></td>
+                            <td class="charge-amount" style="text-align: center; font-weight: bold; color: #374151; font-size: 15px; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9;"><?php echo date('M j, Y', strtotime($patient['visit_date'])); ?></td>
                             <td style="text-align: center; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9; color: #374151;">
-                                <?php 
-                                if ($patient['last_visit']) {
-                                    echo date('M j, Y', strtotime($patient['last_visit']));
-                                } else {
-                                    echo 'Never';
-                                }
-                                ?>
+                                <?php echo $patient['receipt_id']; ?>
                             </td>
                             <td class="charge-clinic" style="text-align: center; font-weight: bold; color: #dc2626; font-size: 14px; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9;">RM <?php echo number_format($patient['total_clinic_fee'], 2); ?></td>
                             <td class="charge-doctor" style="text-align: center; font-weight: bold; color: #059669; font-size: 14px; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9;">RM <?php echo number_format($patient['total_doctor_fee'], 2); ?></td>

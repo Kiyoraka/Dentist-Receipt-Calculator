@@ -1,8 +1,8 @@
 <?php
 /**
- * Export All - Two Page Report
+ * Export All - Two Page Report  
  * Page 1: Pie Chart with Financial Summary
- * Page 2: Patient Table with All Values (Landscape)
+ * Page 2: Individual Visit Records Table (Landscape)
  */
 
 require_once '../config/database.php';
@@ -11,29 +11,59 @@ require_once '../config/config.php';
 $db = new Database();
 $conn = $db->getConnection();
 
-// Get all patients with financial data
+// Get filter parameters
+$filter_month = $_GET['filter_month'] ?? '';
+$filter_year = $_GET['filter_year'] ?? '';
+
+// Get all individual visit records with financial data
 try {
-    $stmt = $conn->prepare("
+    $sql = "
         SELECT 
             p.*,
-            COUNT(r.id) as receipt_count,
-            COALESCE(SUM(r.total_amount), 0) as total_spent,
-            COALESCE(SUM(r.doctor_fee), 0) as total_doctor_fee,
-            COALESCE(SUM(r.clinic_fee), 0) as total_clinic_fee,
-            MAX(r.created_at) as last_visit
+            r.id as receipt_id,
+            r.total_amount,
+            r.doctor_fee,
+            r.clinic_fee,
+            r.created_at as visit_date,
+            1 as receipt_count,
+            COALESCE(r.total_amount, 0) as total_spent,
+            COALESCE(r.doctor_fee, 0) as total_doctor_fee,
+            COALESCE(r.clinic_fee, 0) as total_clinic_fee,
+            r.created_at as last_visit
         FROM patients p 
-        LEFT JOIN receipts r ON p.id = r.patient_id 
-        GROUP BY p.id 
-        ORDER BY p.name ASC
-    ");
-    $stmt->execute();
+        INNER JOIN receipts r ON p.id = r.patient_id 
+    ";
+    
+    $params = [];
+    $where_conditions = [];
+    
+    // Add date filtering if specified
+    if ($filter_month && $filter_year) {
+        $where_conditions[] = "DATE_FORMAT(r.created_at, '%m') = ? AND DATE_FORMAT(r.created_at, '%Y') = ?";
+        $params = array_merge($params, [$filter_month, $filter_year]);
+    } elseif ($filter_month) {
+        $where_conditions[] = "DATE_FORMAT(r.created_at, '%m') = ?";
+        $params[] = $filter_month;
+    } elseif ($filter_year) {
+        $where_conditions[] = "DATE_FORMAT(r.created_at, '%Y') = ?";
+        $params[] = $filter_year;
+    }
+    
+    if (!empty($where_conditions)) {
+        $sql .= " WHERE " . implode(" AND ", $where_conditions);
+    }
+    
+    $sql .= " ORDER BY r.created_at DESC, p.name ASC";
+    
+    $stmt = $conn->prepare($sql);
+    $stmt->execute($params);
     $patients = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     // Calculate totals for pie chart
     $total_doctor_fees = array_sum(array_column($patients, 'total_doctor_fee'));
     $total_clinic_fees = array_sum(array_column($patients, 'total_clinic_fee'));
     $total_amount = array_sum(array_column($patients, 'total_spent'));
-    $total_visits = array_sum(array_column($patients, 'receipt_count'));
+    $total_visits = count($patients);
     
 } catch (Exception $e) {
     $patients = [];
@@ -74,6 +104,23 @@ try {
             @page {
                 size: landscape;
                 margin: 20mm;
+            }
+            
+            /* Force table header colors in print */
+            .patients-table th {
+                background: #2563eb !important;
+                color: white !important;
+                -webkit-print-color-adjust: exact !important;
+                color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            /* Ensure alternating row colors in print */
+            .patients-table tr:nth-child(even) {
+                background-color: #f8fafc !important;
+                -webkit-print-color-adjust: exact !important;
+                color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
         }
         
@@ -125,19 +172,27 @@ try {
             border-radius: 12px;
             padding: 20px;
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 120px;
         }
         
         .stat-value {
             font-size: 28px;
             font-weight: bold;
             color: #2563eb;
-            margin-bottom: 8px;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .stat-label {
             font-size: 14px;
             color: #666;
             font-weight: 500;
+            margin-top: auto;
         }
         
         /* Pie Chart */
@@ -201,14 +256,12 @@ try {
         
         /* Column Widths for Landscape */
         .col-id { width: 8%; }
-        .col-name { width: 20%; text-align: left !important; font-weight: bold; color: #2563eb; }
-        .col-visits { width: 10%; }
-        .col-lastvisit { width: 15%; }
-        .col-clinic { width: 12%; font-weight: bold; color: #dc2626; }
-        .col-doctor { width: 12%; font-weight: bold; color: #059669; }
-        .col-total { width: 12%; font-weight: bold; color: #2563eb; }
-        .col-phone { width: 15%; }
-        .col-email { width: 20%; font-size: 11px; }
+        .col-name { width: 25%; text-align: left !important; font-weight: bold; color: #2563eb; }
+        .col-visitdate { width: 15%; }
+        .col-receipt { width: 12%; }
+        .col-clinic { width: 13%; font-weight: bold; color: #dc2626; }
+        .col-doctor { width: 13%; font-weight: bold; color: #059669; }
+        .col-total { width: 14%; font-weight: bold; color: #2563eb; }
         
         /* Action Buttons */
         .action-buttons {
@@ -261,6 +314,7 @@ try {
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 </head>
 <body>
     <!-- Action Buttons -->
@@ -277,9 +331,19 @@ try {
     <div class="page-1">
         <div class="report-header">
             <h1>🦷 DENTAL PRACTICE</h1>
-            <h2>Financial Summary Report</h2>
+            <h2>
+                <?php if ($filter_month && $filter_year): ?>
+                    Individual Visit Records Report - <?php echo date('F Y', mktime(0, 0, 0, $filter_month, 1, $filter_year)); ?>
+                <?php elseif ($filter_month): ?>
+                    Individual Visit Records Report - <?php echo date('F', mktime(0, 0, 0, $filter_month, 1)); ?> (All Years)
+                <?php elseif ($filter_year): ?>
+                    Individual Visit Records Report - <?php echo $filter_year; ?>
+                <?php else: ?>
+                    Individual Visit Records Report - All Time
+                <?php endif; ?>
+            </h2>
             <p>Generated on <?php echo date('F j, Y \a\t g:i A'); ?></p>
-            <p>Total Patients: <?php echo count($patients); ?> | Total Visits: <?php echo $total_visits; ?></p>
+            <p>Total Visit Records: <?php echo $total_visits; ?></p>
         </div>
 
         <div class="summary-stats">
@@ -322,38 +386,26 @@ try {
                     <tr>
                         <th class="col-id">ID</th>
                         <th class="col-name">Patient Name</th>
-                        <th class="col-visits">Visits</th>
-                        <th class="col-lastvisit">Last Visit</th>
+                        <th class="col-visitdate">Visit Date</th>
+                        <th class="col-receipt">Receipt ID</th>
                         <th class="col-clinic">Clinic Fee</th>
                         <th class="col-doctor">Doctor Fee</th>
                         <th class="col-total">Total Spent</th>
-                        <th class="col-phone">Phone</th>
-                        <th class="col-email">Email</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($patients as $patient): ?>
+                    <?php foreach ($patients as $index => $patient): ?>
                         <tr>
-                            <td class="col-id"><?php echo $patient['id']; ?></td>
+                            <td class="col-id"><?php echo $index + 1; ?></td>
                             <td class="col-name">
                                 <i class="fas fa-user-circle" style="margin-right: 5px; color: #2563eb;"></i>
                                 <?php echo htmlspecialchars($patient['name']); ?>
                             </td>
-                            <td class="col-visits"><?php echo $patient['receipt_count']; ?></td>
-                            <td class="col-lastvisit">
-                                <?php 
-                                if ($patient['last_visit']) {
-                                    echo date('M j, Y', strtotime($patient['last_visit']));
-                                } else {
-                                    echo '<span style="color: #9ca3af;">Never</span>';
-                                }
-                                ?>
-                            </td>
+                            <td class="col-visitdate"><?php echo date('M j, Y', strtotime($patient['visit_date'])); ?></td>
+                            <td class="col-receipt"><?php echo $patient['receipt_id']; ?></td>
                             <td class="col-clinic">RM <?php echo number_format($patient['total_clinic_fee'], 2); ?></td>
                             <td class="col-doctor">RM <?php echo number_format($patient['total_doctor_fee'], 2); ?></td>
                             <td class="col-total">RM <?php echo number_format($patient['total_spent'], 2); ?></td>
-                            <td class="col-phone"><?php echo htmlspecialchars($patient['phone'] ?: '-'); ?></td>
-                            <td class="col-email"><?php echo htmlspecialchars($patient['email'] ?: '-'); ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -398,17 +450,35 @@ try {
                         borderColor: '#fff'
                     }]
                 },
+                plugins: [ChartDataLabels],
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
+                            display: true,
                             position: 'bottom',
                             labels: {
                                 padding: 30,
                                 font: {
                                     size: 18
-                                }
+                                },
+                                color: '#333',
+                                usePointStyle: false,
+                                boxWidth: 20,
+                                boxHeight: 20
+                            }
+                        },
+                        datalabels: {
+                            color: 'white',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            formatter: function(value, context) {
+                                const total = clinicFees + doctorFees;
+                                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
+                                return percentage + '%';
                             }
                         },
                         tooltip: {
