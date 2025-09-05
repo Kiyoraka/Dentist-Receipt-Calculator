@@ -141,40 +141,31 @@ if (isset($_GET['patient_id'])) {
         </div>
     <?php endif; ?>
 
-    <!-- Patient Management Section -->
-    <div class="financial-layout">
-        <div class="calculator-section">
-            <div class="content-section">
-                <div class="section-header">
-                    <h2 class="section-title">
-                        <i class="fas fa-users"></i>
-                        Patient Directory
-                    </h2>
-                    <div class="section-actions">
-                        <button type="button" class="btn btn-info" onclick="exportAllPatients()">
-                            <i class="fas fa-file-export"></i> Export All
-                        </button>
-                    </div>
-                </div>
+    <!-- Patient Management Controls -->
+    <div class="content-section">
+        <div class="section-header">
+            <h2 class="section-title">
+                <i class="fas fa-users"></i>
+                Patient Directory
+            </h2>
+            <div class="section-actions">
+                <button type="button" class="btn btn-info" onclick="exportAllPatients()">
+                    <i class="fas fa-file-export"></i> Export All
+                </button>
+            </div>
+        </div>
 
-                <!-- Search Controls -->
-                <div class="form-section">
-                    <div class="search-container">
-                        <form method="GET" class="search-form">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="search">Search Patients:</label>
-                                    <input type="text" id="search" name="search" placeholder="Name, phone, or email..." value="<?php echo htmlspecialchars($search); ?>" class="form-control">
-                                </div>
-                                <div class="form-group">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-search"></i> Search
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
+        <!-- Search Controls -->
+        <div class="search-controls">
+            <form method="GET" class="search-form">
+                <div class="input-group">
+                    <input type="text" name="search" placeholder="Search by name, phone, or email..." value="<?php echo htmlspecialchars($search); ?>" class="search-input">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Search
+                    </button>
                 </div>
+            </form>
+        </div>
 
                 <!-- Patients Table -->
                 <?php if (!empty($patients)): ?>
@@ -295,17 +286,15 @@ if (isset($_GET['patient_id'])) {
                             </a>
                         <?php endif; ?>
                     </div>
-                </div>
-                <?php else: ?>
-                    <div class="empty-state" style="text-align: center; padding: 40px; color: #666;">
-                        <i class="fas fa-users" style="font-size: 48px; opacity: 0.3; margin-bottom: 20px;"></i>
-                        <h3>No patients found</h3>
-                        <p><?php echo $search ? 'Try adjusting your search criteria' : 'Add your first patient to get started'; ?></p>
-                        <p style="color: #999; font-size: 14px;">Patients are automatically added when processing receipts in Financial Management.</p>
-                    </div>
-                <?php endif; ?>
-            </div>
         </div>
+        <?php else: ?>
+            <div class="empty-state" style="text-align: center; padding: 40px; color: #666;">
+                <i class="fas fa-users" style="font-size: 48px; opacity: 0.3; margin-bottom: 20px;"></i>
+                <h3>No patients found</h3>
+                <p><?php echo $search ? 'Try adjusting your search criteria' : 'Add your first patient to get started'; ?></p>
+                <p style="color: #999; font-size: 14px;">Patients are automatically added when processing receipts in Financial Management.</p>
+            </div>
+        <?php endif; ?>
     </div>
 
     <!-- Edit Patient Modal -->
