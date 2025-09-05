@@ -274,12 +274,6 @@ function loadTreatmentRecords(patientId, patientName, visits, lastVisit, totalSp
         .then(data => {
             const receipts = data.receipts || [];
             displayPatientWithRecords(patientId, patientName, visits, lastVisit, totalSpent, receipts);
-            
-            if (receipts.length > 0) {
-                showNotification(`Loaded ${receipts.length} treatment records`, 'success');
-            } else {
-                showNotification('No treatment records found for this patient', 'info');
-            }
         })
         .catch(error => {
             showNotification('Error loading treatment records', 'error');
@@ -319,7 +313,12 @@ function displayPatientWithRecords(patientId, patientName, visits, lastVisit, to
     document.getElementById('patient-details-content').innerHTML = detailsHTML;
     document.getElementById('patient-details-modal').classList.remove('hidden');
     
-    showNotification(`Patient details loaded: ${patientName}`, 'success');
+    // Show appropriate notification based on receipt count
+    if (receipts.length > 0) {
+        showNotification(`Loaded ${receipts.length} treatment records for ${patientName}`, 'success');
+    } else {
+        showNotification(`Patient details loaded: ${patientName}`, 'info');
+    }
 }
 
 function generateReceiptsList(receipts) {
