@@ -90,6 +90,18 @@ if (!document.getElementById('notification-styles')) {
 
 document.addEventListener('DOMContentLoaded', function() {
     initializePatientManagement();
+    
+    // Auto-hide success messages
+    const successAlert = document.querySelector('.alert-success');
+    if (successAlert) {
+        setTimeout(function() {
+            successAlert.style.opacity = '0';
+            successAlert.style.transform = 'translateY(-10px)';
+            setTimeout(function() {
+                successAlert.remove();
+            }, 300);
+        }, 3000); // Hide after 3 seconds
+    }
 });
 
 function initializePatientManagement() {

@@ -852,6 +852,11 @@
     }
 }
 
+/* Alert Auto-Hide Animation */
+.alert-success, .alert-error {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
 /* Responsive Modal Design */
 @media (max-width: 768px) {
     .modal-content {
