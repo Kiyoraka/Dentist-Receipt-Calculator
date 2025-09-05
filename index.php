@@ -97,25 +97,6 @@ try {
             </div>
         </div>
 
-        <!-- Quick Actions -->
-        <div class="dashboard-card">
-            <div class="card-header">
-                <div class="card-icon warning">
-                    <i class="fas fa-plus-circle"></i>
-                </div>
-                <div>
-                    <h3 class="card-title">Quick Actions</h3>
-                    <div class="quick-actions">
-                        <a href="modules/financial.php" class="btn btn-primary btn-sm">
-                            <i class="fas fa-calculator"></i> New Receipt
-                        </a>
-                        <a href="modules/patients.php" class="btn btn-secondary btn-sm">
-                            <i class="fas fa-user-plus"></i> Add Patient
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- Recent Activity Section -->
