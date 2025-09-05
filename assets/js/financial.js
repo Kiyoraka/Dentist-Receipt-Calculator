@@ -1,9 +1,11 @@
-// Enhanced Financial Calculator with Database Integration
-// Professional dental practice management system
+// Enhanced Charge-Based Financial Calculator
+// Professional dental practice management system with itemized billing
 
 let calculationData = {
-    doctorFee: 0,
-    selectedServices: [],
+    charges: [],          // Array of {service, amount, doctorFee, clinicFee}
+    totalCharges: 0,
+    totalDoctorFee: 0,
+    totalClinicFee: 0,
     otherCharges: [],
     paymentMethod: 'Cash',
     paymentFeePercentage: 0,
@@ -29,23 +31,11 @@ function initializeFinancialCalculator() {
 }
 
 function setupEventListeners() {
-    // Clinic fee input
-    const clinicFeeInput = document.getElementById('clinic-fee');
-    if (clinicFeeInput) {
-        clinicFeeInput.addEventListener('input', updateCalculation);
+    // Add charge button
+    const addChargeBtn = document.getElementById('add-charge-btn');
+    if (addChargeBtn) {
+        addChargeBtn.addEventListener('click', addCharge);
     }
-    
-    // Doctor fee input
-    const doctorFeeInput = document.getElementById('doctor-fee');
-    if (doctorFeeInput) {
-        doctorFeeInput.addEventListener('input', updateCalculation);
-    }
-    
-    // Service checkboxes
-    const serviceCheckboxes = document.querySelectorAll('input[name="services[]"]');
-    serviceCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', updateSelectedServices);
-    });
     
     // Payment method radio buttons
     const paymentRadios = document.querySelectorAll('input[name="payment_method"]');
@@ -56,13 +46,13 @@ function setupEventListeners() {
     // Terminal charge checkbox
     const terminalChargeCheckbox = document.getElementById('terminal-charge');
     if (terminalChargeCheckbox) {
-        terminalChargeCheckbox.addEventListener('change', updateCalculation);
+        terminalChargeCheckbox.addEventListener('change', updateFinalCalculation);
     }
     
-    // Add charge button
-    const addChargeBtn = document.getElementById('add-charge');
-    if (addChargeBtn) {
-        addChargeBtn.addEventListener('click', addOtherCharge);
+    // Other charges
+    const addOtherChargeBtn = document.getElementById('add-charge');
+    if (addOtherChargeBtn) {
+        addOtherChargeBtn.addEventListener('click', addOtherCharge);
     }
     
     // Calculate button
@@ -88,6 +78,17 @@ function setupEventListeners() {
     if (resetBtn) {
         resetBtn.addEventListener('click', resetForm);
     }
+
+    // Enter key support for charge amount
+    const chargeAmountInput = document.getElementById('charge-amount');
+    if (chargeAmountInput) {
+        chargeAmountInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addCharge();
+            }
+        });
+    }
 }
 
 function generateInvoiceNumber() {
@@ -112,6 +113,146 @@ function updateSelectedServices() {
     });
     
     // No calculation needed - services are display-only now
+}
+
+// New Charge-Based Calculator Functions
+function addCharge() {
+    const chargeAmount = parseFloat(document.getElementById('charge-amount').value) || 0;
+    const serviceSelect = document.getElementById('service-select');
+    const servicePercentage = parseFloat(serviceSelect.value) || 0;
+    const serviceName = serviceSelect.options[serviceSelect.selectedIndex].dataset.service || '';
+    
+    // Validation
+    if (chargeAmount <= 0) {
+        showNotification('Please enter a valid charge amount', 'error');
+        return;
+    }
+    
+    if (servicePercentage === 0 || !serviceName) {
+        showNotification('Please select a dental service', 'error');
+        return;
+    }
+    
+    // Calculate doctor and clinic fees
+    const doctorFee = chargeAmount * (servicePercentage / 100);
+    const clinicFee = chargeAmount - doctorFee;
+    
+    // Create charge object
+    const charge = {
+        id: Date.now(), // Unique ID for removal
+        service: serviceName,
+        percentage: servicePercentage,
+        amount: chargeAmount,
+        doctorFee: doctorFee,
+        clinicFee: clinicFee
+    };
+    
+    // Add to charges array
+    calculationData.charges.push(charge);
+    
+    // Update running totals
+    updateRunningTotals();
+    
+    // Update charges display
+    updateChargesDisplay();
+    
+    // Clear input fields
+    document.getElementById('charge-amount').value = '';
+    document.getElementById('service-select').value = '';
+    
+    // Focus back on charge amount for next entry
+    document.getElementById('charge-amount').focus();
+    
+    showNotification(`Added: ${serviceName} - RM ${chargeAmount.toFixed(2)}`, 'success');
+}
+
+function removeCharge(chargeId) {
+    // Remove charge from array
+    calculationData.charges = calculationData.charges.filter(charge => charge.id !== chargeId);
+    
+    // Update displays
+    updateRunningTotals();
+    updateChargesDisplay();
+    updateFinalCalculation();
+    
+    showNotification('Charge removed successfully', 'info');
+}
+
+function updateRunningTotals() {
+    // Calculate totals
+    calculationData.totalCharges = calculationData.charges.reduce((sum, charge) => sum + charge.amount, 0);
+    calculationData.totalDoctorFee = calculationData.charges.reduce((sum, charge) => sum + charge.doctorFee, 0);
+    calculationData.totalClinicFee = calculationData.charges.reduce((sum, charge) => sum + charge.clinicFee, 0);
+    
+    // Update display
+    document.getElementById('total-charges').textContent = `RM ${calculationData.totalCharges.toFixed(2)}`;
+    document.getElementById('total-doctor-fee').textContent = `RM ${calculationData.totalDoctorFee.toFixed(2)}`;
+    document.getElementById('total-clinic-fee').textContent = `RM ${calculationData.totalClinicFee.toFixed(2)}`;
+    
+    // Update final summary
+    document.getElementById('final-doctor-fee').textContent = `RM ${calculationData.totalDoctorFee.toFixed(2)}`;
+    document.getElementById('final-clinic-fee').textContent = `RM ${calculationData.totalClinicFee.toFixed(2)}`;
+    
+    // Trigger final calculation update
+    updateFinalCalculation();
+}
+
+function updateChargesDisplay() {
+    const chargesRows = document.getElementById('charges-rows');
+    chargesRows.innerHTML = '';
+    
+    if (calculationData.charges.length === 0) {
+        chargesRows.innerHTML = '<div class="no-charges">No charges added yet</div>';
+        return;
+    }
+    
+    calculationData.charges.forEach(charge => {
+        const row = document.createElement('div');
+        row.className = 'charge-row';
+        row.innerHTML = `
+            <span class="charge-service">${charge.service}</span>
+            <span class="charge-amount">RM ${charge.amount.toFixed(2)}</span>
+            <span class="charge-doctor">RM ${charge.doctorFee.toFixed(2)} (${charge.percentage}%)</span>
+            <span class="charge-clinic">RM ${charge.clinicFee.toFixed(2)} (${(100-charge.percentage)}%)</span>
+            <span class="charge-action">
+                <button type="button" class="btn-remove" onclick="removeCharge(${charge.id})" title="Remove">
+                    <i class="fas fa-times"></i>
+                </button>
+            </span>
+        `;
+        chargesRows.appendChild(row);
+    });
+}
+
+function updateFinalCalculation() {
+    // Calculate other charges total
+    const otherChargesTotal = calculationData.otherCharges.reduce((sum, charge) => sum + charge.amount, 0);
+    
+    // Calculate base subtotal (clinic + doctor + other charges)
+    const baseSubtotal = calculationData.totalClinicFee + calculationData.totalDoctorFee + otherChargesTotal;
+    
+    // Calculate payment fee
+    const paymentFeeAmount = baseSubtotal * (calculationData.paymentFeePercentage / 100);
+    
+    // Calculate terminal charge
+    const terminalChargeEnabled = document.getElementById('terminal-charge').checked;
+    const terminalChargeAmount = terminalChargeEnabled ? baseSubtotal * (calculationData.terminalChargePercentage / 100) : 0;
+    
+    // Calculate final total
+    const finalTotal = baseSubtotal + paymentFeeAmount + terminalChargeAmount;
+    
+    // Update display
+    document.getElementById('other-charges-total').textContent = `RM ${otherChargesTotal.toFixed(2)}`;
+    document.getElementById('payment-fee').textContent = `RM ${paymentFeeAmount.toFixed(2)}`;
+    document.getElementById('terminal-charge-amount').textContent = `RM ${terminalChargeAmount.toFixed(2)}`;
+    document.getElementById('subtotal-amount').textContent = `RM ${baseSubtotal.toFixed(2)}`;
+    document.getElementById('total-amount').textContent = `RM ${finalTotal.toFixed(2)}`;
+    
+    // Store values for form submission
+    calculationData.paymentFeeAmount = paymentFeeAmount;
+    calculationData.terminalChargeAmount = terminalChargeAmount;
+    calculationData.subtotal = baseSubtotal;
+    calculationData.totalAmount = finalTotal;
 }
 
 function updatePaymentMethod() {
@@ -223,10 +364,13 @@ function performCalculation() {
 
 function updateHiddenFields() {
     // Update all hidden form fields with calculation data
-    document.getElementById('selected-services-data').value = JSON.stringify(calculationData.selectedServices);
+    document.getElementById('charges-list-data').value = JSON.stringify(calculationData.charges);
+    document.getElementById('clinic-fee-input').value = calculationData.totalClinicFee;
+    document.getElementById('doctor-fee-input').value = calculationData.totalDoctorFee;
+    document.getElementById('selected-services-data').value = JSON.stringify(calculationData.charges.map(c => ({name: c.service})));
     document.getElementById('other-charges-data').value = JSON.stringify(calculationData.otherCharges);
-    document.getElementById('services-total-input').value = calculationData.servicesTotal;
-    document.getElementById('other-charges-input').value = calculationData.otherChargesTotal;
+    document.getElementById('services-total-input').value = 0; // No longer used
+    document.getElementById('other-charges-input').value = calculationData.otherCharges.reduce((sum, charge) => sum + charge.amount, 0);
     document.getElementById('payment-fee-percentage-input').value = calculationData.paymentFeePercentage;
     document.getElementById('payment-fee-amount-input').value = calculationData.paymentFeeAmount;
     document.getElementById('terminal-charge-percentage-input').value = calculationData.terminalChargePercentage;
@@ -257,9 +401,7 @@ function validateReceiptForm() {
     const requiredFields = [
         'invoice-date',
         'invoice-number',
-        'customer-name',
-        'clinic-fee',
-        'doctor-fee'
+        'customer-name'
     ];
     
     let isValid = true;
@@ -274,9 +416,9 @@ function validateReceiptForm() {
         }
     });
     
-    // Check if at least one service or charge is selected
-    if (calculationData.selectedServices.length === 0 && calculationData.otherCharges.length === 0) {
-        showNotification('Please select at least one service or add a charge', 'error');
+    // Check if at least one charge is added
+    if (calculationData.charges.length === 0) {
+        showNotification('Please add at least one charge before saving the receipt', 'error');
         isValid = false;
     }
     
@@ -310,20 +452,26 @@ function generateReceiptHTML() {
     const invoiceDate = document.getElementById('invoice-date').value;
     const customerName = document.getElementById('customer-name').value;
     
-    // Generate services list as bullet points
-    let servicesHTML = '';
-    if (calculationData.selectedServices.length > 0) {
-        servicesHTML = '<ul style="margin: 10px 0; padding-left: 20px;">';
-        calculationData.selectedServices.forEach(service => {
-            servicesHTML += `<li>${service.name}</li>`;
+    // Generate itemized charges list
+    let chargesHTML = '';
+    if (calculationData.charges.length > 0) {
+        chargesHTML = '<div style="margin: 20px 0;"><h4 style="color: #2563eb;">Itemized Charges:</h4>';
+        calculationData.charges.forEach(charge => {
+            chargesHTML += `
+                <div style="margin: 10px 0; padding: 10px; background: #f8f9ff; border-left: 4px solid #2563eb;">
+                    <strong>${charge.service}</strong> - RM ${charge.amount.toFixed(2)}<br>
+                    <small style="color: #059669;">Doctor Fee: RM ${charge.doctorFee.toFixed(2)} (${charge.percentage}%)</small><br>
+                    <small style="color: #dc2626;">Clinic Fee: RM ${charge.clinicFee.toFixed(2)} (${100-charge.percentage}%)</small>
+                </div>
+            `;
         });
-        servicesHTML += '</ul>';
+        chargesHTML += '</div>';
     }
     
     // Generate other charges section
     let otherChargesHTML = '';
     if (calculationData.otherCharges.length > 0) {
-        otherChargesHTML = `<div style="margin: 15px 0;"><strong>Other Charges: RM ${calculationData.otherChargesTotal.toFixed(2)}</strong></div>`;
+        otherChargesHTML = `<div style="margin: 15px 0;"><strong>Additional Charges: RM ${calculationData.otherCharges.reduce((sum, charge) => sum + charge.amount, 0).toFixed(2)}</strong></div>`;
     }
     
     return `
@@ -357,13 +505,17 @@ function generateReceiptHTML() {
             
             <div class="customer-name">${customerName}</div>
             
-            <div class="fee-section">
-                <div class="fee-amount">Clinic Fee: RM ${(calculationData.clinicFee || 0).toFixed(2)}</div>
-            </div>
+            ${chargesHTML}
             
-            <div class="fee-section">
-                <div class="fee-amount">Doctor Fee: RM ${calculationData.doctorFee.toFixed(2)}</div>
-                ${servicesHTML ? `<div class="services-section">${servicesHTML}</div>` : ''}
+            <div class="fee-totals" style="margin: 20px 0; padding: 15px; background: #f0f9ff; border: 1px solid #2563eb; border-radius: 8px;">
+                <div style="display: flex; justify-content: space-between; margin: 5px 0;">
+                    <span><strong>Total Doctor Fee:</strong></span>
+                    <span><strong style="color: #059669;">RM ${calculationData.totalDoctorFee.toFixed(2)}</strong></span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin: 5px 0;">
+                    <span><strong>Total Clinic Fee:</strong></span>
+                    <span><strong style="color: #dc2626;">RM ${calculationData.totalClinicFee.toFixed(2)}</strong></span>
+                </div>
             </div>
             
             ${otherChargesHTML}

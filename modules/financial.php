@@ -166,6 +166,9 @@ try {
 
                 <form id="receipt-form" method="POST" class="receipt-form">
                     <input type="hidden" name="action" value="save_receipt">
+                    <input type="hidden" name="charges_list" id="charges-list-data">
+                    <input type="hidden" name="clinic_fee" id="clinic-fee-input">
+                    <input type="hidden" name="doctor_fee" id="doctor-fee-input"> 
                     <input type="hidden" name="selected_services" id="selected-services-data">
                     <input type="hidden" name="other_charges_list" id="other-charges-data">
                     <input type="hidden" name="services_total" id="services-total-input" value="0">
@@ -196,35 +199,66 @@ try {
                         </div>
                     </div>
 
-                    <!-- Clinic & Doctor Fees -->
+                    <!-- Charge Calculator -->
                     <div class="form-section">
-                        <h3><i class="fas fa-hospital"></i> Clinic & Doctor Fees</h3>
-                        <div class="form-group">
-                            <label for="clinic-fee">Clinic Fee (RM):</label>
-                            <input type="number" id="clinic-fee" name="clinic_fee" min="0" step="0.01" placeholder="0.00" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="doctor-fee">Doctor Fee (RM):</label>
-                            <input type="number" id="doctor-fee" name="doctor_fee" min="0" step="0.01" placeholder="0.00" required>
-                        </div>
-                    </div>
-
-                    <!-- Dental Services -->
-                    <div class="form-section">
-                        <h3><i class="fas fa-tooth"></i> Dental Services</h3>
-                        <div class="services-grid">
-                            <?php foreach ($dental_services as $service): ?>
-                            <div class="service-item">
-                                <input type="checkbox" id="service-<?php echo $service['id']; ?>" 
-                                       name="services[]" 
-                                       value="<?php echo $service['percentage']; ?>" 
-                                       data-service="<?php echo htmlspecialchars($service['service_name']); ?>"
-                                       data-percentage="<?php echo $service['percentage']; ?>">
-                                <label for="service-<?php echo $service['id']; ?>">
-                                    <?php echo htmlspecialchars($service['service_name']); ?> (<?php echo $service['percentage']; ?>%)
-                                </label>
+                        <h3><i class="fas fa-calculator"></i> Charge Calculator</h3>
+                        <div class="calculator-input">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="charge-amount">Charge Amount (RM):</label>
+                                    <input type="number" id="charge-amount" min="0" step="0.01" placeholder="0.00">
+                                </div>
+                                <div class="form-group">
+                                    <label for="service-select">Dental Service:</label>
+                                    <select id="service-select">
+                                        <option value="">Select Service</option>
+                                        <?php foreach ($dental_services as $service): ?>
+                                        <option value="<?php echo $service['percentage']; ?>" 
+                                                data-service="<?php echo htmlspecialchars($service['service_name']); ?>">
+                                            <?php echo htmlspecialchars($service['service_name']); ?> (<?php echo $service['percentage']; ?>% Doctor)
+                                        </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <button type="button" id="add-charge-btn" class="btn btn-primary">
+                                        <i class="fas fa-plus"></i> Add Charge
+                                    </button>
+                                </div>
                             </div>
-                            <?php endforeach; ?>
+                        </div>
+                        
+                        <!-- Charges List -->
+                        <div id="charges-list" class="charges-container">
+                            <h4>Added Charges:</h4>
+                            <div class="charges-table">
+                                <div class="table-header">
+                                    <span>Service</span>
+                                    <span>Charge</span>
+                                    <span>Doctor Fee</span>
+                                    <span>Clinic Fee</span>
+                                    <span>Action</span>
+                                </div>
+                                <div id="charges-rows"></div>
+                            </div>
+                        </div>
+
+                        <!-- Running Totals -->
+                        <div class="running-totals">
+                            <div class="totals-grid">
+                                <div class="total-item">
+                                    <label>Total Charges:</label>
+                                    <span id="total-charges">RM 0.00</span>
+                                </div>
+                                <div class="total-item">
+                                    <label>Total Doctor Fee:</label>
+                                    <span id="total-doctor-fee">RM 0.00</span>
+                                </div>
+                                <div class="total-item">
+                                    <label>Total Clinic Fee:</label>  
+                                    <span id="total-clinic-fee">RM 0.00</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -279,19 +313,19 @@ try {
                         </div>
                     </div>
 
-                    <!-- Calculation Summary -->
+                    <!-- Final Summary -->
                     <div class="form-section calculation-summary">
-                        <h3><i class="fas fa-calculator"></i> Summary</h3>
+                        <h3><i class="fas fa-calculator"></i> Final Summary</h3>
                         <div class="summary-row">
-                            <span>Clinic Fee:</span>
-                            <span id="clinic-fee-display">RM 0.00</span>
+                            <span><strong>Total Clinic Fee:</strong></span>
+                            <span id="final-clinic-fee"><strong>RM 0.00</strong></span>
                         </div>
                         <div class="summary-row">
-                            <span>Doctor Fee:</span>
-                            <span id="doctor-fee-display">RM 0.00</span>
+                            <span><strong>Total Doctor Fee:</strong></span>
+                            <span id="final-doctor-fee"><strong>RM 0.00</strong></span>
                         </div>
                         <div class="summary-row">
-                            <span>Other Charges:</span>
+                            <span>Additional Charges:</span>
                             <span id="other-charges-total">RM 0.00</span>
                         </div>
                         <div class="summary-row">
@@ -307,7 +341,7 @@ try {
                             <span id="subtotal-amount">RM 0.00</span>
                         </div>
                         <div class="summary-row total">
-                            <span><strong>Total Amount (Patient Pays):</strong></span>
+                            <span><strong>GRAND TOTAL (Patient Pays):</strong></span>
                             <span id="total-amount"><strong>RM 0.00</strong></span>
                         </div>
                     </div>
@@ -371,6 +405,7 @@ try {
     </div>
 
 <?php 
+$additional_css = ['../assets/css/charge-calculator.css'];
 $additional_js = ['../assets/js/financial-helpers.js', '../assets/js/financial.js'];
 include '../includes/footer.php'; 
 ?>
