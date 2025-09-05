@@ -1,108 +1,6 @@
 // Enhanced Financial Calculator with Database Integration
 // Professional dental practice management system
 
-// Notification system functions
-function showNotification(message, type = 'info') {
-    // Create notification element
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 15px 20px;
-        background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
-        color: white;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        z-index: 10000;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        animation: slideIn 0.3s ease-out;
-        max-width: 400px;
-    `;
-    
-    // Add icon
-    const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
-    notification.innerHTML = `<i class="fas ${icon}"></i> ${message}`;
-    
-    // Add to body
-    document.body.appendChild(notification);
-    
-    // Auto remove after 3 seconds
-    setTimeout(() => {
-        notification.style.animation = 'slideOut 0.3s ease-in';
-        setTimeout(() => notification.remove(), 300);
-    }, 3000);
-}
-
-function showLoading() {
-    // Create loading overlay if it doesn't exist
-    if (!document.getElementById('loading-overlay')) {
-        const loadingOverlay = document.createElement('div');
-        loadingOverlay.id = 'loading-overlay';
-        loadingOverlay.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        `;
-        loadingOverlay.innerHTML = `
-            <div style="background: white; padding: 20px; border-radius: 10px; text-align: center;">
-                <i class="fas fa-spinner fa-spin" style="font-size: 2em; color: #2563eb;"></i>
-                <p style="margin-top: 10px; color: #333;">Processing...</p>
-            </div>
-        `;
-        document.body.appendChild(loadingOverlay);
-    }
-}
-
-function hideLoading() {
-    const loadingOverlay = document.getElementById('loading-overlay');
-    if (loadingOverlay) {
-        loadingOverlay.remove();
-    }
-}
-
-function initializeAutoSave(formId, interval) {
-    // Auto-save form data periodically
-    const form = document.getElementById(formId);
-    if (form) {
-        setInterval(() => {
-            const formData = new FormData(form);
-            const data = {};
-            formData.forEach((value, key) => {
-                data[key] = value;
-            });
-            localStorage.setItem(`autosave_${formId}`, JSON.stringify(data));
-        }, interval);
-    }
-}
-
-// Add animation styles if not already present
-if (!document.getElementById('notification-styles')) {
-    const style = document.createElement('style');
-    style.id = 'notification-styles';
-    style.textContent = `
-        @keyframes slideIn {
-            from { transform: translateX(400px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(400px); opacity: 0; }
-        }
-    `;
-    document.head.appendChild(style);
-}
-
 let calculationData = {
     baseCost: 0,
     selectedServices: [],
@@ -138,13 +36,13 @@ function setupEventListeners() {
     }
     
     // Service checkboxes
-    const serviceCheckboxes = document.querySelectorAll('input[name=\"services[]\"]');
+    const serviceCheckboxes = document.querySelectorAll('input[name="services[]"]');
     serviceCheckboxes.forEach(checkbox => {
         checkbox.addEventListener('change', updateSelectedServices);
     });
     
     // Payment method radio buttons
-    const paymentRadios = document.querySelectorAll('input[name=\"payment_method\"]');
+    const paymentRadios = document.querySelectorAll('input[name="payment_method"]');
     paymentRadios.forEach(radio => {
         radio.addEventListener('change', updatePaymentMethod);
     });
@@ -184,4 +82,375 @@ function setupEventListeners() {
     if (resetBtn) {
         resetBtn.addEventListener('click', resetForm);
     }
-}\n\nfunction generateInvoiceNumber() {\n    const today = new Date();\n    const dateStr = today.getFullYear().toString() + \n                   (today.getMonth() + 1).toString().padStart(2, '0') + \n                   today.getDate().toString().padStart(2, '0');\n    const timeStr = Math.floor(Math.random() * 1000).toString().padStart(3, '0');\n    \n    const invoiceNumber = `INV-${dateStr}-${timeStr}`;\n    document.getElementById('invoice-number').value = invoiceNumber;\n}\n\nfunction updateSelectedServices() {\n    calculationData.selectedServices = [];\n    \n    const serviceCheckboxes = document.querySelectorAll('input[name=\"services[]\"]:checked');\n    serviceCheckboxes.forEach(checkbox => {\n        calculationData.selectedServices.push({\n            name: checkbox.dataset.service,\n            percentage: parseFloat(checkbox.dataset.percentage),\n            amount: 0 // Will be calculated\n        });\n    });\n    \n    updateCalculation();\n}\n\nfunction updatePaymentMethod() {\n    const selectedPayment = document.querySelector('input[name=\"payment_method\"]:checked');\n    if (selectedPayment) {\n        calculationData.paymentMethod = selectedPayment.value;\n        calculationData.paymentFeePercentage = parseFloat(selectedPayment.dataset.fee);\n        updateCalculation();\n    }\n}\n\nfunction addOtherCharge() {\n    const container = document.getElementById('other-charges-container');\n    const chargeItem = document.createElement('div');\n    chargeItem.className = 'charge-item';\n    \n    chargeItem.innerHTML = `\n        <input type=\"text\" placeholder=\"Description\" class=\"charge-description\">\n        <input type=\"number\" placeholder=\"0.00\" min=\"0\" step=\"0.01\" class=\"charge-amount\">\n        <button type=\"button\" class=\"btn-remove\" onclick=\"removeCharge(this)\">\n            <i class=\"fas fa-times\"></i>\n        </button>\n    `;\n    \n    container.appendChild(chargeItem);\n    \n    // Add event listeners to new inputs\n    const amountInput = chargeItem.querySelector('.charge-amount');\n    amountInput.addEventListener('input', updateOtherCharges);\n}\n\nfunction removeCharge(button) {\n    button.closest('.charge-item').remove();\n    updateOtherCharges();\n}\n\nfunction updateOtherCharges() {\n    calculationData.otherCharges = [];\n    \n    const chargeItems = document.querySelectorAll('.charge-item');\n    chargeItems.forEach(item => {\n        const description = item.querySelector('.charge-description').value;\n        const amount = parseFloat(item.querySelector('.charge-amount').value) || 0;\n        \n        if (description && amount > 0) {\n            calculationData.otherCharges.push({\n                description: description,\n                amount: amount\n            });\n        }\n    });\n    \n    updateCalculation();\n}\n\nfunction updateCalculation() {\n    // Get base cost\n    calculationData.baseCost = parseFloat(document.getElementById('base-cost').value) || 0;\n    \n    // Calculate services total\n    let servicesTotal = 0;\n    calculationData.selectedServices.forEach(service => {\n        service.amount = calculationData.baseCost * (service.percentage / 100);\n        servicesTotal += service.amount;\n    });\n    \n    // Calculate other charges total\n    const otherChargesTotal = calculationData.otherCharges.reduce((sum, charge) => sum + charge.amount, 0);\n    \n    // Calculate subtotal\n    const subtotal = calculationData.baseCost + servicesTotal + otherChargesTotal;\n    \n    // Calculate payment fee\n    const paymentFeeAmount = subtotal * (calculationData.paymentFeePercentage / 100);\n    \n    // Calculate terminal charge\n    const terminalChargeEnabled = document.getElementById('terminal-charge').checked;\n    const terminalChargeAmount = terminalChargeEnabled ? subtotal * (calculationData.terminalChargePercentage / 100) : 0;\n    \n    // Calculate final total\n    const totalAmount = subtotal + paymentFeeAmount + terminalChargeAmount;\n    \n    // Update display\n    document.getElementById('services-total').textContent = `RM ${servicesTotal.toFixed(2)}`;\n    document.getElementById('other-charges-total').textContent = `RM ${otherChargesTotal.toFixed(2)}`;\n    document.getElementById('payment-fee').textContent = `RM ${paymentFeeAmount.toFixed(2)}`;\n    document.getElementById('terminal-charge-amount').textContent = `RM ${terminalChargeAmount.toFixed(2)}`;\n    document.getElementById('subtotal-amount').textContent = `RM ${subtotal.toFixed(2)}`;\n    document.getElementById('total-amount').textContent = `RM ${totalAmount.toFixed(2)}`;\n    \n    // Store calculated values\n    calculationData.servicesTotal = servicesTotal;\n    calculationData.otherChargesTotal = otherChargesTotal;\n    calculationData.paymentFeeAmount = paymentFeeAmount;\n    calculationData.terminalChargeAmount = terminalChargeAmount;\n    calculationData.subtotal = subtotal;\n    calculationData.totalAmount = totalAmount;\n}\n\nfunction performCalculation() {\n    updateCalculation();\n    \n    // Enable save and print buttons\n    document.getElementById('save-btn').disabled = false;\n    document.getElementById('print-btn').disabled = false;\n    \n    // Update hidden form fields\n    updateHiddenFields();\n    \n    showNotification('Calculation completed successfully!', 'success');\n}\n\nfunction updateHiddenFields() {\n    // Update all hidden form fields with calculation data\n    document.getElementById('selected-services-data').value = JSON.stringify(calculationData.selectedServices);\n    document.getElementById('other-charges-data').value = JSON.stringify(calculationData.otherCharges);\n    document.getElementById('services-total-input').value = calculationData.servicesTotal;\n    document.getElementById('other-charges-input').value = calculationData.otherChargesTotal;\n    document.getElementById('payment-fee-percentage-input').value = calculationData.paymentFeePercentage;\n    document.getElementById('payment-fee-amount-input').value = calculationData.paymentFeeAmount;\n    document.getElementById('terminal-charge-percentage-input').value = calculationData.terminalChargePercentage;\n    document.getElementById('terminal-charge-amount-input').value = calculationData.terminalChargeAmount;\n    document.getElementById('subtotal-input').value = calculationData.subtotal;\n    document.getElementById('total-amount-input').value = calculationData.totalAmount;\n}\n\nfunction handleFormSubmission(e) {\n    e.preventDefault();\n    \n    // Validate form\n    if (!validateReceiptForm()) {\n        return false;\n    }\n    \n    // Show loading\n    showLoading();\n    \n    // Update hidden fields before submission\n    updateHiddenFields();\n    \n    // Submit form\n    e.target.submit();\n}\n\nfunction validateReceiptForm() {\n    const requiredFields = [\n        'invoice-date',\n        'invoice-number',\n        'customer-name',\n        'base-cost'\n    ];\n    \n    let isValid = true;\n    \n    requiredFields.forEach(fieldId => {\n        const field = document.getElementById(fieldId);\n        if (!field.value.trim()) {\n            field.classList.add('error');\n            isValid = false;\n        } else {\n            field.classList.remove('error');\n        }\n    });\n    \n    // Check if at least one service or charge is selected\n    if (calculationData.selectedServices.length === 0 && calculationData.otherCharges.length === 0) {\n        showNotification('Please select at least one service or add a charge', 'error');\n        isValid = false;\n    }\n    \n    // Check if calculation has been performed\n    if (calculationData.totalAmount === undefined || calculationData.totalAmount === 0) {\n        showNotification('Please perform calculation before saving', 'error');\n        isValid = false;\n    }\n    \n    return isValid;\n}\n\nfunction printReceipt() {\n    if (!calculationData.totalAmount) {\n        showNotification('Please calculate first before printing', 'error');\n        return;\n    }\n    \n    // Generate receipt HTML\n    const receiptHTML = generateReceiptHTML();\n    \n    // Open print window\n    const printWindow = window.open('', '_blank', 'width=800,height=600');\n    printWindow.document.write(receiptHTML);\n    printWindow.document.close();\n    printWindow.print();\n}\n\nfunction generateReceiptHTML() {\n    const invoiceNumber = document.getElementById('invoice-number').value;\n    const invoiceDate = document.getElementById('invoice-date').value;\n    const customerName = document.getElementById('customer-name').value;\n    \n    let servicesHTML = '';\n    calculationData.selectedServices.forEach(service => {\n        servicesHTML += `\n            <tr>\n                <td>${service.name}</td>\n                <td>${service.percentage}%</td>\n                <td>RM ${service.amount.toFixed(2)}</td>\n            </tr>\n        `;\n    });\n    \n    let chargesHTML = '';\n    calculationData.otherCharges.forEach(charge => {\n        chargesHTML += `\n            <tr>\n                <td colspan=\"2\">${charge.description}</td>\n                <td>RM ${charge.amount.toFixed(2)}</td>\n            </tr>\n        `;\n    });\n    \n    return `\n        <!DOCTYPE html>\n        <html>\n        <head>\n            <title>Receipt - ${invoiceNumber}</title>\n            <style>\n                body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }\n                .header { text-align: center; border-bottom: 2px solid #2563eb; padding-bottom: 20px; margin-bottom: 20px; }\n                .header h1 { color: #2563eb; margin: 0; }\n                .invoice-details { margin-bottom: 20px; }\n                .invoice-details table { width: 100%; }\n                .invoice-details td { padding: 5px 0; }\n                .services-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }\n                .services-table th, .services-table td { border: 1px solid #ddd; padding: 10px; text-align: left; }\n                .services-table th { background-color: #f8f9fa; }\n                .summary { margin-top: 20px; }\n                .summary table { width: 100%; max-width: 400px; margin-left: auto; }\n                .summary td { padding: 5px 10px; }\n                .total-row { border-top: 2px solid #2563eb; font-weight: bold; }\n                .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #666; }\n            </style>\n        </head>\n        <body>\n            <div class=\"header\">\n                <h1>🦷 DENTAL PRACTICE</h1>\n                <h2>RECEIPT</h2>\n            </div>\n            \n            <div class=\"invoice-details\">\n                <table>\n                    <tr><td><strong>Invoice Number:</strong></td><td>${invoiceNumber}</td></tr>\n                    <tr><td><strong>Date:</strong></td><td>${new Date(invoiceDate).toLocaleDateString()}</td></tr>\n                    <tr><td><strong>Patient Name:</strong></td><td>${customerName}</td></tr>\n                    <tr><td><strong>Payment Method:</strong></td><td>${calculationData.paymentMethod}</td></tr>\n                </table>\n            </div>\n            \n            <table class=\"services-table\">\n                <thead>\n                    <tr>\n                        <th>Service/Item</th>\n                        <th>Rate</th>\n                        <th>Amount</th>\n                    </tr>\n                </thead>\n                <tbody>\n                    <tr>\n                        <td>Base Cost</td>\n                        <td>-</td>\n                        <td>RM ${calculationData.baseCost.toFixed(2)}</td>\n                    </tr>\n                    ${servicesHTML}\n                    ${chargesHTML}\n                </tbody>\n            </table>\n            \n            <div class=\"summary\">\n                <table>\n                    <tr><td>Services Total:</td><td>RM ${calculationData.servicesTotal.toFixed(2)}</td></tr>\n                    <tr><td>Other Charges:</td><td>RM ${calculationData.otherChargesTotal.toFixed(2)}</td></tr>\n                    <tr><td>Payment Fee (${calculationData.paymentFeePercentage}%):</td><td>RM ${calculationData.paymentFeeAmount.toFixed(2)}</td></tr>\n                    <tr><td>Terminal Charge (${calculationData.terminalChargePercentage}%):</td><td>RM ${calculationData.terminalChargeAmount.toFixed(2)}</td></tr>\n                    <tr><td>Subtotal:</td><td>RM ${calculationData.subtotal.toFixed(2)}</td></tr>\n                    <tr class=\"total-row\"><td><strong>TOTAL AMOUNT:</strong></td><td><strong>RM ${calculationData.totalAmount.toFixed(2)}</strong></td></tr>\n                </table>\n            </div>\n            \n            <div class=\"footer\">\n                <p>Thank you for choosing our dental practice!</p>\n                <p>Generated on ${new Date().toLocaleString()}</p>\n            </div>\n        </body>\n        </html>\n    `;\n}\n\nfunction resetForm() {\n    // Reset calculation data\n    calculationData = {\n        baseCost: 0,\n        selectedServices: [],\n        otherCharges: [],\n        paymentMethod: 'Cash',\n        paymentFeePercentage: 0,\n        terminalChargeEnabled: true,\n        terminalChargePercentage: 8\n    };\n    \n    // Reset display\n    document.getElementById('services-total').textContent = 'RM 0.00';\n    document.getElementById('other-charges-total').textContent = 'RM 0.00';\n    document.getElementById('payment-fee').textContent = 'RM 0.00';\n    document.getElementById('terminal-charge-amount').textContent = 'RM 0.00';\n    document.getElementById('subtotal-amount').textContent = 'RM 0.00';\n    document.getElementById('total-amount').textContent = 'RM 0.00';\n    \n    // Disable buttons\n    document.getElementById('save-btn').disabled = true;\n    document.getElementById('print-btn').disabled = true;\n    \n    // Generate new invoice number\n    generateInvoiceNumber();\n    \n    // Clear other charges container\n    const container = document.getElementById('other-charges-container');\n    container.innerHTML = `\n        <div class=\"charge-item\">\n            <input type=\"text\" placeholder=\"Description\" class=\"charge-description\">\n            <input type=\"number\" placeholder=\"0.00\" min=\"0\" step=\"0.01\" class=\"charge-amount\">\n            <button type=\"button\" class=\"btn-remove\" onclick=\"removeCharge(this)\">\n                <i class=\"fas fa-times\"></i>\n            </button>\n        </div>\n    `;\n    \n    showNotification('Form reset successfully', 'info');\n}\n\n// Add event listeners to existing charge inputs\ndocument.addEventListener('DOMContentLoaded', function() {\n    const chargeAmountInputs = document.querySelectorAll('.charge-amount');\n    chargeAmountInputs.forEach(input => {\n        input.addEventListener('input', updateOtherCharges);\n    });\n});
+}
+
+function generateInvoiceNumber() {
+    const today = new Date();
+    const dateStr = today.getFullYear().toString() + 
+                   (today.getMonth() + 1).toString().padStart(2, '0') + 
+                   today.getDate().toString().padStart(2, '0');
+    const timeStr = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    
+    const invoiceNumber = `INV-${dateStr}-${timeStr}`;
+    document.getElementById('invoice-number').value = invoiceNumber;
+}
+
+function updateSelectedServices() {
+    calculationData.selectedServices = [];
+    
+    const serviceCheckboxes = document.querySelectorAll('input[name="services[]"]:checked');
+    serviceCheckboxes.forEach(checkbox => {
+        calculationData.selectedServices.push({
+            name: checkbox.dataset.service,
+            percentage: parseFloat(checkbox.dataset.percentage),
+            amount: 0 // Will be calculated
+        });
+    });
+    
+    updateCalculation();
+}
+
+function updatePaymentMethod() {
+    const selectedPayment = document.querySelector('input[name="payment_method"]:checked');
+    if (selectedPayment) {
+        calculationData.paymentMethod = selectedPayment.value;
+        calculationData.paymentFeePercentage = parseFloat(selectedPayment.dataset.fee);
+        updateCalculation();
+    }
+}
+
+function addOtherCharge() {
+    const container = document.getElementById('other-charges-container');
+    const chargeItem = document.createElement('div');
+    chargeItem.className = 'charge-item';
+    
+    chargeItem.innerHTML = `
+        <input type="text" placeholder="Description" class="charge-description">
+        <input type="number" placeholder="0.00" min="0" step="0.01" class="charge-amount">
+        <button type="button" class="btn-remove" onclick="removeCharge(this)">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    
+    container.appendChild(chargeItem);
+    
+    // Add event listeners to new inputs
+    const amountInput = chargeItem.querySelector('.charge-amount');
+    amountInput.addEventListener('input', updateOtherCharges);
+}
+
+function removeCharge(button) {
+    button.closest('.charge-item').remove();
+    updateOtherCharges();
+}
+
+function updateOtherCharges() {
+    calculationData.otherCharges = [];
+    
+    const chargeItems = document.querySelectorAll('.charge-item');
+    chargeItems.forEach(item => {
+        const description = item.querySelector('.charge-description').value;
+        const amount = parseFloat(item.querySelector('.charge-amount').value) || 0;
+        
+        if (description && amount > 0) {
+            calculationData.otherCharges.push({
+                description: description,
+                amount: amount
+            });
+        }
+    });
+    
+    updateCalculation();
+}
+
+function updateCalculation() {
+    // Get base cost
+    calculationData.baseCost = parseFloat(document.getElementById('base-cost').value) || 0;
+    
+    // Calculate services total
+    let servicesTotal = 0;
+    calculationData.selectedServices.forEach(service => {
+        service.amount = calculationData.baseCost * (service.percentage / 100);
+        servicesTotal += service.amount;
+    });
+    
+    // Calculate other charges total
+    const otherChargesTotal = calculationData.otherCharges.reduce((sum, charge) => sum + charge.amount, 0);
+    
+    // Calculate subtotal
+    const subtotal = calculationData.baseCost + servicesTotal + otherChargesTotal;
+    
+    // Calculate payment fee
+    const paymentFeeAmount = subtotal * (calculationData.paymentFeePercentage / 100);
+    
+    // Calculate terminal charge
+    const terminalChargeEnabled = document.getElementById('terminal-charge').checked;
+    const terminalChargeAmount = terminalChargeEnabled ? subtotal * (calculationData.terminalChargePercentage / 100) : 0;
+    
+    // Calculate final total
+    const totalAmount = subtotal + paymentFeeAmount + terminalChargeAmount;
+    
+    // Update display
+    document.getElementById('services-total').textContent = `RM ${servicesTotal.toFixed(2)}`;
+    document.getElementById('other-charges-total').textContent = `RM ${otherChargesTotal.toFixed(2)}`;
+    document.getElementById('payment-fee').textContent = `RM ${paymentFeeAmount.toFixed(2)}`;
+    document.getElementById('terminal-charge-amount').textContent = `RM ${terminalChargeAmount.toFixed(2)}`;
+    document.getElementById('subtotal-amount').textContent = `RM ${subtotal.toFixed(2)}`;
+    document.getElementById('total-amount').textContent = `RM ${totalAmount.toFixed(2)}`;
+    
+    // Store calculated values
+    calculationData.servicesTotal = servicesTotal;
+    calculationData.otherChargesTotal = otherChargesTotal;
+    calculationData.paymentFeeAmount = paymentFeeAmount;
+    calculationData.terminalChargeAmount = terminalChargeAmount;
+    calculationData.subtotal = subtotal;
+    calculationData.totalAmount = totalAmount;
+}
+
+function performCalculation() {
+    updateCalculation();
+    
+    // Enable save and print buttons
+    document.getElementById('save-btn').disabled = false;
+    document.getElementById('print-btn').disabled = false;
+    
+    // Update hidden form fields
+    updateHiddenFields();
+    
+    showNotification('Calculation completed successfully!', 'success');
+}
+
+function updateHiddenFields() {
+    // Update all hidden form fields with calculation data
+    document.getElementById('selected-services-data').value = JSON.stringify(calculationData.selectedServices);
+    document.getElementById('other-charges-data').value = JSON.stringify(calculationData.otherCharges);
+    document.getElementById('services-total-input').value = calculationData.servicesTotal;
+    document.getElementById('other-charges-input').value = calculationData.otherChargesTotal;
+    document.getElementById('payment-fee-percentage-input').value = calculationData.paymentFeePercentage;
+    document.getElementById('payment-fee-amount-input').value = calculationData.paymentFeeAmount;
+    document.getElementById('terminal-charge-percentage-input').value = calculationData.terminalChargePercentage;
+    document.getElementById('terminal-charge-amount-input').value = calculationData.terminalChargeAmount;
+    document.getElementById('subtotal-input').value = calculationData.subtotal;
+    document.getElementById('total-amount-input').value = calculationData.totalAmount;
+}
+
+function handleFormSubmission(e) {
+    e.preventDefault();
+    
+    // Validate form
+    if (!validateReceiptForm()) {
+        return false;
+    }
+    
+    // Show loading
+    showLoading();
+    
+    // Update hidden fields before submission
+    updateHiddenFields();
+    
+    // Submit form
+    e.target.submit();
+}
+
+function validateReceiptForm() {
+    const requiredFields = [
+        'invoice-date',
+        'invoice-number',
+        'customer-name',
+        'base-cost'
+    ];
+    
+    let isValid = true;
+    
+    requiredFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (!field.value.trim()) {
+            field.classList.add('error');
+            isValid = false;
+        } else {
+            field.classList.remove('error');
+        }
+    });
+    
+    // Check if at least one service or charge is selected
+    if (calculationData.selectedServices.length === 0 && calculationData.otherCharges.length === 0) {
+        showNotification('Please select at least one service or add a charge', 'error');
+        isValid = false;
+    }
+    
+    // Check if calculation has been performed
+    if (calculationData.totalAmount === undefined || calculationData.totalAmount === 0) {
+        showNotification('Please perform calculation before saving', 'error');
+        isValid = false;
+    }
+    
+    return isValid;
+}
+
+function printReceipt() {
+    if (!calculationData.totalAmount) {
+        showNotification('Please calculate first before printing', 'error');
+        return;
+    }
+    
+    // Generate receipt HTML
+    const receiptHTML = generateReceiptHTML();
+    
+    // Open print window
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    printWindow.document.write(receiptHTML);
+    printWindow.document.close();
+    printWindow.print();
+}
+
+function generateReceiptHTML() {
+    const invoiceNumber = document.getElementById('invoice-number').value;
+    const invoiceDate = document.getElementById('invoice-date').value;
+    const customerName = document.getElementById('customer-name').value;
+    
+    let servicesHTML = '';
+    calculationData.selectedServices.forEach(service => {
+        servicesHTML += `
+            <tr>
+                <td>${service.name}</td>
+                <td>${service.percentage}%</td>
+                <td>RM ${service.amount.toFixed(2)}</td>
+            </tr>
+        `;
+    });
+    
+    let chargesHTML = '';
+    calculationData.otherCharges.forEach(charge => {
+        chargesHTML += `
+            <tr>
+                <td colspan="2">${charge.description}</td>
+                <td>RM ${charge.amount.toFixed(2)}</td>
+            </tr>
+        `;
+    });
+    
+    return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Receipt - ${invoiceNumber}</title>
+            <style>
+                body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+                .header { text-align: center; border-bottom: 2px solid #2563eb; padding-bottom: 20px; margin-bottom: 20px; }
+                .header h1 { color: #2563eb; margin: 0; }
+                .invoice-details { margin-bottom: 20px; }
+                .invoice-details table { width: 100%; }
+                .invoice-details td { padding: 5px 0; }
+                .services-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                .services-table th, .services-table td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+                .services-table th { background-color: #f8f9fa; }
+                .summary { margin-top: 20px; }
+                .summary table { width: 100%; max-width: 400px; margin-left: auto; }
+                .summary td { padding: 5px 10px; }
+                .total-row { border-top: 2px solid #2563eb; font-weight: bold; }
+                .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #666; }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>🦷 DENTAL PRACTICE</h1>
+                <h2>RECEIPT</h2>
+            </div>
+            
+            <div class="invoice-details">
+                <table>
+                    <tr><td><strong>Invoice Number:</strong></td><td>${invoiceNumber}</td></tr>
+                    <tr><td><strong>Date:</strong></td><td>${new Date(invoiceDate).toLocaleDateString()}</td></tr>
+                    <tr><td><strong>Patient Name:</strong></td><td>${customerName}</td></tr>
+                    <tr><td><strong>Payment Method:</strong></td><td>${calculationData.paymentMethod}</td></tr>
+                </table>
+            </div>
+            
+            <table class="services-table">
+                <thead>
+                    <tr>
+                        <th>Service/Item</th>
+                        <th>Rate</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Base Cost</td>
+                        <td>-</td>
+                        <td>RM ${calculationData.baseCost.toFixed(2)}</td>
+                    </tr>
+                    ${servicesHTML}
+                    ${chargesHTML}
+                </tbody>
+            </table>
+            
+            <div class="summary">
+                <table>
+                    <tr><td>Services Total:</td><td>RM ${calculationData.servicesTotal.toFixed(2)}</td></tr>
+                    <tr><td>Other Charges:</td><td>RM ${calculationData.otherChargesTotal.toFixed(2)}</td></tr>
+                    <tr><td>Payment Fee (${calculationData.paymentFeePercentage}%):</td><td>RM ${calculationData.paymentFeeAmount.toFixed(2)}</td></tr>
+                    <tr><td>Terminal Charge (${calculationData.terminalChargePercentage}%):</td><td>RM ${calculationData.terminalChargeAmount.toFixed(2)}</td></tr>
+                    <tr><td>Subtotal:</td><td>RM ${calculationData.subtotal.toFixed(2)}</td></tr>
+                    <tr class="total-row"><td><strong>TOTAL AMOUNT:</strong></td><td><strong>RM ${calculationData.totalAmount.toFixed(2)}</strong></td></tr>
+                </table>
+            </div>
+            
+            <div class="footer">
+                <p>Thank you for choosing our dental practice!</p>
+                <p>Generated on ${new Date().toLocaleString()}</p>
+            </div>
+        </body>
+        </html>
+    `;
+}
+
+function resetForm() {
+    // Reset calculation data
+    calculationData = {
+        baseCost: 0,
+        selectedServices: [],
+        otherCharges: [],
+        paymentMethod: 'Cash',
+        paymentFeePercentage: 0,
+        terminalChargeEnabled: true,
+        terminalChargePercentage: 8
+    };
+    
+    // Reset display
+    document.getElementById('services-total').textContent = 'RM 0.00';
+    document.getElementById('other-charges-total').textContent = 'RM 0.00';
+    document.getElementById('payment-fee').textContent = 'RM 0.00';
+    document.getElementById('terminal-charge-amount').textContent = 'RM 0.00';
+    document.getElementById('subtotal-amount').textContent = 'RM 0.00';
+    document.getElementById('total-amount').textContent = 'RM 0.00';
+    
+    // Disable buttons
+    document.getElementById('save-btn').disabled = true;
+    document.getElementById('print-btn').disabled = true;
+    
+    // Generate new invoice number
+    generateInvoiceNumber();
+    
+    // Clear other charges container
+    const container = document.getElementById('other-charges-container');
+    container.innerHTML = `
+        <div class="charge-item">
+            <input type="text" placeholder="Description" class="charge-description">
+            <input type="number" placeholder="0.00" min="0" step="0.01" class="charge-amount">
+            <button type="button" class="btn-remove" onclick="removeCharge(this)">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+    
+    showNotification('Form reset successfully', 'info');
+}
+
+// Add event listeners to existing charge inputs
+document.addEventListener('DOMContentLoaded', function() {
+    const chargeAmountInputs = document.querySelectorAll('.charge-amount');
+    chargeAmountInputs.forEach(input => {
+        input.addEventListener('input', updateOtherCharges);
+    });
+});
