@@ -351,11 +351,9 @@ function updateOtherCharges() {
 }
 
 function updateCalculation() {
-    // Get clinic and doctor fees
-    const clinicFee = parseFloat(document.getElementById('clinic-fee').value) || 0;
-    const doctorFee = parseFloat(document.getElementById('doctor-fee').value) || 0;
-    calculationData.doctorFee = doctorFee;
-    calculationData.clinicFee = clinicFee;
+    // Use calculated totals from charges (already calculated in updateRunningTotals)
+    const clinicFee = calculationData.totalClinicFee || 0;
+    const doctorFee = calculationData.totalDoctorFee || 0;
     
     // Calculate other charges total
     const otherChargesTotal = calculationData.otherCharges.reduce((sum, charge) => sum + charge.amount, 0);
@@ -374,8 +372,8 @@ function updateCalculation() {
     const totalAmount = subtotal + paymentFeeAmount + terminalChargeAmount;
     
     // Update display
-    document.getElementById('clinic-fee-display').textContent = `RM ${clinicFee.toFixed(2)}`;
-    document.getElementById('doctor-fee-display').textContent = `RM ${doctorFee.toFixed(2)}`;
+    document.getElementById('final-clinic-fee').textContent = `RM ${clinicFee.toFixed(2)}`;
+    document.getElementById('final-doctor-fee').textContent = `RM ${doctorFee.toFixed(2)}`;
     document.getElementById('other-charges-total').textContent = `RM ${otherChargesTotal.toFixed(2)}`;
     document.getElementById('payment-fee').textContent = `RM ${paymentFeeAmount.toFixed(2)}`;
     document.getElementById('terminal-charge-amount').textContent = `RM ${terminalChargeAmount.toFixed(2)}`;
