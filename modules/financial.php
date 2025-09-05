@@ -232,16 +232,16 @@ try {
                                 <span><i class="fas fa-money-bill"></i> Cash (0%)</span>
                             </label>
                             <label class="payment-option">
-                                <input type="radio" name="payment_method" value="Union" data-fee="0">
-                                <span><i class="fas fa-university"></i> Union (0%)</span>
+                                <input type="radio" name="payment_method" value="Online" data-fee="0">
+                                <span><i class="fas fa-globe"></i> Online (0%)</span>
                             </label>
                             <label class="payment-option">
-                                <input type="radio" name="payment_method" value="Debit Card" data-fee="6.5">
-                                <span><i class="fas fa-credit-card"></i> Debit Card (6.5%)</span>
+                                <input type="radio" name="payment_method" value="Debit Card" data-fee="0.5">
+                                <span><i class="fas fa-credit-card"></i> Debit Card (0.5%)</span>
                             </label>
                             <label class="payment-option">
-                                <input type="radio" name="payment_method" value="Credit Card" data-fee="1.7">
-                                <span><i class="fas fa-credit-card"></i> Credit Card (1.7%)</span>
+                                <input type="radio" name="payment_method" value="Credit Card" data-fee="1.2">
+                                <span><i class="fas fa-credit-card"></i> Credit Card (1.2%)</span>
                             </label>
                             <label class="payment-option">
                                 <input type="radio" name="payment_method" value="Mastercard" data-fee="2.5">
