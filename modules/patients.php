@@ -15,17 +15,7 @@ $conn = $db->getConnection();
 // Handle actions
 if ($_POST && isset($_POST['action'])) {
     try {
-        if ($_POST['action'] === 'add_patient') {
-            $stmt = $conn->prepare("INSERT INTO patients (name, phone, email, address) VALUES (?, ?, ?, ?)");
-            $stmt->execute([
-                $_POST['name'],
-                $_POST['phone'],
-                $_POST['email'],
-                $_POST['address']
-            ]);
-            $success_message = "Patient added successfully!";
-            
-        } elseif ($_POST['action'] === 'update_patient') {
+        if ($_POST['action'] === 'update_patient') {
             $stmt = $conn->prepare("UPDATE patients SET name = ?, phone = ?, email = ?, address = ? WHERE id = ?");
             $stmt->execute([
                 $_POST['name'],
@@ -166,9 +156,6 @@ if (isset($_GET['patient_id'])) {
                 </form>
             </div>
             <div class="action-buttons">
-                <button type="button" class="btn btn-success" onclick="openAddPatientModal()">
-                    <i class="fas fa-user-plus"></i> Add Patient
-                </button>
                 <button type="button" class="btn btn-info" onclick="exportAllPatients()">
                     <i class="fas fa-file-export"></i> Export All
                 </button>
@@ -303,24 +290,22 @@ if (isset($_GET['patient_id'])) {
                 <i class="fas fa-users"></i>
                 <h3>No patients found</h3>
                 <p><?php echo $search ? 'Try adjusting your search criteria' : 'Add your first patient to get started'; ?></p>
-                <button type="button" class="btn btn-primary" onclick="openAddPatientModal()">
-                    <i class="fas fa-user-plus"></i> Add Patient
-                </button>
+                <p class="text-muted">Patients are automatically added when processing receipts in Financial Management.</p>
             </div>
         <?php endif; ?>
     </div>
 
-    <!-- Add/Edit Patient Modal -->
+    <!-- Edit Patient Modal -->
     <div id="patient-modal" class="modal hidden">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="modal-title">Add New Patient</h2>
+                <h2 id="modal-title">Edit Patient</h2>
                 <button type="button" class="modal-close" onclick="closePatientModal()">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <form id="patient-form" method="POST">
-                <input type="hidden" name="action" id="form-action" value="add_patient">
+                <input type="hidden" name="action" id="form-action" value="update_patient">
                 <input type="hidden" name="patient_id" id="patient-id-input">
                 
                 <div class="form-row">
@@ -351,7 +336,7 @@ if (isset($_GET['patient_id'])) {
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" onclick="closePatientModal()">Cancel</button>
                     <button type="submit" class="btn btn-success" id="save-patient-btn">
-                        <i class="fas fa-save"></i> Save Patient
+                        <i class="fas fa-save"></i> Update Patient
                     </button>
                 </div>
             </form>

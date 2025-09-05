@@ -51,24 +51,14 @@ function initializePatientSearch() {
     }
 }
 
-function openAddPatientModal() {
-    document.getElementById('modal-title').textContent = 'Add New Patient';
-    document.getElementById('form-action').value = 'add_patient';
-    document.getElementById('patient-id-input').value = '';
-    document.getElementById('save-patient-btn').innerHTML = '<i class=\"fas fa-save\"></i> Save Patient';
-    
-    // Clear form
-    document.getElementById('patient-form').reset();
-    
-    // Show modal
-    document.getElementById('patient-modal').classList.remove('hidden');
-    document.getElementById('patient-name').focus();
-}
+// Add patient functionality removed - patients are created automatically from financial management
 
 function editPatient(patientId) {
-    // Get patient data from the card
-    const patientCard = document.querySelector(`[data-patient-id=\"${patientId}\"]`);
-    const patientName = patientCard.querySelector('.patient-name').textContent;
+    // Get patient data from the table row
+    const patientRow = document.querySelector(`[data-patient-id=\"${patientId}\"]`);
+    const patientName = patientRow.querySelector('.patient-name-cell').textContent.trim();
+    const phone = patientRow.children[3].textContent;
+    const email = patientRow.children[4].textContent;
     
     // Set modal for editing
     document.getElementById('modal-title').textContent = 'Edit Patient';
@@ -76,8 +66,10 @@ function editPatient(patientId) {
     document.getElementById('patient-id-input').value = patientId;
     document.getElementById('save-patient-btn').innerHTML = '<i class=\"fas fa-save\"></i> Update Patient';
     
-    // Load patient data (you might want to fetch this via AJAX)
-    document.getElementById('patient-name').value = patientName;
+    // Load patient data
+    document.getElementById('patient-name').value = patientName.replace('👤', '').trim();
+    document.getElementById('patient-phone').value = phone !== '-' ? phone : '';
+    document.getElementById('patient-email').value = email !== '-' ? email : '';
     
     // Show modal
     document.getElementById('patient-modal').classList.remove('hidden');
