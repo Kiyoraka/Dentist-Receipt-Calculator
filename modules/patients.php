@@ -104,8 +104,10 @@ if ($_POST && isset($_POST['action'])) {
     }
 }
 
-// Get search term
+// Get search term and filters
 $search = $_GET['search'] ?? '';
+$filter_month = $_GET['filter_month'] ?? '';
+$filter_year = $_GET['filter_year'] ?? '';
 
 // Pagination settings
 $records_per_page = 10;
@@ -117,11 +119,31 @@ $offset = ($page - 1) * $records_per_page;
 try {
     $count_sql = "SELECT COUNT(DISTINCT p.id) as total FROM patients p";
     $count_params = [];
+    $where_conditions = [];
     
     if ($search) {
-        $count_sql .= " WHERE p.name LIKE ? OR p.phone LIKE ? OR p.email LIKE ?";
+        $where_conditions[] = "(p.name LIKE ? OR p.phone LIKE ? OR p.email LIKE ?)";
         $searchTerm = "%{$search}%";
-        $count_params = [$searchTerm, $searchTerm, $searchTerm];
+        $count_params = array_merge($count_params, [$searchTerm, $searchTerm, $searchTerm]);
+    }
+    
+    // Add date filtering if month/year specified
+    if ($filter_month || $filter_year) {
+        $count_sql .= " LEFT JOIN receipts r ON p.id = r.patient_id";
+        if ($filter_month && $filter_year) {
+            $where_conditions[] = "DATE_FORMAT(r.created_at, '%m') = ? AND DATE_FORMAT(r.created_at, '%Y') = ?";
+            $count_params = array_merge($count_params, [$filter_month, $filter_year]);
+        } elseif ($filter_month) {
+            $where_conditions[] = "DATE_FORMAT(r.created_at, '%m') = ?";
+            $count_params[] = $filter_month;
+        } elseif ($filter_year) {
+            $where_conditions[] = "DATE_FORMAT(r.created_at, '%Y') = ?";
+            $count_params[] = $filter_year;
+        }
+    }
+    
+    if (!empty($where_conditions)) {
+        $count_sql .= " WHERE " . implode(" AND ", $where_conditions);
     }
     
     $count_stmt = $conn->prepare($count_sql);
@@ -143,10 +165,28 @@ try {
     ";
     
     $params = [];
+    $where_conditions = [];
+    
     if ($search) {
-        $sql .= " WHERE p.name LIKE ? OR p.phone LIKE ? OR p.email LIKE ?";
+        $where_conditions[] = "(p.name LIKE ? OR p.phone LIKE ? OR p.email LIKE ?)";
         $searchTerm = "%{$search}%";
-        $params = [$searchTerm, $searchTerm, $searchTerm];
+        $params = array_merge($params, [$searchTerm, $searchTerm, $searchTerm]);
+    }
+    
+    // Add date filtering for receipts
+    if ($filter_month && $filter_year) {
+        $where_conditions[] = "DATE_FORMAT(r.created_at, '%m') = ? AND DATE_FORMAT(r.created_at, '%Y') = ?";
+        $params = array_merge($params, [$filter_month, $filter_year]);
+    } elseif ($filter_month) {
+        $where_conditions[] = "DATE_FORMAT(r.created_at, '%m') = ?";
+        $params[] = $filter_month;
+    } elseif ($filter_year) {
+        $where_conditions[] = "DATE_FORMAT(r.created_at, '%Y') = ?";
+        $params[] = $filter_year;
+    }
+    
+    if (!empty($where_conditions)) {
+        $sql .= " WHERE " . implode(" AND ", $where_conditions);
     }
     
     $sql .= " GROUP BY p.id ORDER BY p.name ASC LIMIT $records_per_page OFFSET $offset";
@@ -231,6 +271,35 @@ if (isset($_GET['patient_id'])) {
             <form method="GET" class="search-form">
                 <div class="input-group">
                     <input type="text" name="search" placeholder="Search by name, phone, or email..." value="<?php echo htmlspecialchars($search); ?>" class="search-input">
+                    
+                    <select name="filter_month" class="filter-select">
+                        <option value="">All Months</option>
+                        <?php
+                        $months = [
+                            '01' => 'January', '02' => 'February', '03' => 'March', '04' => 'April',
+                            '05' => 'May', '06' => 'June', '07' => 'July', '08' => 'August',
+                            '09' => 'September', '10' => 'October', '11' => 'November', '12' => 'December'
+                        ];
+                        $selected_month = $_GET['filter_month'] ?? '';
+                        foreach ($months as $num => $name) {
+                            $selected = ($selected_month == $num) ? 'selected' : '';
+                            echo "<option value=\"$num\" $selected>$name</option>";
+                        }
+                        ?>
+                    </select>
+                    
+                    <select name="filter_year" class="filter-select">
+                        <option value="">All Years</option>
+                        <?php
+                        $current_year = date('Y');
+                        $selected_year = $_GET['filter_year'] ?? '';
+                        for ($year = $current_year; $year >= 2020; $year--) {
+                            $selected = ($selected_year == $year) ? 'selected' : '';
+                            echo "<option value=\"$year\" $selected>$year</option>";
+                        }
+                        ?>
+                    </select>
+                    
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-search"></i> Search
                     </button>
@@ -323,12 +392,21 @@ if (isset($_GET['patient_id'])) {
                         <?php endif; ?>
                     </div>
                     <div style="display: flex; gap: 8px; align-items: center;">
+                        <?php 
+                        // Build query parameters for pagination links
+                        $query_params = [];
+                        if (!empty($search)) $query_params[] = 'search=' . urlencode($search);
+                        if (!empty($filter_month)) $query_params[] = 'filter_month=' . urlencode($filter_month);
+                        if (!empty($filter_year)) $query_params[] = 'filter_year=' . urlencode($filter_year);
+                        $query_string = !empty($query_params) ? '&' . implode('&', $query_params) : '';
+                        ?>
+                        
                         <?php if ($page > 1): ?>
-                            <a href="?page=1<?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>" 
+                            <a href="?page=1<?php echo $query_string; ?>" 
                                style="padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 6px; color: #374151; text-decoration: none; background: white;">
                                 <i class="fas fa-angle-double-left"></i>
                             </a>
-                            <a href="?page=<?php echo $page - 1; ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>" 
+                            <a href="?page=<?php echo $page - 1; ?><?php echo $query_string; ?>" 
                                style="padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 6px; color: #374151; text-decoration: none; background: white;">
                                 <i class="fas fa-angle-left"></i> Previous
                             </a>
@@ -340,7 +418,7 @@ if (isset($_GET['patient_id'])) {
                         
                         for ($i = $start_page; $i <= $end_page; $i++):
                         ?>
-                            <a href="?page=<?php echo $i; ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>" 
+                            <a href="?page=<?php echo $i; ?><?php echo $query_string; ?>" 
                                style="padding: 8px 12px; border: 1px solid <?php echo $i == $page ? '#2563eb' : '#e5e7eb'; ?>; 
                                       border-radius: 6px; color: <?php echo $i == $page ? 'white' : '#374151'; ?>; 
                                       background: <?php echo $i == $page ? '#2563eb' : 'white'; ?>; text-decoration: none; font-weight: 500;">
@@ -349,11 +427,11 @@ if (isset($_GET['patient_id'])) {
                         <?php endfor; ?>
                         
                         <?php if ($page < $total_pages): ?>
-                            <a href="?page=<?php echo $page + 1; ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>" 
+                            <a href="?page=<?php echo $page + 1; ?><?php echo $query_string; ?>" 
                                style="padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 6px; color: #374151; text-decoration: none; background: white;">
                                 Next <i class="fas fa-angle-right"></i>
                             </a>
-                            <a href="?page=<?php echo $total_pages; ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>" 
+                            <a href="?page=<?php echo $total_pages; ?><?php echo $query_string; ?>" 
                                style="padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 6px; color: #374151; text-decoration: none; background: white;">
                                 <i class="fas fa-angle-double-right"></i>
                             </a>
