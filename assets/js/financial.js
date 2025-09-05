@@ -17,6 +17,18 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, initializing financial calculator...');
     initializeFinancialCalculator();
     
+    // Check if receipt was just saved and keep print button enabled
+    if (localStorage.getItem('receiptSaved') === 'true' && localStorage.getItem('printEnabled') === 'true') {
+        const printBtn = document.getElementById('print-btn');
+        if (printBtn) {
+            printBtn.disabled = false;
+            console.log('Print button enabled after successful save');
+        }
+        // Clear the flags after use
+        localStorage.removeItem('receiptSaved');
+        localStorage.removeItem('printEnabled');
+    }
+    
     // Verify critical elements exist
     const chargesRows = document.getElementById('charges-rows');
     const addChargeBtn = document.getElementById('add-charge-btn');
@@ -433,6 +445,10 @@ function handleFormSubmission(e) {
     // Update hidden fields before submission
     updateHiddenFields();
     
+    // Mark that we're about to save successfully - keep print enabled
+    localStorage.setItem('receiptSaved', 'true');
+    localStorage.setItem('printEnabled', 'true');
+    
     // Submit form
     e.target.submit();
 }
@@ -577,8 +593,10 @@ function generateReceiptHTML() {
 function resetForm() {
     // Reset calculation data
     calculationData = {
-        doctorFee: 0,
-        selectedServices: [],
+        charges: [],
+        totalCharges: 0,
+        totalDoctorFee: 0,
+        totalClinicFee: 0,
         otherCharges: [],
         paymentMethod: 'Cash',
         paymentFeePercentage: 0,
@@ -586,13 +604,29 @@ function resetForm() {
         terminalChargePercentage: 8
     };
     
-    // Reset display
-    document.getElementById('services-total').textContent = 'RM 0.00';
-    document.getElementById('other-charges-total').textContent = 'RM 0.00';
-    document.getElementById('payment-fee').textContent = 'RM 0.00';
-    document.getElementById('terminal-charge-amount').textContent = 'RM 0.00';
-    document.getElementById('subtotal-amount').textContent = 'RM 0.00';
-    document.getElementById('total-amount').textContent = 'RM 0.00';
+    // Clear any saved receipt flags
+    localStorage.removeItem('receiptSaved');
+    localStorage.removeItem('printEnabled');
+    
+    // Reset display elements
+    const finalDoctorFee = document.getElementById('final-doctor-fee');
+    const finalClinicFee = document.getElementById('final-clinic-fee');
+    const otherChargesTotal = document.getElementById('other-charges-total');
+    const paymentFee = document.getElementById('payment-fee');
+    const terminalChargeAmount = document.getElementById('terminal-charge-amount');
+    const subtotalAmount = document.getElementById('subtotal-amount');
+    const totalAmount = document.getElementById('total-amount');
+    
+    if (finalDoctorFee) finalDoctorFee.textContent = 'RM 0.00';
+    if (finalClinicFee) finalClinicFee.textContent = 'RM 0.00';
+    if (otherChargesTotal) otherChargesTotal.textContent = 'RM 0.00';
+    if (paymentFee) paymentFee.textContent = 'RM 0.00';
+    if (terminalChargeAmount) terminalChargeAmount.textContent = 'RM 0.00';
+    if (subtotalAmount) subtotalAmount.textContent = 'RM 0.00';
+    if (totalAmount) totalAmount.textContent = 'RM 0.00';
+    
+    // Clear charges display
+    updateChargesDisplay();
     
     // Disable buttons
     document.getElementById('save-btn').disabled = true;
@@ -600,6 +634,8 @@ function resetForm() {
     
     // Generate new invoice number
     generateInvoiceNumber();
+    
+    showNotification('Form reset successfully', 'info');
     
     // Clear other charges container
     const container = document.getElementById('other-charges-container');
