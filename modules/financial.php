@@ -261,7 +261,7 @@ try {
                     <div class="form-section calculation-summary">
                         <h3><i class="fas fa-calculator"></i> Summary</h3>
                         <div class="summary-row">
-                            <span>Services Total:</span>
+                            <span>Material Fee (Clinic Revenue):</span>
                             <span id="services-total">RM 0.00</span>
                         </div>
                         <div class="summary-row">
@@ -281,7 +281,7 @@ try {
                             <span id="subtotal-amount">RM 0.00</span>
                         </div>
                         <div class="summary-row total">
-                            <span><strong>Total Amount:</strong></span>
+                            <span><strong>Total Amount (Patient Pays):</strong></span>
                             <span id="total-amount"><strong>RM 0.00</strong></span>
                         </div>
                     </div>

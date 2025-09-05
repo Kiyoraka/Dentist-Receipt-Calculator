@@ -386,13 +386,15 @@ function generateReceiptHTML() {
             </table>
             
             <div class="summary">
+                <h4>Financial Breakdown</h4>
                 <table>
-                    <tr><td>Services Total:</td><td>RM ${calculationData.servicesTotal.toFixed(2)}</td></tr>
+                    <tr><td><strong>Doctor Fee:</strong></td><td><strong>RM ${calculationData.doctorFee.toFixed(2)}</strong></td></tr>
+                    <tr><td><strong>Material Fee (Clinic):</strong></td><td><strong>RM ${calculationData.servicesTotal.toFixed(2)}</strong></td></tr>
                     <tr><td>Other Charges:</td><td>RM ${calculationData.otherChargesTotal.toFixed(2)}</td></tr>
                     <tr><td>Payment Fee (${calculationData.paymentFeePercentage}%):</td><td>RM ${calculationData.paymentFeeAmount.toFixed(2)}</td></tr>
                     <tr><td>Terminal Charge (${calculationData.terminalChargePercentage}%):</td><td>RM ${calculationData.terminalChargeAmount.toFixed(2)}</td></tr>
                     <tr><td>Subtotal:</td><td>RM ${calculationData.subtotal.toFixed(2)}</td></tr>
-                    <tr class="total-row"><td><strong>TOTAL AMOUNT:</strong></td><td><strong>RM ${calculationData.totalAmount.toFixed(2)}</strong></td></tr>
+                    <tr class="total-row"><td><strong>TOTAL AMOUNT (PATIENT PAYS):</strong></td><td><strong>RM ${calculationData.totalAmount.toFixed(2)}</strong></td></tr>
                 </table>
             </div>
             
