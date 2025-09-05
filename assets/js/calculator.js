@@ -252,18 +252,27 @@ class DentalCalculator {
     }
 
     validateForm() {
-        const customerName = document.getElementById('customer-name').value.trim();
-        const baseCost = document.getElementById('doctor-fee').value;
+        const customerNameField = document.getElementById('customer-name');
+        const doctorFeeField = document.getElementById('doctor-fee');
+        
+        // Check if fields exist (calculator might be loaded on different pages)
+        if (!customerNameField || !doctorFeeField) {
+            showNotification('Required form fields not found on this page', 'error');
+            return false;
+        }
+        
+        const customerName = customerNameField.value.trim();
+        const baseCost = doctorFeeField.value;
 
         if (!customerName) {
             showNotification('Please enter customer name', 'error');
-            document.getElementById('customer-name').focus();
+            customerNameField.focus();
             return false;
         }
 
         if (!baseCost || parseFloat(baseCost) <= 0) {
-            showNotification('Please enter a valid base cost', 'error');
-            document.getElementById('doctor-fee').focus();
+            showNotification('Please enter a valid doctor fee', 'error');
+            doctorFeeField.focus();
             return false;
         }
 
@@ -276,10 +285,14 @@ class DentalCalculator {
     }
 
     collectInvoiceData() {
+        const dateField = document.getElementById('invoice-date');
+        const invoiceField = document.getElementById('invoice-number');
+        const nameField = document.getElementById('customer-name');
+        
         return {
-            date: document.getElementById('invoice-date').value,
-            memberInvoice: document.getElementById('invoice-number').value || 'N/A',
-            customerName: document.getElementById('customer-name').value.trim()
+            date: dateField ? dateField.value : '',
+            memberInvoice: invoiceField ? invoiceField.value || 'N/A' : 'N/A',
+            customerName: nameField ? nameField.value.trim() : ''
         };
     }
 
@@ -437,11 +450,16 @@ class DentalCalculator {
     }
 
     resetCalculator() {
-        // Reset all form fields
-        document.getElementById('invoice-date').value = new Date().toISOString().split('T')[0];
-        document.getElementById('invoice-number').value = '';
-        document.getElementById('customer-name').value = '';
-        document.getElementById('doctor-fee').value = '';
+        // Reset all form fields with null checks
+        const dateField = document.getElementById('invoice-date');
+        const invoiceField = document.getElementById('invoice-number');
+        const nameField = document.getElementById('customer-name');
+        const feeField = document.getElementById('doctor-fee');
+        
+        if (dateField) dateField.value = new Date().toISOString().split('T')[0];
+        if (invoiceField) invoiceField.value = '';
+        if (nameField) nameField.value = '';
+        if (feeField) feeField.value = '';
 
         // Uncheck all services
         const serviceCheckboxes = document.querySelectorAll('input[name="services"]');
@@ -489,14 +507,22 @@ class DentalCalculator {
         // Scroll to top
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
-        // Focus on customer name
-        document.getElementById('customer-name').focus();
+        // Focus on customer name if field exists
+        const nameField = document.getElementById('customer-name');
+        if (nameField) nameField.focus();
     }
 }
 
-// Initialize calculator when DOM is loaded
+// Initialize calculator when DOM is loaded (only if required fields exist)
 document.addEventListener('DOMContentLoaded', () => {
-    window.calculator = new DentalCalculator();
+    // Check if we're on a page that has the calculator fields
+    const hasCalculatorFields = document.getElementById('doctor-fee') && 
+                                document.getElementById('customer-name') && 
+                                document.getElementById('invoice-date');
+    
+    if (hasCalculatorFields) {
+        window.calculator = new DentalCalculator();
+    }
 });
 
 // Export for module use if needed
