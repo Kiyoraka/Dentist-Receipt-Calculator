@@ -21,7 +21,7 @@ if (!defined('BASE_URL')) {
         <ul>
             <li class="nav-item <?php echo ($current_page == 'index.php') ? 'active' : ''; ?>">
                 <a href="<?php echo BASE_URL; ?>/index.php" class="nav-link">
-                    <i class="fas fa-chart-dashboard"></i>
+                    <i class="fas fa-tachometer-alt"></i>
                     <span>Main Dashboard</span>
                 </a>
             </li>
