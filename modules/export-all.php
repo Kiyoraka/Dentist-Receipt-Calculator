@@ -1,80 +1,56 @@
 <?php
 /**
- * Export All Receipts - HTML/PDF Generation
- * Professional dental practice comprehensive report with pie chart and receipt formats
- * 
- * Features:
- * - Pie chart showing Clinic Fee vs Doctor Fee totals
- * - Individual receipts in new format (Date|Invoice, Name, Clinic Fee, Doctor Fee, Services bullets, Total)
- * - HTML display with PDF save functionality
+ * Export All - Two Page Report
+ * Page 1: Pie Chart with Financial Summary
+ * Page 2: Patient Table with All Values (Landscape)
  */
 
 require_once '../config/database.php';
+require_once '../config/config.php';
 
-// Check if this is a PDF export request
-$export_pdf = isset($_GET['pdf']) && $_GET['pdf'] == '1';
-
-// Database connection
 $db = new Database();
 $conn = $db->getConnection();
 
+// Get all patients with financial data
 try {
-    // Get all receipts with patient information
     $stmt = $conn->prepare("
-        SELECT r.*, p.name as patient_name 
-        FROM receipts r 
-        LEFT JOIN patients p ON r.patient_id = p.id 
-        ORDER BY r.invoice_date DESC, r.invoice_number DESC
+        SELECT 
+            p.*,
+            COUNT(r.id) as receipt_count,
+            COALESCE(SUM(r.total_amount), 0) as total_spent,
+            COALESCE(SUM(r.doctor_fee), 0) as total_doctor_fee,
+            COALESCE(SUM(r.clinic_fee), 0) as total_clinic_fee,
+            MAX(r.created_at) as last_visit
+        FROM patients p 
+        LEFT JOIN receipts r ON p.id = r.patient_id 
+        GROUP BY p.id 
+        ORDER BY p.name ASC
     ");
     $stmt->execute();
-    $receipts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $patients = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     // Calculate totals for pie chart
-    $total_clinic_fee = 0;
-    $total_doctor_fee = 0;
-    $total_other_charges = 0;
+    $total_doctor_fees = array_sum(array_column($patients, 'total_doctor_fee'));
+    $total_clinic_fees = array_sum(array_column($patients, 'total_clinic_fee'));
+    $total_amount = array_sum(array_column($patients, 'total_spent'));
+    $total_visits = array_sum(array_column($patients, 'receipt_count'));
+    
+} catch (Exception $e) {
+    $patients = [];
+    $total_doctor_fees = 0;
+    $total_clinic_fees = 0;
     $total_amount = 0;
-    
-    foreach ($receipts as $receipt) {
-        $total_clinic_fee += $receipt['clinic_fee'];
-        $total_doctor_fee += $receipt['doctor_fee'];
-        $total_other_charges += $receipt['other_charges'];
-        $total_amount += $receipt['total_amount'];
-    }
-    
-    // Get services for each receipt
-    foreach ($receipts as &$receipt) {
-        $stmt = $conn->prepare("SELECT service_name FROM receipt_services WHERE receipt_id = ?");
-        $stmt->execute([$receipt['id']]);
-        $receipt['services'] = $stmt->fetchAll(PDO::FETCH_COLUMN);
-        
-        // Get other charges for each receipt
-        $stmt = $conn->prepare("SELECT description, amount FROM receipt_charges WHERE receipt_id = ?");
-        $stmt->execute([$receipt['id']]);
-        $receipt['charges'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-    
-} catch (PDOException $e) {
-    die('Database error: ' . $e->getMessage());
+    $total_visits = 0;
+    $error_message = $e->getMessage();
 }
-
-// Set headers for PDF if requested
-if ($export_pdf) {
-    header('Content-Type: application/pdf');
-    header('Content-Disposition: attachment; filename="dental_receipts_' . date('Y-m-d_H-i-s') . '.pdf"');
-    // Note: For actual PDF generation, you'd need a library like TCPDF or DOMPDF
-    // For now, we'll output HTML that can be printed to PDF
-    header('Content-Type: text/html');
-}
-
 ?>
 <!DOCTYPE html>
 <html>
 <head>
-    <title>All Receipts Export - Dental Practice</title>
+    <title>Dental Practice Report - <?php echo date('Y-m-d'); ?></title>
     <meta charset="UTF-8">
     <style>
-        /* Professional Print/PDF Styles */
+        /* General Styles */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -83,152 +59,156 @@ if ($export_pdf) {
             line-height: 1.4;
         }
         
-        /* Print-specific styles */
+        /* Print/PDF Styles - Landscape */
         @media print {
-            body { padding: 0; }
-            .no-print { display: none !important; }
-            .page-break { page-break-before: always; }
+            body { 
+                padding: 0; 
+                margin: 0;
+            }
+            .no-print { 
+                display: none !important; 
+            }
+            .page-break { 
+                page-break-before: always; 
+            }
+            @page {
+                size: landscape;
+                margin: 20mm;
+            }
         }
         
-        /* Header Styles */
-        .report-header {
+        /* Page 1 - Portrait for Pie Chart */
+        .page-1 {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 3px solid #2563eb;
-            padding-bottom: 20px;
+        }
+        
+        /* Report Header */
+        .report-header {
+            margin-bottom: 40px;
         }
         
         .report-header h1 {
+            color: #2563eb;
+            font-size: 36px;
+            margin: 0;
+        }
+        
+        .report-header h2 {
+            color: #666;
+            font-size: 24px;
+            margin: 10px 0;
+        }
+        
+        .report-header p {
+            color: #888;
+            font-size: 16px;
+            margin: 5px 0;
+        }
+        
+        /* Summary Stats */
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin: 40px 0;
+            max-width: 800px;
+        }
+        
+        .stat-box {
+            background: linear-gradient(135deg, #f8f9ff 0%, #e0e7ff 100%);
+            border: 2px solid #2563eb;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2563eb;
+            margin-bottom: 8px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        /* Pie Chart */
+        .chart-container {
+            margin: 40px 0;
+        }
+        
+        .chart-canvas {
+            width: 500px;
+            height: 500px;
+            margin: 0 auto;
+        }
+        
+        /* Page 2 - Landscape for Table */
+        .page-2 {
+            min-height: 100vh;
+        }
+        
+        .table-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .table-header h2 {
             color: #2563eb;
             font-size: 28px;
             margin: 0;
         }
         
-        .report-header p {
-            color: #666;
-            font-size: 14px;
-            margin: 5px 0;
-        }
-        
-        /* Summary Section */
-        .summary-section {
-            margin-bottom: 40px;
-        }
-        
-        .summary-stats {
-            display: flex;
-            justify-content: space-around;
-            margin: 20px 0;
-            flex-wrap: wrap;
-        }
-        
-        .stat-box {
-            background: #f8f9ff;
-            border: 2px solid #2563eb;
-            border-radius: 8px;
-            padding: 15px;
-            text-align: center;
-            min-width: 150px;
-            margin: 5px;
-        }
-        
-        .stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2563eb;
-        }
-        
-        .stat-label {
+        /* Patient Table - Landscape Optimized */
+        .patients-table {
+            width: 100%;
+            border-collapse: collapse;
             font-size: 12px;
-            color: #666;
-            margin-top: 5px;
-        }
-        
-        /* Pie Chart Container */
-        .chart-container {
-            text-align: center;
-            margin: 30px 0;
-        }
-        
-        .chart-canvas {
-            max-width: 400px;
-            height: 400px;
-            margin: 0 auto;
-        }
-        
-        /* Receipt Styles - Matching financial.js exactly */
-        .receipt {
-            font-family: Arial, sans-serif; 
-            max-width: 600px; 
-            margin: 30px auto; 
-            padding: 20px; 
-            line-height: 1.4;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            background: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .receipt .header {
-            text-align: center;
-            border-bottom: 2px solid #2563eb;
-            padding-bottom: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .receipt .header h1 {
-            color: #2563eb;
-            margin: 0;
-            font-size: 24px;
-        }
-        
-        .receipt .header-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            font-weight: bold;
-        }
-        
-        .receipt .customer-name {
-            font-size: 18px;
             margin: 20px 0;
+        }
+        
+        .patients-table th {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
             font-weight: bold;
-        }
-        
-        .receipt .fee-section {
-            margin: 15px 0;
-        }
-        
-        .receipt .fee-amount {
-            font-size: 16px;
-            font-weight: bold;
-        }
-        
-        .receipt .services-section {
-            margin: 10px 0 15px 0;
-        }
-        
-        .receipt .total-section {
-            margin: 20px 0;
-            padding: 10px;
-            border: 2px solid #2563eb;
-            background-color: #f8f9ff;
-        }
-        
-        .receipt .total-amount {
-            font-size: 20px;
-            font-weight: bold;
-            color: #2563eb;
-        }
-        
-        .receipt .footer {
-            margin-top: 30px;
+            padding: 12px 8px;
             text-align: center;
-            font-size: 12px;
-            color: #666;
-            border-top: 1px solid #ddd;
-            padding-top: 15px;
+            border: 1px solid #1d4ed8;
         }
+        
+        .patients-table td {
+            padding: 10px 8px;
+            text-align: center;
+            border: 1px solid #e5e7eb;
+            vertical-align: middle;
+        }
+        
+        .patients-table tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        
+        .patients-table tr:hover {
+            background-color: #f0f9ff;
+        }
+        
+        /* Column Widths for Landscape */
+        .col-id { width: 8%; }
+        .col-name { width: 20%; text-align: left !important; font-weight: bold; color: #2563eb; }
+        .col-visits { width: 10%; }
+        .col-lastvisit { width: 15%; }
+        .col-clinic { width: 12%; font-weight: bold; color: #dc2626; }
+        .col-doctor { width: 12%; font-weight: bold; color: #059669; }
+        .col-total { width: 12%; font-weight: bold; color: #2563eb; }
+        .col-phone { width: 15%; }
+        .col-email { width: 20%; font-size: 11px; }
         
         /* Action Buttons */
         .action-buttons {
@@ -239,27 +219,45 @@ if ($export_pdf) {
         }
         
         .btn {
-            background: #2563eb;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
+            padding: 12px 20px;
+            border-radius: 8px;
             cursor: pointer;
             margin: 5px;
             text-decoration: none;
             display: inline-block;
+            font-weight: 600;
+            transition: all 0.3s ease;
         }
         
         .btn:hover {
-            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
         }
         
         .btn-secondary {
-            background: #6b7280;
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
         }
         
         .btn-secondary:hover {
-            background: #4b5563;
+            box-shadow: 0 4px 8px rgba(107, 114, 128, 0.3);
+        }
+        
+        /* Summary Footer */
+        .summary-footer {
+            margin-top: 30px;
+            text-align: center;
+            padding: 20px;
+            background: #f8f9ff;
+            border-radius: 8px;
+            border: 1px solid #e0e7ff;
+        }
+        
+        .summary-footer h3 {
+            color: #2563eb;
+            margin: 0 0 10px 0;
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -267,140 +265,136 @@ if ($export_pdf) {
 <body>
     <!-- Action Buttons -->
     <div class="action-buttons no-print">
-        <button onclick="window.print()" class="btn">🖨️ Print/PDF</button>
-        <button onclick="generatePDF()" class="btn">💾 Save PDF</button>
-        <a href="financial.php" class="btn btn-secondary">← Back to Financial</a>
+        <button onclick="window.print()" class="btn">
+            <i class="fas fa-print"></i> 🖨️ Print/Save PDF
+        </button>
+        <a href="patients.php" class="btn btn-secondary">
+            ← Back to Patients
+        </a>
     </div>
 
-    <!-- Report Header -->
-    <div class="report-header">
-        <h1>🦷 DENTAL PRACTICE</h1>
-        <h2>Comprehensive Receipts Report</h2>
-        <p>Generated on <?php echo date('F j, Y \a\t g:i A'); ?></p>
-        <p>Total Receipts: <?php echo count($receipts); ?></p>
-    </div>
+    <!-- PAGE 1: PIE CHART -->
+    <div class="page-1">
+        <div class="report-header">
+            <h1>🦷 DENTAL PRACTICE</h1>
+            <h2>Financial Summary Report</h2>
+            <p>Generated on <?php echo date('F j, Y \a\t g:i A'); ?></p>
+            <p>Total Patients: <?php echo count($patients); ?> | Total Visits: <?php echo $total_visits; ?></p>
+        </div>
 
-    <!-- Summary Section with Stats and Pie Chart -->
-    <div class="summary-section">
-        <h3 style="text-align: center; color: #2563eb; margin-bottom: 20px;">Financial Summary</h3>
-        
         <div class="summary-stats">
             <div class="stat-box">
-                <div class="stat-value">RM <?php echo number_format($total_clinic_fee, 2); ?></div>
+                <div class="stat-value">RM <?php echo number_format($total_clinic_fees, 2); ?></div>
                 <div class="stat-label">Total Clinic Fees</div>
             </div>
             
             <div class="stat-box">
-                <div class="stat-value">RM <?php echo number_format($total_doctor_fee, 2); ?></div>
+                <div class="stat-value">RM <?php echo number_format($total_doctor_fees, 2); ?></div>
                 <div class="stat-label">Total Doctor Fees</div>
             </div>
             
             <div class="stat-box">
-                <div class="stat-value">RM <?php echo number_format($total_other_charges, 2); ?></div>
-                <div class="stat-label">Other Charges</div>
+                <div class="stat-value"><?php echo $total_visits; ?></div>
+                <div class="stat-label">Total Visits</div>
             </div>
             
             <div class="stat-box">
                 <div class="stat-value">RM <?php echo number_format($total_amount, 2); ?></div>
-                <div class="stat-label">Grand Total</div>
+                <div class="stat-label">Grand Total Revenue</div>
             </div>
         </div>
 
-        <!-- Pie Chart -->
         <div class="chart-container">
-            <h4 style="color: #2563eb;">Fee Distribution</h4>
             <canvas id="feeChart" class="chart-canvas"></canvas>
         </div>
     </div>
 
-    <?php if (empty($receipts)): ?>
-        <div style="text-align: center; padding: 50px; color: #666;">
-            <h3>No receipts found</h3>
-            <p>No receipt data available for export.</p>
+    <!-- PAGE 2: PATIENT TABLE (LANDSCAPE) -->
+    <div class="page-break page-2">
+        <div class="table-header">
+            <h2>🦷 Patient Management Report</h2>
+            <p>Complete patient data with financial breakdown - Generated <?php echo date('F j, Y'); ?></p>
         </div>
-    <?php else: ?>
-        <!-- Individual Receipts -->
-        <div class="page-break"></div>
-        <h3 style="text-align: center; color: #2563eb; margin: 30px 0;">Individual Receipts</h3>
-        
-        <?php foreach ($receipts as $index => $receipt): ?>
-            <?php if ($index > 0): ?>
-                <div class="page-break"></div>
-            <?php endif; ?>
-            
-            <!-- Individual Receipt - Matching financial.js format exactly -->
-            <div class="receipt">
-                <div class="header">
-                    <h1>🦷 DENTAL PRACTICE</h1>
-                </div>
-                
-                <div class="header-row">
-                    <div><?php echo date('M j, Y', strtotime($receipt['invoice_date'])); ?></div>
-                    <div><?php echo htmlspecialchars($receipt['invoice_number']); ?></div>
-                </div>
-                
-                <div class="customer-name">
-                    <?php echo htmlspecialchars($receipt['patient_name'] ?: 'Walk-in Patient'); ?>
-                </div>
-                
-                <div class="fee-section">
-                    <div class="fee-amount">Clinic Fee: RM <?php echo number_format($receipt['clinic_fee'], 2); ?></div>
-                </div>
-                
-                <div class="fee-section">
-                    <div class="fee-amount">Doctor Fee: RM <?php echo number_format($receipt['doctor_fee'], 2); ?></div>
-                    
-                    <?php if (!empty($receipt['services'])): ?>
-                        <div class="services-section">
-                            <ul style="margin: 10px 0; padding-left: 20px;">
-                                <?php foreach ($receipt['services'] as $service): ?>
-                                    <li><?php echo htmlspecialchars($service); ?></li>
-                                <?php endforeach; ?>
-                            </ul>
-                        </div>
-                    <?php endif; ?>
-                </div>
-                
-                <?php if (!empty($receipt['charges'])): ?>
-                    <div style="margin: 15px 0;">
-                        <strong>Other Charges: RM <?php echo number_format($receipt['other_charges'], 2); ?></strong>
-                    </div>
-                <?php endif; ?>
-                
-                <div class="total-section">
-                    <div class="total-amount">Total Amount: RM <?php echo number_format($receipt['total_amount'], 2); ?></div>
-                </div>
-                
-                <div class="footer">
-                    <p>Payment Method: <?php echo htmlspecialchars($receipt['payment_method']); ?></p>
-                    <p>Thank you for choosing our dental practice!</p>
-                    <p>Generated on <?php echo date('F j, Y \a\t g:i A'); ?></p>
-                </div>
+
+        <?php if (!empty($patients)): ?>
+            <table class="patients-table">
+                <thead>
+                    <tr>
+                        <th class="col-id">ID</th>
+                        <th class="col-name">Patient Name</th>
+                        <th class="col-visits">Visits</th>
+                        <th class="col-lastvisit">Last Visit</th>
+                        <th class="col-clinic">Clinic Fee</th>
+                        <th class="col-doctor">Doctor Fee</th>
+                        <th class="col-total">Total Spent</th>
+                        <th class="col-phone">Phone</th>
+                        <th class="col-email">Email</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($patients as $patient): ?>
+                        <tr>
+                            <td class="col-id"><?php echo $patient['id']; ?></td>
+                            <td class="col-name">
+                                <i class="fas fa-user-circle" style="margin-right: 5px; color: #2563eb;"></i>
+                                <?php echo htmlspecialchars($patient['name']); ?>
+                            </td>
+                            <td class="col-visits"><?php echo $patient['receipt_count']; ?></td>
+                            <td class="col-lastvisit">
+                                <?php 
+                                if ($patient['last_visit']) {
+                                    echo date('M j, Y', strtotime($patient['last_visit']));
+                                } else {
+                                    echo '<span style="color: #9ca3af;">Never</span>';
+                                }
+                                ?>
+                            </td>
+                            <td class="col-clinic">RM <?php echo number_format($patient['total_clinic_fee'], 2); ?></td>
+                            <td class="col-doctor">RM <?php echo number_format($patient['total_doctor_fee'], 2); ?></td>
+                            <td class="col-total">RM <?php echo number_format($patient['total_spent'], 2); ?></td>
+                            <td class="col-phone"><?php echo htmlspecialchars($patient['phone'] ?: '-'); ?></td>
+                            <td class="col-email"><?php echo htmlspecialchars($patient['email'] ?: '-'); ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+
+            <div class="summary-footer">
+                <h3>Summary Statistics</h3>
+                <p>
+                    <strong><?php echo count($patients); ?></strong> total patients | 
+                    <strong><?php echo $total_visits; ?></strong> total visits | 
+                    <strong>RM <?php echo number_format($total_amount, 2); ?></strong> total revenue
+                </p>
             </div>
-        <?php endforeach; ?>
-    <?php endif; ?>
+
+        <?php else: ?>
+            <div style="text-align: center; padding: 50px; color: #666;">
+                <h3>No patient data found</h3>
+                <p>No patient records available for export.</p>
+            </div>
+        <?php endif; ?>
+    </div>
 
     <script>
         // Pie Chart Generation
         document.addEventListener('DOMContentLoaded', function() {
             const ctx = document.getElementById('feeChart').getContext('2d');
             
-            const clinicFee = <?php echo $total_clinic_fee; ?>;
-            const doctorFee = <?php echo $total_doctor_fee; ?>;
-            const otherCharges = <?php echo $total_other_charges; ?>;
+            const clinicFees = <?php echo $total_clinic_fees; ?>;
+            const doctorFees = <?php echo $total_doctor_fees; ?>;
             
             new Chart(ctx, {
                 type: 'pie',
                 data: {
-                    labels: ['Clinic Fees', 'Doctor Fees', 'Other Charges'],
+                    labels: ['Clinic Fees', 'Doctor Fees'],
                     datasets: [{
-                        data: [clinicFee, doctorFee, otherCharges],
+                        data: [clinicFees, doctorFees],
                         backgroundColor: [
-                            '#2563eb',  // Blue for clinic fees
-                            '#10b981',  // Green for doctor fees  
-                            '#f59e0b'   // Orange for other charges
+                            '#dc2626',  // Red for clinic fees
+                            '#059669'   // Green for doctor fees
                         ],
-                        borderWidth: 2,
+                        borderWidth: 3,
                         borderColor: '#fff'
                     }]
                 },
@@ -411,9 +405,9 @@ if ($export_pdf) {
                         legend: {
                             position: 'bottom',
                             labels: {
-                                padding: 20,
+                                padding: 30,
                                 font: {
-                                    size: 14
+                                    size: 18
                                 }
                             }
                         },
@@ -422,8 +416,8 @@ if ($export_pdf) {
                                 label: function(context) {
                                     const label = context.label || '';
                                     const value = context.parsed;
-                                    const total = clinicFee + doctorFee + otherCharges;
-                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    const total = clinicFees + doctorFees;
+                                    const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
                                     return `${label}: RM ${value.toFixed(2)} (${percentage}%)`;
                                 }
                             }
@@ -432,22 +426,13 @@ if ($export_pdf) {
                 }
             });
         });
-        
-        // PDF Generation Function
-        function generatePDF() {
-            // For actual PDF generation, you'd integrate with a library like jsPDF or use server-side PDF generation
-            // For now, we'll open the print dialog
-            window.print();
-        }
-        
+
         // Print optimization
         window.addEventListener('beforeprint', function() {
-            // Hide action buttons when printing
             document.querySelector('.action-buttons').style.display = 'none';
         });
         
         window.addEventListener('afterprint', function() {
-            // Show action buttons after printing
             document.querySelector('.action-buttons').style.display = 'block';
         });
     </script>
