@@ -77,17 +77,22 @@ function editPatient(patientId) {
 }
 
 function deletePatient(patientId, patientName) {
-    if (confirm(`Are you sure you want to delete patient \"${patientName}\"? This action cannot be undone.`)) {
-        // Create and submit delete form
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.innerHTML = `
-            <input type=\"hidden\" name=\"action\" value=\"delete_patient\">
-            <input type=\"hidden\" name=\"patient_id\" value=\"${patientId}\">
-        `;
-        document.body.appendChild(form);
-        form.submit();
-    }
+    // Set patient details in modal
+    document.getElementById('delete-patient-name').textContent = patientName;
+    document.getElementById('delete-patient-id').value = patientId;
+    
+    // Show the delete confirmation modal
+    document.getElementById('delete-confirmation-modal').classList.remove('hidden');
+}
+
+function confirmDeletePatient() {
+    // Submit the delete form
+    document.getElementById('delete-patient-form').submit();
+}
+
+function closeDeleteModal() {
+    // Hide the delete confirmation modal
+    document.getElementById('delete-confirmation-modal').classList.add('hidden');
 }
 
 function viewPatientDetails(patientId) {
@@ -163,6 +168,7 @@ function closePatientDetailsModal() {
 function closeAllModals() {
     closePatientModal();
     closePatientDetailsModal();
+    closeDeleteModal();
 }
 
 function handlePatientFormSubmission(e) {

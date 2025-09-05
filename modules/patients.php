@@ -357,6 +357,41 @@ if (isset($_GET['patient_id'])) {
         </div>
     </div>
 
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-confirmation-modal" class="modal hidden">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white;">
+                <h2><i class="fas fa-exclamation-triangle"></i> Confirm Deletion</h2>
+                <button type="button" class="modal-close" onclick="closeDeleteModal()" style="color: white;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 20px; text-align: center;">
+                <i class="fas fa-user-times" style="font-size: 3em; color: #ef4444; margin-bottom: 20px;"></i>
+                <p style="font-size: 16px; margin-bottom: 10px;">Are you sure you want to delete patient:</p>
+                <h3 id="delete-patient-name" style="color: #1e293b; margin: 10px 0;"></h3>
+                <p style="color: #ef4444; font-weight: 500; margin-top: 15px;">
+                    <i class="fas fa-exclamation-circle"></i> This action cannot be undone!
+                </p>
+                <p style="color: #64748b; font-size: 14px; margin-top: 10px;">
+                    All associated receipts and records will be permanently removed.
+                </p>
+            </div>
+            <form id="delete-patient-form" method="POST" style="display: none;">
+                <input type="hidden" name="action" value="delete_patient">
+                <input type="hidden" name="patient_id" id="delete-patient-id">
+            </form>
+            <div class="modal-actions" style="justify-content: center; gap: 10px; padding: 20px; background: #f9fafb;">
+                <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button type="button" class="btn btn-danger" onclick="confirmDeletePatient()">
+                    <i class="fas fa-trash"></i> Delete Patient
+                </button>
+            </div>
+        </div>
+    </div>
+
 <?php 
 $additional_js = ['../assets/js/patients.js'];
 include '../includes/footer.php'; 
