@@ -28,15 +28,10 @@ try {
     $stmt->execute();
     $patient_count = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
     
-    // Recent receipts
-    $stmt = $conn->prepare("SELECT r.*, p.name as patient_name FROM receipts r LEFT JOIN patients p ON r.patient_id = p.id ORDER BY r.created_at DESC LIMIT 5");
+    // Popular services for bar chart
+    $stmt = $conn->prepare("SELECT service_name, COUNT(*) as usage_count FROM receipt_services GROUP BY service_name ORDER BY usage_count DESC LIMIT 10");
     $stmt->execute();
-    $recent_receipts = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    // Top services
-    $stmt = $conn->prepare("SELECT service_name, COUNT(*) as usage_count, SUM(amount) as total_amount FROM receipt_services GROUP BY service_name ORDER BY usage_count DESC LIMIT 5");
-    $stmt->execute();
-    $top_services = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $popular_services = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
 } catch (PDOException $e) {
     $error_message = 'Database error: ' . $e->getMessage();
@@ -99,81 +94,153 @@ try {
 
     </div>
 
-    <!-- Recent Activity Section -->
+    <!-- Popular Services Chart Section -->
     <div class="dashboard-content">
         <div class="dashboard-row">
-            <!-- Recent Receipts -->
+            <!-- Popular Services Bar Chart -->
             <div class="content-section">
                 <div class="section-header">
                     <h2 class="section-title">
-                        <i class="fas fa-receipt"></i>
-                        Recent Receipts
-                    </h2>
-                    <a href="modules/financial.php" class="btn btn-outline">View All</a>
-                </div>
-                
-                <div class="table-responsive">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Invoice #</th>
-                                <th>Patient</th>
-                                <th>Date</th>
-                                <th>Total</th>
-                                <th>Payment</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (!empty($recent_receipts)): ?>
-                                <?php foreach ($recent_receipts as $receipt): ?>
-                                <tr>
-                                    <td><strong><?php echo htmlspecialchars($receipt['invoice_number']); ?></strong></td>
-                                    <td><?php echo htmlspecialchars($receipt['patient_name'] ?? 'Walk-in'); ?></td>
-                                    <td><?php echo date('M j, Y', strtotime($receipt['invoice_date'])); ?></td>
-                                    <td><strong>RM <?php echo number_format($receipt['total_amount'], 2); ?></strong></td>
-                                    <td><span class="payment-badge"><?php echo htmlspecialchars($receipt['payment_method']); ?></span></td>
-                                </tr>
-                                <?php endforeach; ?>
-                            <?php else: ?>
-                                <tr>
-                                    <td colspan="5" class="text-center">No receipts found</td>
-                                </tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div class="dashboard-row">
-            <!-- Top Services -->
-            <div class="content-section">
-                <div class="section-header">
-                    <h2 class="section-title">
-                        <i class="fas fa-tooth"></i>
+                        <i class="fas fa-chart-bar"></i>
                         Popular Services
                     </h2>
                 </div>
                 
-                <div class="services-stats">
-                    <?php if (!empty($top_services)): ?>
-                        <?php foreach ($top_services as $service): ?>
-                        <div class="service-stat-item">
-                            <div class="service-info">
-                                <h4><?php echo htmlspecialchars($service['service_name']); ?></h4>
-                                <p><?php echo $service['usage_count']; ?> times used</p>
-                            </div>
-                            <div class="service-amount">
-                                <strong>RM <?php echo number_format($service['total_amount'], 2); ?></strong>
-                            </div>
-                        </div>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <p class="text-center">No service data available</p>
-                    <?php endif; ?>
+                <div class="chart-container">
+                    <canvas id="servicesChart" style="max-height: 400px;"></canvas>
                 </div>
+                
+                <?php if (empty($popular_services)): ?>
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <i class="fas fa-chart-bar" style="font-size: 48px; opacity: 0.3; margin-bottom: 20px;"></i>
+                        <p>No service data available</p>
+                        <p style="font-size: 14px; color: #999;">Start using services to see analytics</p>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
+
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        // Popular Services Bar Chart
+        document.addEventListener('DOMContentLoaded', function() {
+            <?php if (!empty($popular_services)): ?>
+            const ctx = document.getElementById('servicesChart').getContext('2d');
+            
+            const servicesData = {
+                labels: [<?php 
+                    $labels = array_map(function($service) {
+                        return '"' . htmlspecialchars($service['service_name']) . '"';
+                    }, $popular_services);
+                    echo implode(', ', $labels);
+                ?>],
+                datasets: [{
+                    label: 'Number of Services',
+                    data: [<?php 
+                        $counts = array_map(function($service) {
+                            return $service['usage_count'];
+                        }, $popular_services);
+                        echo implode(', ', $counts);
+                    ?>],
+                    backgroundColor: [
+                        '#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
+                        '#06b6d4', '#f97316', '#84cc16', '#ec4899', '#6b7280'
+                    ],
+                    borderColor: [
+                        '#1d4ed8', '#059669', '#d97706', '#dc2626', '#7c3aed',
+                        '#0891b2', '#ea580c', '#65a30d', '#db2777', '#4b5563'
+                    ],
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    borderSkipped: false
+                }]
+            };
+
+            const config = {
+                type: 'bar',
+                data: servicesData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Service Usage Analytics',
+                            font: {
+                                size: 18,
+                                weight: 'bold'
+                            },
+                            color: '#374151'
+                        },
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#ffffff',
+                            bodyColor: '#ffffff',
+                            borderColor: '#e5e7eb',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y + ' times used';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Services Used',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                },
+                                color: '#6b7280'
+                            },
+                            ticks: {
+                                stepSize: 1,
+                                color: '#6b7280'
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Service Types',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                },
+                                color: '#6b7280'
+                            },
+                            ticks: {
+                                color: '#6b7280',
+                                maxRotation: 45,
+                                minRotation: 0
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            };
+
+            new Chart(ctx, config);
+            <?php endif; ?>
+        });
+    </script>
 
 <?php include 'includes/footer.php'; ?>
