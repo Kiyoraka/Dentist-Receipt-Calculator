@@ -29,10 +29,16 @@ function initializeFinancialCalculator() {
 }
 
 function setupEventListeners() {
-    // Base cost input
-    const baseCostInput = document.getElementById('base-cost');
-    if (baseCostInput) {
-        baseCostInput.addEventListener('input', updateCalculation);
+    // Clinic fee input
+    const clinicFeeInput = document.getElementById('clinic-fee');
+    if (clinicFeeInput) {
+        clinicFeeInput.addEventListener('input', updateCalculation);
+    }
+    
+    // Doctor fee input
+    const doctorFeeInput = document.getElementById('doctor-fee');
+    if (doctorFeeInput) {
+        doctorFeeInput.addEventListener('input', updateCalculation);
     }
     
     // Service checkboxes
@@ -101,13 +107,11 @@ function updateSelectedServices() {
     const serviceCheckboxes = document.querySelectorAll('input[name="services[]"]:checked');
     serviceCheckboxes.forEach(checkbox => {
         calculationData.selectedServices.push({
-            name: checkbox.dataset.service,
-            percentage: parseFloat(checkbox.dataset.percentage),
-            amount: 0 // Will be calculated
+            name: checkbox.dataset.service
         });
     });
     
-    updateCalculation();
+    // No calculation needed - services are display-only now
 }
 
 function updatePaymentMethod() {
@@ -164,21 +168,17 @@ function updateOtherCharges() {
 }
 
 function updateCalculation() {
-    // Get doctor fee
-    calculationData.doctorFee = parseFloat(document.getElementById('base-cost').value) || 0;
-    
-    // Calculate services total
-    let servicesTotal = 0;
-    calculationData.selectedServices.forEach(service => {
-        service.amount = calculationData.doctorFee * (service.percentage / 100);
-        servicesTotal += service.amount;
-    });
+    // Get clinic and doctor fees
+    const clinicFee = parseFloat(document.getElementById('clinic-fee').value) || 0;
+    const doctorFee = parseFloat(document.getElementById('doctor-fee').value) || 0;
+    calculationData.doctorFee = doctorFee;
+    calculationData.clinicFee = clinicFee;
     
     // Calculate other charges total
     const otherChargesTotal = calculationData.otherCharges.reduce((sum, charge) => sum + charge.amount, 0);
     
-    // Calculate subtotal
-    const subtotal = calculationData.doctorFee + servicesTotal + otherChargesTotal;
+    // Calculate subtotal (Clinic Fee + Doctor Fee + Other Charges)
+    const subtotal = clinicFee + doctorFee + otherChargesTotal;
     
     // Calculate payment fee
     const paymentFeeAmount = subtotal * (calculationData.paymentFeePercentage / 100);
@@ -191,7 +191,8 @@ function updateCalculation() {
     const totalAmount = subtotal + paymentFeeAmount + terminalChargeAmount;
     
     // Update display
-    document.getElementById('services-total').textContent = `RM ${servicesTotal.toFixed(2)}`;
+    document.getElementById('clinic-fee-display').textContent = `RM ${clinicFee.toFixed(2)}`;
+    document.getElementById('doctor-fee-display').textContent = `RM ${doctorFee.toFixed(2)}`;
     document.getElementById('other-charges-total').textContent = `RM ${otherChargesTotal.toFixed(2)}`;
     document.getElementById('payment-fee').textContent = `RM ${paymentFeeAmount.toFixed(2)}`;
     document.getElementById('terminal-charge-amount').textContent = `RM ${terminalChargeAmount.toFixed(2)}`;
@@ -199,7 +200,7 @@ function updateCalculation() {
     document.getElementById('total-amount').textContent = `RM ${totalAmount.toFixed(2)}`;
     
     // Store calculated values
-    calculationData.servicesTotal = servicesTotal;
+    calculationData.servicesTotal = 0; // No longer calculated
     calculationData.otherChargesTotal = otherChargesTotal;
     calculationData.paymentFeeAmount = paymentFeeAmount;
     calculationData.terminalChargeAmount = terminalChargeAmount;
@@ -308,26 +309,21 @@ function generateReceiptHTML() {
     const invoiceDate = document.getElementById('invoice-date').value;
     const customerName = document.getElementById('customer-name').value;
     
+    // Generate services list as bullet points
     let servicesHTML = '';
-    calculationData.selectedServices.forEach(service => {
-        servicesHTML += `
-            <tr>
-                <td>${service.name}</td>
-                <td>${service.percentage}%</td>
-                <td>RM ${service.amount.toFixed(2)}</td>
-            </tr>
-        `;
-    });
+    if (calculationData.selectedServices.length > 0) {
+        servicesHTML = '<ul style="margin: 10px 0; padding-left: 20px;">';
+        calculationData.selectedServices.forEach(service => {
+            servicesHTML += `<li>${service.name}</li>`;
+        });
+        servicesHTML += '</ul>';
+    }
     
-    let chargesHTML = '';
-    calculationData.otherCharges.forEach(charge => {
-        chargesHTML += `
-            <tr>
-                <td colspan="2">${charge.description}</td>
-                <td>RM ${charge.amount.toFixed(2)}</td>
-            </tr>
-        `;
-    });
+    // Generate other charges section
+    let otherChargesHTML = '';
+    if (calculationData.otherCharges.length > 0) {
+        otherChargesHTML = `<div style="margin: 15px 0;"><strong>Other Charges: RM ${calculationData.otherChargesTotal.toFixed(2)}</strong></div>`;
+    }
     
     return `
         <!DOCTYPE html>
@@ -335,70 +331,48 @@ function generateReceiptHTML() {
         <head>
             <title>Receipt - ${invoiceNumber}</title>
             <style>
-                body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+                body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; line-height: 1.4; }
                 .header { text-align: center; border-bottom: 2px solid #2563eb; padding-bottom: 20px; margin-bottom: 20px; }
-                .header h1 { color: #2563eb; margin: 0; }
-                .invoice-details { margin-bottom: 20px; }
-                .invoice-details table { width: 100%; }
-                .invoice-details td { padding: 5px 0; }
-                .services-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-                .services-table th, .services-table td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-                .services-table th { background-color: #f8f9fa; }
-                .summary { margin-top: 20px; }
-                .summary table { width: 100%; max-width: 400px; margin-left: auto; }
-                .summary td { padding: 5px 10px; }
-                .total-row { border-top: 2px solid #2563eb; font-weight: bold; }
-                .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #666; }
+                .header h1 { color: #2563eb; margin: 0; font-size: 24px; }
+                .header-row { display: flex; justify-content: space-between; margin-bottom: 20px; font-weight: bold; }
+                .customer-name { font-size: 18px; margin: 20px 0; font-weight: bold; }
+                .fee-section { margin: 15px 0; }
+                .fee-amount { font-size: 16px; font-weight: bold; }
+                .services-section { margin: 10px 0 15px 0; }
+                .total-section { margin: 20px 0; padding: 10px; border: 2px solid #2563eb; background-color: #f8f9ff; }
+                .total-amount { font-size: 20px; font-weight: bold; color: #2563eb; }
+                .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #ddd; padding-top: 15px; }
             </style>
         </head>
         <body>
             <div class="header">
                 <h1>🦷 DENTAL PRACTICE</h1>
-                <h2>RECEIPT</h2>
             </div>
             
-            <div class="invoice-details">
-                <table>
-                    <tr><td><strong>Invoice Number:</strong></td><td>${invoiceNumber}</td></tr>
-                    <tr><td><strong>Date:</strong></td><td>${new Date(invoiceDate).toLocaleDateString()}</td></tr>
-                    <tr><td><strong>Patient Name:</strong></td><td>${customerName}</td></tr>
-                    <tr><td><strong>Payment Method:</strong></td><td>${calculationData.paymentMethod}</td></tr>
-                </table>
+            <div class="header-row">
+                <div>${new Date(invoiceDate).toLocaleDateString()}</div>
+                <div>${invoiceNumber}</div>
             </div>
             
-            <table class="services-table">
-                <thead>
-                    <tr>
-                        <th>Service/Item</th>
-                        <th>Rate</th>
-                        <th>Amount</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Doctor Fee</td>
-                        <td>-</td>
-                        <td>RM ${calculationData.doctorFee.toFixed(2)}</td>
-                    </tr>
-                    ${servicesHTML}
-                    ${chargesHTML}
-                </tbody>
-            </table>
+            <div class="customer-name">${customerName}</div>
             
-            <div class="summary">
-                <h4>Financial Breakdown</h4>
-                <table>
-                    <tr><td><strong>Doctor Fee:</strong></td><td><strong>RM ${calculationData.doctorFee.toFixed(2)}</strong></td></tr>
-                    <tr><td><strong>Material Fee (Clinic):</strong></td><td><strong>RM ${calculationData.servicesTotal.toFixed(2)}</strong></td></tr>
-                    <tr><td>Other Charges:</td><td>RM ${calculationData.otherChargesTotal.toFixed(2)}</td></tr>
-                    <tr><td>Payment Fee (${calculationData.paymentFeePercentage}%):</td><td>RM ${calculationData.paymentFeeAmount.toFixed(2)}</td></tr>
-                    <tr><td>Terminal Charge (${calculationData.terminalChargePercentage}%):</td><td>RM ${calculationData.terminalChargeAmount.toFixed(2)}</td></tr>
-                    <tr><td>Subtotal:</td><td>RM ${calculationData.subtotal.toFixed(2)}</td></tr>
-                    <tr class="total-row"><td><strong>TOTAL AMOUNT (PATIENT PAYS):</strong></td><td><strong>RM ${calculationData.totalAmount.toFixed(2)}</strong></td></tr>
-                </table>
+            <div class="fee-section">
+                <div class="fee-amount">Clinic Fee: RM ${(calculationData.clinicFee || 0).toFixed(2)}</div>
+            </div>
+            
+            <div class="fee-section">
+                <div class="fee-amount">Doctor Fee: RM ${calculationData.doctorFee.toFixed(2)}</div>
+                ${servicesHTML ? `<div class="services-section">${servicesHTML}</div>` : ''}
+            </div>
+            
+            ${otherChargesHTML}
+            
+            <div class="total-section">
+                <div class="total-amount">Total Amount: RM ${calculationData.totalAmount.toFixed(2)}</div>
             </div>
             
             <div class="footer">
+                <p>Payment Method: ${calculationData.paymentMethod}</p>
                 <p>Thank you for choosing our dental practice!</p>
                 <p>Generated on ${new Date().toLocaleString()}</p>
             </div>

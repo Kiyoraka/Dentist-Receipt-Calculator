@@ -33,12 +33,13 @@ if ($_POST && isset($_POST['action'])) {
             }
             
             // Insert receipt
-            $stmt = $conn->prepare("INSERT INTO receipts (patient_id, invoice_number, invoice_date, doctor_fee, services_total, other_charges, payment_method, payment_fee_percentage, payment_fee_amount, terminal_charge_percentage, terminal_charge_amount, subtotal, total_amount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt = $conn->prepare("INSERT INTO receipts (patient_id, invoice_number, invoice_date, clinic_fee, doctor_fee, services_total, other_charges, payment_method, payment_fee_percentage, payment_fee_amount, terminal_charge_percentage, terminal_charge_amount, subtotal, total_amount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             
             $stmt->execute([
                 $patient_id,
                 $_POST['invoice_number'],
                 $_POST['invoice_date'],
+                $_POST['clinic_fee'],
                 $_POST['doctor_fee'],
                 $_POST['services_total'],
                 $_POST['other_charges'],
@@ -56,14 +57,12 @@ if ($_POST && isset($_POST['action'])) {
             // Insert services
             if (!empty($_POST['selected_services'])) {
                 $services = json_decode($_POST['selected_services'], true);
-                $stmt = $conn->prepare("INSERT INTO receipt_services (receipt_id, service_name, percentage, amount) VALUES (?, ?, ?, ?)");
+                $stmt = $conn->prepare("INSERT INTO receipt_services (receipt_id, service_name) VALUES (?, ?)");
                 
                 foreach ($services as $service) {
                     $stmt->execute([
                         $receipt_id,
-                        $service['name'],
-                        $service['percentage'],
-                        $service['amount']
+                        $service['name']
                     ]);
                 }
             }
@@ -150,7 +149,7 @@ try {
                     <input type="hidden" name="action" value="save_receipt">
                     <input type="hidden" name="selected_services" id="selected-services-data">
                     <input type="hidden" name="other_charges_list" id="other-charges-data">
-                    <input type="hidden" name="services_total" id="services-total-input">
+                    <input type="hidden" name="services_total" id="services-total-input" value="0">
                     <input type="hidden" name="other_charges" id="other-charges-input">
                     <input type="hidden" name="payment_fee_percentage" id="payment-fee-percentage-input">
                     <input type="hidden" name="payment_fee_amount" id="payment-fee-amount-input">
@@ -178,12 +177,16 @@ try {
                         </div>
                     </div>
 
-                    <!-- Doctor Fee -->
+                    <!-- Clinic & Doctor Fees -->
                     <div class="form-section">
-                        <h3><i class="fas fa-user-md"></i> Doctor Fee</h3>
+                        <h3><i class="fas fa-hospital"></i> Clinic & Doctor Fees</h3>
                         <div class="form-group">
-                            <label for="base-cost">Doctor Fee (RM):</label>
-                            <input type="number" id="base-cost" name="doctor_fee" min="0" step="0.01" placeholder="0.00" required>
+                            <label for="clinic-fee">Clinic Fee (RM):</label>
+                            <input type="number" id="clinic-fee" name="clinic_fee" min="0" step="0.01" placeholder="0.00" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="doctor-fee">Doctor Fee (RM):</label>
+                            <input type="number" id="doctor-fee" name="doctor_fee" min="0" step="0.01" placeholder="0.00" required>
                         </div>
                     </div>
 
@@ -261,8 +264,12 @@ try {
                     <div class="form-section calculation-summary">
                         <h3><i class="fas fa-calculator"></i> Summary</h3>
                         <div class="summary-row">
-                            <span>Material Fee (Clinic Revenue):</span>
-                            <span id="services-total">RM 0.00</span>
+                            <span>Clinic Fee:</span>
+                            <span id="clinic-fee-display">RM 0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Doctor Fee:</span>
+                            <span id="doctor-fee-display">RM 0.00</span>
                         </div>
                         <div class="summary-row">
                             <span>Other Charges:</span>

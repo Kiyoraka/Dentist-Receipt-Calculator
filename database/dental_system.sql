@@ -29,7 +29,8 @@ CREATE TABLE receipts (
     patient_id INT,
     invoice_number VARCHAR(50) NOT NULL UNIQUE,
     invoice_date DATE NOT NULL,
-    base_cost DECIMAL(10,2) NOT NULL,
+    clinic_fee DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    doctor_fee DECIMAL(10,2) NOT NULL,
     services_total DECIMAL(10,2) NOT NULL,
     other_charges DECIMAL(10,2) DEFAULT 0.00,
     payment_method VARCHAR(50) NOT NULL,
@@ -49,8 +50,6 @@ CREATE TABLE receipt_services (
     id INT AUTO_INCREMENT PRIMARY KEY,
     receipt_id INT NOT NULL,
     service_name VARCHAR(100) NOT NULL,
-    percentage DECIMAL(5,2) NOT NULL,
-    amount DECIMAL(10,2) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (receipt_id) REFERENCES receipts(id) ON DELETE CASCADE
 );
