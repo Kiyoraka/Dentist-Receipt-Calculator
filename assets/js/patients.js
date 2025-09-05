@@ -578,6 +578,13 @@ function showExportOptionsModal() {
                 <div class="modal-body" style="padding: 30px; text-align: center;">
                     <h3 style="margin-bottom: 20px;">Choose Export Type</h3>
                     <div style="display: grid; gap: 15px;">
+                        <button type="button" class="btn btn-primary" onclick="exportAllReceipts()" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border: none; font-size: 16px; padding: 15px;">
+                            <i class="fas fa-receipt"></i> 🦷 All Receipts (Pie Chart + Receipts)
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="exportAllReceiptsPDF()" style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); border: none;">
+                            <i class="fas fa-file-pdf"></i> All Receipts PDF
+                        </button>
+                        <hr style="margin: 15px 0;">
                         <button type="button" class="btn btn-primary" onclick="exportBasicPatients()">
                             <i class="fas fa-users"></i> Patient Summary Report
                         </button>
@@ -816,4 +823,37 @@ function downloadCSV(csvData, filename) {
     
     // Clean up
     URL.revokeObjectURL(url);
+}
+
+// New Comprehensive Export Functions
+function exportAllReceipts() {
+    closeExportModal();
+    showLoading();
+    
+    showNotification('Opening comprehensive receipts report with pie chart...', 'info');
+    
+    // Open export-all.php in new window
+    const exportWindow = window.open('export-all.php', '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
+    
+    if (!exportWindow) {
+        showNotification('Please allow pop-ups for this website to view the export', 'error');
+    }
+    
+    hideLoading();
+}
+
+function exportAllReceiptsPDF() {
+    closeExportModal();
+    showLoading();
+    
+    showNotification('Generating PDF report with pie chart and all receipts...', 'info');
+    
+    // Open export-pdf.php for PDF generation
+    const pdfWindow = window.open('export-pdf.php?generate=1', '_blank');
+    
+    if (!pdfWindow) {
+        showNotification('Please allow pop-ups for this website to download the PDF', 'error');
+    }
+    
+    hideLoading();
 }
