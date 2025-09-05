@@ -21,7 +21,7 @@ class DentalCalculator {
 
     bindEvents() {
         // Base cost input
-        const baseCostInput = document.getElementById('base-cost');
+        const baseCostInput = document.getElementById('doctor-fee');
         baseCostInput?.addEventListener('input', (e) => {
             this.baseCost = parseFloat(e.target.value) || 0;
             this.updateCalculation();
@@ -253,7 +253,7 @@ class DentalCalculator {
 
     validateForm() {
         const customerName = document.getElementById('customer-name').value.trim();
-        const baseCost = document.getElementById('base-cost').value;
+        const baseCost = document.getElementById('doctor-fee').value;
 
         if (!customerName) {
             showNotification('Please enter customer name', 'error');
@@ -263,7 +263,7 @@ class DentalCalculator {
 
         if (!baseCost || parseFloat(baseCost) <= 0) {
             showNotification('Please enter a valid base cost', 'error');
-            document.getElementById('base-cost').focus();
+            document.getElementById('doctor-fee').focus();
             return false;
         }
 
@@ -278,7 +278,7 @@ class DentalCalculator {
     collectInvoiceData() {
         return {
             date: document.getElementById('invoice-date').value,
-            memberInvoice: document.getElementById('member-invoice').value || 'N/A',
+            memberInvoice: document.getElementById('invoice-number').value || 'N/A',
             customerName: document.getElementById('customer-name').value.trim()
         };
     }
@@ -439,9 +439,9 @@ class DentalCalculator {
     resetCalculator() {
         // Reset all form fields
         document.getElementById('invoice-date').value = new Date().toISOString().split('T')[0];
-        document.getElementById('member-invoice').value = '';
+        document.getElementById('invoice-number').value = '';
         document.getElementById('customer-name').value = '';
-        document.getElementById('base-cost').value = '';
+        document.getElementById('doctor-fee').value = '';
 
         // Uncheck all services
         const serviceCheckboxes = document.querySelectorAll('input[name="services"]');

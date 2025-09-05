@@ -258,7 +258,8 @@ function validateReceiptForm() {
         'invoice-date',
         'invoice-number',
         'customer-name',
-        'base-cost'
+        'clinic-fee',
+        'doctor-fee'
     ];
     
     let isValid = true;
