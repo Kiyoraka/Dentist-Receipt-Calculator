@@ -156,81 +156,78 @@ if ($export_pdf) {
             margin: 0 auto;
         }
         
-        /* Receipt Styles */
+        /* Receipt Styles - Matching financial.js exactly */
         .receipt {
+            font-family: Arial, sans-serif; 
+            max-width: 600px; 
+            margin: 30px auto; 
+            padding: 20px; 
+            line-height: 1.4;
             border: 2px solid #ddd;
             border-radius: 8px;
-            margin: 30px 0;
-            padding: 20px;
             background: white;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
-        .receipt-header {
+        .receipt .header {
             text-align: center;
             border-bottom: 2px solid #2563eb;
-            padding-bottom: 15px;
+            padding-bottom: 20px;
             margin-bottom: 20px;
         }
         
-        .receipt-header h2 {
+        .receipt .header h1 {
             color: #2563eb;
             margin: 0;
-            font-size: 20px;
+            font-size: 24px;
         }
         
-        .header-row {
+        .receipt .header-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             font-weight: bold;
         }
         
-        .customer-name {
+        .receipt .customer-name {
             font-size: 18px;
+            margin: 20px 0;
             font-weight: bold;
+        }
+        
+        .receipt .fee-section {
             margin: 15px 0;
         }
         
-        .fee-section {
-            margin: 12px 0;
-        }
-        
-        .fee-amount {
+        .receipt .fee-amount {
             font-size: 16px;
             font-weight: bold;
         }
         
-        .services-list {
-            margin: 10px 0;
-            padding-left: 20px;
+        .receipt .services-section {
+            margin: 10px 0 15px 0;
         }
         
-        .services-list li {
-            margin: 5px 0;
-        }
-        
-        .total-section {
+        .receipt .total-section {
             margin: 20px 0;
-            padding: 15px;
+            padding: 10px;
             border: 2px solid #2563eb;
             background-color: #f8f9ff;
-            text-align: center;
         }
         
-        .total-amount {
+        .receipt .total-amount {
             font-size: 20px;
             font-weight: bold;
             color: #2563eb;
         }
         
-        .receipt-footer {
+        .receipt .footer {
+            margin-top: 30px;
             text-align: center;
             font-size: 12px;
             color: #666;
             border-top: 1px solid #ddd;
-            padding-top: 10px;
-            margin-top: 15px;
+            padding-top: 15px;
         }
         
         /* Action Buttons */
@@ -331,9 +328,10 @@ if ($export_pdf) {
                 <div class="page-break"></div>
             <?php endif; ?>
             
+            <!-- Individual Receipt - Matching financial.js format exactly -->
             <div class="receipt">
-                <div class="receipt-header">
-                    <h2>🦷 DENTAL PRACTICE</h2>
+                <div class="header">
+                    <h1>🦷 DENTAL PRACTICE</h1>
                 </div>
                 
                 <div class="header-row">
@@ -353,22 +351,19 @@ if ($export_pdf) {
                     <div class="fee-amount">Doctor Fee: RM <?php echo number_format($receipt['doctor_fee'], 2); ?></div>
                     
                     <?php if (!empty($receipt['services'])): ?>
-                        <ul class="services-list">
-                            <?php foreach ($receipt['services'] as $service): ?>
-                                <li><?php echo htmlspecialchars($service); ?></li>
-                            <?php endforeach; ?>
-                        </ul>
+                        <div class="services-section">
+                            <ul style="margin: 10px 0; padding-left: 20px;">
+                                <?php foreach ($receipt['services'] as $service): ?>
+                                    <li><?php echo htmlspecialchars($service); ?></li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
                     <?php endif; ?>
                 </div>
                 
                 <?php if (!empty($receipt['charges'])): ?>
-                    <div class="fee-section">
-                        <div class="fee-amount">Other Charges:</div>
-                        <?php foreach ($receipt['charges'] as $charge): ?>
-                            <div style="margin-left: 20px;">
-                                • <?php echo htmlspecialchars($charge['description']); ?>: RM <?php echo number_format($charge['amount'], 2); ?>
-                            </div>
-                        <?php endforeach; ?>
+                    <div style="margin: 15px 0;">
+                        <strong>Other Charges: RM <?php echo number_format($receipt['other_charges'], 2); ?></strong>
                     </div>
                 <?php endif; ?>
                 
@@ -376,9 +371,10 @@ if ($export_pdf) {
                     <div class="total-amount">Total Amount: RM <?php echo number_format($receipt['total_amount'], 2); ?></div>
                 </div>
                 
-                <div class="receipt-footer">
+                <div class="footer">
                     <p>Payment Method: <?php echo htmlspecialchars($receipt['payment_method']); ?></p>
                     <p>Thank you for choosing our dental practice!</p>
+                    <p>Generated on <?php echo date('F j, Y \a\t g:i A'); ?></p>
                 </div>
             </div>
         <?php endforeach; ?>
