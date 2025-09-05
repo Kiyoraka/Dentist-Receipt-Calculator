@@ -342,6 +342,6 @@ try {
     </div>
 
 <?php 
-$additional_js = ['../assets/js/financial.js'];
+$additional_js = ['../assets/js/financial-helpers.js', '../assets/js/financial.js'];
 include '../includes/footer.php'; 
 ?>
