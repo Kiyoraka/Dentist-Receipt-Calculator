@@ -561,6 +561,56 @@ function downloadPatientReport(html, patientName) {
 function exportAllPatients() {
     showLoading();
     
+    // Show export options modal
+    showExportOptionsModal();
+}
+
+function showExportOptionsModal() {
+    const modalHTML = `
+        <div id="export-options-modal" class="modal">
+            <div class="modal-content" style="max-width: 500px;">
+                <div class="modal-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
+                    <h2><i class="fas fa-file-export"></i> Export Options</h2>
+                    <button type="button" class="modal-close" onclick="closeExportModal()" style="color: white;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body" style="padding: 30px; text-align: center;">
+                    <h3 style="margin-bottom: 20px;">Choose Export Type</h3>
+                    <div style="display: grid; gap: 15px;">
+                        <button type="button" class="btn btn-primary" onclick="exportBasicPatients()">
+                            <i class="fas fa-users"></i> Patient Summary Report
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="exportFinancialBreakdown()">
+                            <i class="fas fa-chart-line"></i> Financial Breakdown Report
+                        </button>
+                        <button type="button" class="btn btn-info" onclick="exportDoctorPayments()">
+                            <i class="fas fa-user-md"></i> Doctor Payment Report  
+                        </button>
+                        <button type="button" class="btn btn-warning" onclick="exportClinicRevenue()">
+                            <i class="fas fa-building"></i> Clinic Revenue Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    hideLoading();
+}
+
+function closeExportModal() {
+    const modal = document.getElementById('export-options-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+function exportBasicPatients() {
+    closeExportModal();
+    showLoading();
+    
     // Get all patient data
     const patientCards = document.querySelectorAll('.patient-card');
     const patients = [];
@@ -583,10 +633,67 @@ function exportAllPatients() {
     
     // Generate CSV report
     const csvData = generatePatientsCSV(patients);
-    downloadCSV(csvData, `All_Patients_Report_${new Date().toISOString().split('T')[0]}.csv`);
+    downloadCSV(csvData, `Patient_Summary_${new Date().toISOString().split('T')[0]}.csv`);
     
     hideLoading();
-    showNotification(`Exported ${patients.length} patients successfully!`, 'success');
+    showNotification(`Patient summary exported successfully!`, 'success');
+}
+
+function exportFinancialBreakdown() {
+    closeExportModal();
+    showLoading();
+    
+    // Fetch detailed financial data from server
+    fetch('export_financial_breakdown.php')
+        .then(response => response.json())
+        .then(data => {
+            const csvData = generateFinancialBreakdownCSV(data);
+            downloadCSV(csvData, `Financial_Breakdown_${new Date().toISOString().split('T')[0]}.csv`);
+            hideLoading();
+            showNotification(`Financial breakdown exported successfully!`, 'success');
+        })
+        .catch(error => {
+            hideLoading();
+            showNotification('Export failed. Please try again.', 'error');
+        });
+}
+
+function exportDoctorPayments() {
+    closeExportModal();
+    showLoading();
+    
+    // Fetch doctor payment data from server
+    fetch('export_doctor_payments.php')
+        .then(response => response.json())
+        .then(data => {
+            const csvData = generateDoctorPaymentsCSV(data);
+            downloadCSV(csvData, `Doctor_Payments_${new Date().toISOString().split('T')[0]}.csv`);
+            hideLoading();
+            showNotification(`Doctor payments report exported successfully!`, 'success');
+        })
+        .catch(error => {
+            hideLoading();
+            showNotification('Export failed. Please try again.', 'error');
+        });
+}
+
+function exportClinicRevenue() {
+    closeExportModal();
+    showLoading();
+    
+    // Fetch clinic revenue data from server
+    fetch('export_clinic_revenue.php')
+        .then(response => response.json())
+        .then(data => {
+            const csvData = generateClinicRevenueCSV(data);
+            downloadCSV(csvData, `Clinic_Revenue_${new Date().toISOString().split('T')[0]}.csv`);
+            hideLoading();
+            showNotification(`Clinic revenue report exported successfully!`, 'success');
+        })
+        .catch(error => {
+            hideLoading();
+            showNotification('Export failed. Please try again.', 'error');
+        });
 }
 
 function generatePatientsCSV(patients) {
@@ -608,6 +715,78 @@ function generatePatientsCSV(patients) {
     return csv;
 }
 
+function generateFinancialBreakdownCSV(data) {
+    const headers = ['Date', 'Invoice', 'Patient Name', 'Service Type', 'Doctor Fee', 'Material Fee', 'Payment Method', 'Total Amount'];
+    let csv = headers.join(',') + '\\n';
+    
+    data.forEach(record => {
+        const row = [
+            record.invoice_date,
+            record.invoice_number,
+            `\"${record.patient_name}\"`,
+            `\"${record.service_types}\"`,
+            `RM ${record.doctor_fee}`,
+            `RM ${record.material_fee}`,
+            record.payment_method,
+            `RM ${record.total_amount}`
+        ];
+        csv += row.join(',') + '\\n';
+    });
+    
+    return csv;
+}
+
+function generateDoctorPaymentsCSV(data) {
+    const headers = ['Date', 'Invoice', 'Patient Name', 'Service Type', 'Doctor Fee', 'Payment Method'];
+    let csv = headers.join(',') + '\\n';
+    
+    data.forEach(record => {
+        const row = [
+            record.invoice_date,
+            record.invoice_number,
+            `\"${record.patient_name}\"`,
+            `\"${record.service_types}\"`,
+            `RM ${record.doctor_fee}`,
+            record.payment_method
+        ];
+        csv += row.join(',') + '\\n';
+    });
+    
+    // Add summary row
+    const totalDoctorFees = data.reduce((sum, record) => sum + parseFloat(record.doctor_fee), 0);
+    csv += `\\n\"TOTAL DOCTOR PAYMENTS:\",\"\",\"\",\"\",\"RM ${totalDoctorFees.toFixed(2)}\",\"\"\\n`;
+    
+    return csv;
+}
+
+function generateClinicRevenueCSV(data) {
+    const headers = ['Date', 'Invoice', 'Patient Name', 'Service Type', 'Material Fee', 'Other Charges', 'Payment Fees', 'Clinic Revenue'];
+    let csv = headers.join(',') + '\\n';
+    
+    data.forEach(record => {
+        const clinicRevenue = parseFloat(record.material_fee) + parseFloat(record.other_charges) + parseFloat(record.payment_fee_amount);
+        const row = [
+            record.invoice_date,
+            record.invoice_number,
+            `\"${record.patient_name}\"`,
+            `\"${record.service_types}\"`,
+            `RM ${record.material_fee}`,
+            `RM ${record.other_charges}`,
+            `RM ${record.payment_fee_amount}`,
+            `RM ${clinicRevenue.toFixed(2)}`
+        ];
+        csv += row.join(',') + '\\n';
+    });
+    
+    // Add summary row
+    const totalClinicRevenue = data.reduce((sum, record) => {
+        return sum + parseFloat(record.material_fee) + parseFloat(record.other_charges) + parseFloat(record.payment_fee_amount);
+    }, 0);
+    csv += `\\n\"TOTAL CLINIC REVENUE:\",\"\",\"\",\"\",\"\",\"\",\"\",\"RM ${totalClinicRevenue.toFixed(2)}\"\\n`;
+    
+    return csv;
+}
+
 // Utility functions (if not already defined in dashboard.js)
 function validateEmail(email) {
     const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
@@ -617,4 +796,24 @@ function validateEmail(email) {
 function validatePhone(phone) {
     const phoneRegex = /^[0-9+\\-\\s()]+$/;
     return phoneRegex.test(phone) && phone.length >= 10;
+}
+
+function downloadCSV(csvData, filename) {
+    // Create blob with CSV data
+    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+    
+    // Create download link
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    
+    // Trigger download
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Clean up
+    URL.revokeObjectURL(url);
 }
