@@ -198,12 +198,7 @@ function updateRunningTotals() {
     calculationData.totalDoctorFee = calculationData.charges.reduce((sum, charge) => sum + charge.doctorFee, 0);
     calculationData.totalClinicFee = calculationData.charges.reduce((sum, charge) => sum + charge.clinicFee, 0);
     
-    // Update display
-    document.getElementById('total-charges').textContent = `RM ${calculationData.totalCharges.toFixed(2)}`;
-    document.getElementById('total-doctor-fee').textContent = `RM ${calculationData.totalDoctorFee.toFixed(2)}`;
-    document.getElementById('total-clinic-fee').textContent = `RM ${calculationData.totalClinicFee.toFixed(2)}`;
-    
-    // Update final summary
+    // Update final summary only
     document.getElementById('final-doctor-fee').textContent = `RM ${calculationData.totalDoctorFee.toFixed(2)}`;
     document.getElementById('final-clinic-fee').textContent = `RM ${calculationData.totalClinicFee.toFixed(2)}`;
     
@@ -222,21 +217,15 @@ function updateChargesDisplay() {
     chargesRows.innerHTML = '';
     
     if (calculationData.charges.length === 0) {
-        // Hide both charges table and running totals when no charges
+        // Hide charges table when no charges
         const chargesContainer = document.getElementById('charges-list');
-        const runningTotalsContainer = document.getElementById('running-totals');
-        
         if (chargesContainer) chargesContainer.style.display = 'none';
-        if (runningTotalsContainer) runningTotalsContainer.style.display = 'none';
         return;
     }
     
-    // Show both charges table and running totals when charges exist
+    // Show charges table when charges exist
     const chargesContainer = document.getElementById('charges-list');
-    const runningTotalsContainer = document.getElementById('running-totals');
-    
     if (chargesContainer) chargesContainer.style.display = 'block';
-    if (runningTotalsContainer) runningTotalsContainer.style.display = 'block';
     
     // Add charge rows
     calculationData.charges.forEach((charge, index) => {

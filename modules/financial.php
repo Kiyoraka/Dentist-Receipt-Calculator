@@ -249,23 +249,6 @@ try {
                             </div>
                         </div>
 
-                        <!-- Running Totals -->
-                        <div id="running-totals" class="running-totals" style="display: none;">
-                            <div class="totals-grid">
-                                <div class="total-item">
-                                    <label>Total Charges:</label>
-                                    <span id="total-charges">RM 0.00</span>
-                                </div>
-                                <div class="total-item">
-                                    <label>Total Doctor Fee:</label>
-                                    <span id="total-doctor-fee">RM 0.00</span>
-                                </div>
-                                <div class="total-item">
-                                    <label>Total Clinic Fee:</label>  
-                                    <span id="total-clinic-fee">RM 0.00</span>
-                                </div>
-                            </div>
-                        </div>
                     </div>
 
                     <!-- Other Charges -->
