@@ -177,6 +177,7 @@ if (isset($_GET['patient_id'])) {
                 </div>
 
                 <!-- Patients Table -->
+                <?php if (!empty($patients)): ?>
                 <div class="charges-table-wrapper">
                     <table class="charges-table patients-table">
                         <thead class="table-header">
