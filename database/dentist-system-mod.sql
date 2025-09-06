@@ -16,11 +16,7 @@
 -- ============================================
 -- Database Structure
 -- ============================================
-CREATE DATABASE IF NOT EXISTS `dental_system` 
-DEFAULT CHARACTER SET utf8mb4 
-COLLATE utf8mb4_unicode_ci;
 
-USE `dental_system`;
 
 -- ============================================
 -- Table: dental_services
