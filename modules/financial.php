@@ -214,7 +214,7 @@ try {
                                         <option value="<?php echo $service['percentage']; ?>" 
                                                 data-service="<?php echo htmlspecialchars($service['service_name']); ?>">
                                             <?php 
-                                            if ($service['percentage'] == 0) {
+                                            if (floatval($service['percentage']) == 0) {
                                                 echo htmlspecialchars($service['service_name']);
                                             } else {
                                                 echo htmlspecialchars($service['service_name']) . ' (' . $service['percentage'] . '% Doctor)';
