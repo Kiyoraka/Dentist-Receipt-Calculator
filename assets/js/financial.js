@@ -281,12 +281,12 @@ function updateFinalCalculation() {
     // Calculate payment fee
     const paymentFeeAmount = baseSubtotal * (calculationData.paymentFeePercentage / 100);
     
-    // Calculate final total (no terminal charges)
-    const finalTotal = baseSubtotal + paymentFeeAmount;
+    // Calculate final total (payment fees are subtracted)
+    const finalTotal = baseSubtotal - paymentFeeAmount;
     
     // Update display
     document.getElementById('other-charges-total').textContent = `RM ${otherChargesTotal.toFixed(2)}`;
-    document.getElementById('payment-fee').textContent = `RM ${paymentFeeAmount.toFixed(2)}`;
+    document.getElementById('payment-fee').textContent = paymentFeeAmount > 0 ? `- RM ${paymentFeeAmount.toFixed(2)}` : `RM 0.00`;
     document.getElementById('subtotal-amount').textContent = `RM ${baseSubtotal.toFixed(2)}`;
     document.getElementById('total-amount').textContent = `RM ${finalTotal.toFixed(2)}`;
     
@@ -363,14 +363,14 @@ function updateCalculation() {
     // Calculate payment fee
     const paymentFeeAmount = subtotal * (calculationData.paymentFeePercentage / 100);
     
-    // Calculate final total (no terminal charges)
-    const totalAmount = subtotal + paymentFeeAmount;
+    // Calculate final total (payment fees are subtracted)
+    const totalAmount = subtotal - paymentFeeAmount;
     
     // Update display
     document.getElementById('final-clinic-fee').textContent = `RM ${clinicFee.toFixed(2)}`;
     document.getElementById('final-doctor-fee').textContent = `RM ${doctorFee.toFixed(2)}`;
     document.getElementById('other-charges-total').textContent = `RM ${otherChargesTotal.toFixed(2)}`;
-    document.getElementById('payment-fee').textContent = `RM ${paymentFeeAmount.toFixed(2)}`;
+    document.getElementById('payment-fee').textContent = paymentFeeAmount > 0 ? `- RM ${paymentFeeAmount.toFixed(2)}` : `RM 0.00`;
     document.getElementById('subtotal-amount').textContent = `RM ${subtotal.toFixed(2)}`;
     document.getElementById('total-amount').textContent = `RM ${totalAmount.toFixed(2)}`;
     
