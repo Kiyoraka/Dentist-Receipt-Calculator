@@ -213,7 +213,13 @@ try {
                                         <?php foreach ($dental_services as $service): ?>
                                         <option value="<?php echo $service['percentage']; ?>" 
                                                 data-service="<?php echo htmlspecialchars($service['service_name']); ?>">
-                                            <?php echo htmlspecialchars($service['service_name']); ?> (<?php echo $service['percentage']; ?>% Doctor)
+                                            <?php 
+                                            if ($service['percentage'] == 0) {
+                                                echo htmlspecialchars($service['service_name']);
+                                            } else {
+                                                echo htmlspecialchars($service['service_name']) . ' (' . $service['percentage'] . '% Doctor)';
+                                            }
+                                            ?>
                                         </option>
                                         <?php endforeach; ?>
                                     </select>

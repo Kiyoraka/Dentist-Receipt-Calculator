@@ -147,7 +147,7 @@ function addCharge() {
         return;
     }
     
-    if (servicePercentage === 0 || !serviceName) {
+    if (servicePercentage === '' || !serviceName) {
         showNotification('Please select a dental service', 'error');
         return;
     }
