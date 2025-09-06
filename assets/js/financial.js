@@ -199,10 +199,9 @@ function removeCharge(chargeId) {
     // Remove charge from array
     calculationData.charges = calculationData.charges.filter(charge => charge.id !== chargeId);
     
-    // Update displays
+    // Update displays (but not final calculation)
     updateRunningTotals();
     updateChargesDisplay();
-    updateFinalCalculation();
     
     showNotification('Charge removed successfully', 'info');
 }
@@ -213,12 +212,11 @@ function updateRunningTotals() {
     calculationData.totalDoctorFee = calculationData.charges.reduce((sum, charge) => sum + charge.doctorFee, 0);
     calculationData.totalClinicFee = calculationData.charges.reduce((sum, charge) => sum + charge.clinicFee, 0);
     
-    // Update final summary only
+    // Update only the doctor/clinic fee display (not the full final calculation)
     document.getElementById('final-doctor-fee').textContent = `RM ${calculationData.totalDoctorFee.toFixed(2)}`;
     document.getElementById('final-clinic-fee').textContent = `RM ${calculationData.totalClinicFee.toFixed(2)}`;
     
-    // Trigger final calculation update
-    updateFinalCalculation();
+    // DO NOT call updateFinalCalculation() here - only when Calculate button is pressed
 }
 
 function updateChargesDisplay() {
@@ -311,7 +309,7 @@ function updatePaymentMethod() {
     if (selectedPayment) {
         calculationData.paymentMethod = selectedPayment.value;
         calculationData.paymentFeePercentage = parseFloat(selectedPayment.dataset.fee);
-        updateCalculation();
+        // Don't auto-calculate - wait for Calculate button
     }
 }
 
@@ -356,7 +354,7 @@ function updateOtherCharges() {
         }
     });
     
-    updateCalculation();
+    // Don't auto-calculate - wait for Calculate button
 }
 
 function updateCalculation() {
