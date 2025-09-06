@@ -141,19 +141,6 @@ try {
         <p class="content-subtitle">Receipt calculator and financial tracking</p>
     </div>
 
-    <?php if (isset($success_message)): ?>
-        <div class="alert alert-success">
-            <i class="fas fa-check-circle"></i>
-            <?php echo $success_message; ?>
-        </div>
-    <?php endif; ?>
-
-    <?php if (isset($error_message)): ?>
-        <div class="alert alert-error">
-            <i class="fas fa-exclamation-circle"></i>
-            <?php echo $error_message; ?>
-        </div>
-    <?php endif; ?>
 
     <div class="financial-layout">
         <!-- Calculator Section -->
