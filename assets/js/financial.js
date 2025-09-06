@@ -412,7 +412,7 @@ function updateHiddenFields() {
     document.getElementById('doctor-fee-input').value = calculationData.totalDoctorFee;
     document.getElementById('selected-services-data').value = JSON.stringify(calculationData.charges.map(c => ({name: c.service})));
     document.getElementById('other-charges-data').value = JSON.stringify(calculationData.otherCharges);
-    document.getElementById('services-total-input').value = 0; // No longer used
+    // services-total-input removed from form
     document.getElementById('other-charges-input').value = calculationData.otherCharges.reduce((sum, charge) => sum + charge.amount, 0);
     document.getElementById('payment-fee-percentage-input').value = calculationData.paymentFeePercentage;
     document.getElementById('payment-fee-amount-input').value = calculationData.paymentFeeAmount;

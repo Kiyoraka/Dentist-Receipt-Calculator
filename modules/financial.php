@@ -52,7 +52,7 @@ if ($_POST && isset($_POST['action'])) {
             }
             
             // Insert receipt
-            $stmt = $conn->prepare("INSERT INTO receipts (patient_id, invoice_number, invoice_date, clinic_fee, doctor_fee, services_total, other_charges, payment_method, payment_fee_percentage, payment_fee_amount, terminal_charge_percentage, terminal_charge_amount, subtotal, total_amount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt = $conn->prepare("INSERT INTO receipts (patient_id, invoice_number, invoice_date, clinic_fee, doctor_fee, other_charges, payment_method, payment_fee_percentage, payment_fee_amount, terminal_charge_percentage, terminal_charge_amount, subtotal, total_amount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             
             $stmt->execute([
                 $patient_id,
@@ -60,13 +60,12 @@ if ($_POST && isset($_POST['action'])) {
                 $_POST['invoice_date'],
                 $_POST['clinic_fee'],
                 $_POST['doctor_fee'],
-                $_POST['services_total'],
                 $_POST['other_charges'],
                 $_POST['payment_method'],
                 $_POST['payment_fee_percentage'],
                 $_POST['payment_fee_amount'],
-                $_POST['terminal_charge_percentage'],
-                $_POST['terminal_charge_amount'],
+                $_POST['terminal_charge_percentage'] ?? 0,
+                $_POST['terminal_charge_amount'] ?? 0,
                 $_POST['subtotal'],
                 $_POST['total_amount']
             ]);
@@ -171,7 +170,6 @@ try {
                     <input type="hidden" name="doctor_fee" id="doctor-fee-input"> 
                     <input type="hidden" name="selected_services" id="selected-services-data">
                     <input type="hidden" name="other_charges_list" id="other-charges-data">
-                    <input type="hidden" name="services_total" id="services-total-input" value="0">
                     <input type="hidden" name="other_charges" id="other-charges-input">
                     <input type="hidden" name="payment_fee_percentage" id="payment-fee-percentage-input">
                     <input type="hidden" name="payment_fee_amount" id="payment-fee-amount-input">
