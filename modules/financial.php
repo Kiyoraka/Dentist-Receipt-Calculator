@@ -362,8 +362,8 @@ try {
                         <i class="fas fa-history"></i>
                         Recent Receipts
                     </h2>
-                    <button type="button" class="btn btn-danger" onclick="clearAllReceipts()" style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); border: none;">
-                        <i class="fas fa-trash-alt"></i> Clear All
+                    <button type="button" class="btn btn-secondary" onclick="clearAllReceipts()" style="background: linear-gradient(135deg, #64748b 0%, #475569 100%); border: none;">
+                        <i class="fas fa-eye-slash"></i> Hide All
                     </button>
                 </div>
 

@@ -292,13 +292,13 @@ function updateFinalCalculation() {
     const terminalChargeEnabled = document.getElementById('terminal-charge').checked;
     const terminalChargeAmount = terminalChargeEnabled ? baseSubtotal * (calculationData.terminalChargePercentage / 100) : 0;
     
-    // Calculate final total
-    const finalTotal = baseSubtotal + paymentFeeAmount + terminalChargeAmount;
+    // Calculate final total (terminal charge is subtracted from the total)
+    const finalTotal = baseSubtotal + paymentFeeAmount - terminalChargeAmount;
     
     // Update display
     document.getElementById('other-charges-total').textContent = `RM ${otherChargesTotal.toFixed(2)}`;
     document.getElementById('payment-fee').textContent = `RM ${paymentFeeAmount.toFixed(2)}`;
-    document.getElementById('terminal-charge-amount').textContent = `RM ${terminalChargeAmount.toFixed(2)}`;
+    document.getElementById('terminal-charge-amount').textContent = terminalChargeAmount > 0 ? `- RM ${terminalChargeAmount.toFixed(2)}` : `RM 0.00`;
     document.getElementById('subtotal-amount').textContent = `RM ${baseSubtotal.toFixed(2)}`;
     document.getElementById('total-amount').textContent = `RM ${finalTotal.toFixed(2)}`;
     
@@ -380,15 +380,15 @@ function updateCalculation() {
     const terminalChargeEnabled = document.getElementById('terminal-charge').checked;
     const terminalChargeAmount = terminalChargeEnabled ? subtotal * (calculationData.terminalChargePercentage / 100) : 0;
     
-    // Calculate final total
-    const totalAmount = subtotal + paymentFeeAmount + terminalChargeAmount;
+    // Calculate final total (terminal charge is subtracted from the total)
+    const totalAmount = subtotal + paymentFeeAmount - terminalChargeAmount;
     
     // Update display
     document.getElementById('final-clinic-fee').textContent = `RM ${clinicFee.toFixed(2)}`;
     document.getElementById('final-doctor-fee').textContent = `RM ${doctorFee.toFixed(2)}`;
     document.getElementById('other-charges-total').textContent = `RM ${otherChargesTotal.toFixed(2)}`;
     document.getElementById('payment-fee').textContent = `RM ${paymentFeeAmount.toFixed(2)}`;
-    document.getElementById('terminal-charge-amount').textContent = `RM ${terminalChargeAmount.toFixed(2)}`;
+    document.getElementById('terminal-charge-amount').textContent = terminalChargeAmount > 0 ? `- RM ${terminalChargeAmount.toFixed(2)}` : `RM 0.00`;
     document.getElementById('subtotal-amount').textContent = `RM ${subtotal.toFixed(2)}`;
     document.getElementById('total-amount').textContent = `RM ${totalAmount.toFixed(2)}`;
     
@@ -660,38 +660,32 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Clear All Receipts Functionality
+// Clear All Receipts Functionality (Hide, not delete)
 function clearAllReceipts() {
     // Show confirmation modal
     const modalHTML = `
         <div id="clear-receipts-modal" class="modal">
             <div class="modal-content" style="max-width: 500px;">
                 <div class="modal-header" style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: white;">
-                    <h2><i class="fas fa-exclamation-triangle"></i> Clear All Receipts</h2>
+                    <h2><i class="fas fa-eye-slash"></i> Hide All Receipts</h2>
                     <button type="button" class="modal-close" onclick="closeClearModal()" style="color: white;">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
                 <div class="modal-body" style="padding: 30px; text-align: center;">
                     <div style="font-size: 48px; color: #dc2626; margin-bottom: 20px;">
-                        <i class="fas fa-trash-alt"></i>
+                        <i class="fas fa-eye-slash"></i>
                     </div>
-                    <h3 style="margin-bottom: 20px; color: #dc2626;">⚠️ WARNING: This action cannot be undone!</h3>
+                    <h3 style="margin-bottom: 20px; color: #2563eb;">Hide Receipt Display</h3>
                     <p style="margin-bottom: 20px; font-size: 16px;">
-                        This will permanently delete <strong>ALL receipts</strong> and their associated data including:
+                        This will temporarily hide all receipts from view. The data will NOT be deleted and can be shown again later.
                     </p>
-                    <ul style="text-align: left; margin: 20px 0; padding-left: 40px;">
-                        <li>All invoice records</li>
-                        <li>All selected services</li>  
-                        <li>All additional charges</li>
-                        <li>All financial data</li>
-                    </ul>
-                    <p style="font-weight: bold; color: #dc2626; margin-top: 20px;">
-                        Are you absolutely sure you want to proceed?
+                    <p style="font-weight: bold; color: #2563eb; margin-top: 20px;">
+                        Do you want to hide all receipts from display?
                     </p>
                     <div style="margin-top: 30px;">
-                        <button type="button" class="btn btn-danger" onclick="confirmClearAllReceipts()" style="background: #dc2626; margin-right: 10px;">
-                            <i class="fas fa-trash-alt"></i> Yes, Clear All Receipts
+                        <button type="button" class="btn btn-primary" onclick="confirmHideAllReceipts()" style="background: #2563eb; margin-right: 10px;">
+                            <i class="fas fa-eye-slash"></i> Yes, Hide All Receipts
                         </button>
                         <button type="button" class="btn btn-secondary" onclick="closeClearModal()">
                             <i class="fas fa-times"></i> Cancel
@@ -712,22 +706,66 @@ function closeClearModal() {
     }
 }
 
-function confirmClearAllReceipts() {
+function confirmHideAllReceipts() {
     closeClearModal();
-    showLoading();
-    showNotification('Clearing all receipts...', 'info');
     
-    // Create a form and submit it
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = 'financial.php';
+    // Hide all receipt items instead of deleting
+    const receiptItems = document.querySelectorAll('.receipt-item');
+    receiptItems.forEach(item => {
+        item.classList.add('hidden');
+    });
     
-    const actionInput = document.createElement('input');
-    actionInput.type = 'hidden';
-    actionInput.name = 'action';
-    actionInput.value = 'clear_all_receipts';
+    // Store hide state in localStorage
+    localStorage.setItem('receiptsHidden', 'true');
     
-    form.appendChild(actionInput);
-    document.body.appendChild(form);
-    form.submit();
+    // Show empty state message
+    const receiptsList = document.querySelector('.receipts-list');
+    if (receiptsList && receiptsList.querySelectorAll('.receipt-item:not(.hidden)').length === 0) {
+        // Check if empty state doesn't already exist
+        if (!receiptsList.querySelector('.empty-state')) {
+            receiptsList.innerHTML += `
+                <div class="empty-state">
+                    <i class="fas fa-eye-slash"></i>
+                    <p>Receipts are hidden</p>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="showAllReceipts()" style="margin-top: 10px;">
+                        <i class="fas fa-eye"></i> Show Receipts
+                    </button>
+                </div>
+            `;
+        }
+    }
+    
+    showNotification('All receipts have been hidden from view', 'success');
 }
+
+// Function to show all hidden receipts
+function showAllReceipts() {
+    const receiptItems = document.querySelectorAll('.receipt-item.hidden');
+    receiptItems.forEach(item => {
+        item.classList.remove('hidden');
+    });
+    
+    // Remove hide state from localStorage
+    localStorage.removeItem('receiptsHidden');
+    
+    // Remove empty state message
+    const emptyState = document.querySelector('.receipts-list .empty-state');
+    if (emptyState) {
+        emptyState.remove();
+    }
+    
+    showNotification('All receipts are now visible', 'success');
+}
+
+// Check on page load if receipts should be hidden
+document.addEventListener('DOMContentLoaded', function() {
+    if (localStorage.getItem('receiptsHidden') === 'true') {
+        // Hide all receipts on load if previously hidden
+        setTimeout(() => {
+            const receiptItems = document.querySelectorAll('.receipt-item');
+            if (receiptItems.length > 0) {
+                confirmHideAllReceipts();
+            }
+        }, 100);
+    }
+});

@@ -372,6 +372,13 @@ body {
     border: 1px solid #e2e8f0;
 }
 
+.history-section {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 140px);
+    min-height: 0;
+}
+
 .form-section {
     margin-bottom: 2rem;
     padding-bottom: 1.5rem;
@@ -525,16 +532,24 @@ body {
 }
 
 .receipts-list {
-    max-height: 600px;
-    overflow-y: auto;
+    /* Remove fixed height and scroll - use all available space */
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex: 1;
+    overflow: hidden;
 }
 
 .receipt-item {
     padding: 1rem;
     border: 1px solid #e2e8f0;
     border-radius: 0.5rem;
-    margin-bottom: 0.75rem;
     transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.receipt-item.hidden {
+    display: none;
 }
 
 .receipt-item:hover {
