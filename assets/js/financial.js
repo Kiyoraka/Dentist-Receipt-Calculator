@@ -138,7 +138,6 @@ function updateSelectedServices() {
 function addCharge() {
     const chargeAmount = parseFloat(document.getElementById('charge-amount').value) || 0;
     const serviceSelect = document.getElementById('service-select');
-    const servicePercentage = parseFloat(serviceSelect.value) || 0;
     const serviceName = serviceSelect.options[serviceSelect.selectedIndex].dataset.service || '';
     
     // Validation
@@ -147,10 +146,13 @@ function addCharge() {
         return;
     }
     
-    if (servicePercentage === '' || !serviceName) {
+    if (serviceSelect.value === '' || !serviceName) {
         showNotification('Please select a dental service', 'error');
         return;
     }
+    
+    // Get service percentage after validation (can be 0 for Medication)
+    const servicePercentage = parseFloat(serviceSelect.value);
     
     // Calculate doctor and clinic fees
     const doctorFee = chargeAmount * (servicePercentage / 100);
