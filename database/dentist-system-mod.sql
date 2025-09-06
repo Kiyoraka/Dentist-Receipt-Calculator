@@ -42,7 +42,9 @@ INSERT INTO `dental_services` (`service_name`, `percentage`) VALUES
 ('Package', 30.00),
 ('Oral Surgery', 30.00),
 ('X-ray', 30.00),
-('Trauma', 40.00);
+('Trauma', 40.00),
+('Extraction', 40.00),
+('Medication', 0.00);
 
 -- ============================================
 -- Table: patients
