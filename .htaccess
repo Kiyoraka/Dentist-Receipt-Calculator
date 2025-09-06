@@ -1,0 +1,35 @@
+# Dental Practice Management System - Cache Control
+# Force browsers to reload JavaScript and CSS files to prevent cache issues
+
+# Disable caching for JavaScript and CSS files
+<FilesMatch "\.(js|css)$">
+    ExpiresActive On
+    ExpiresDefault "access plus 1 seconds"
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache" 
+    Header set Expires "0"
+</FilesMatch>
+
+# Optional: Enable compression for better performance (but still force reload)
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/x-javascript
+</IfModule>
+
+# Security headers
+Header always set X-Content-Type-Options nosniff
+Header always set X-Frame-Options DENY
+Header always set X-XSS-Protection "1; mode=block"
+
+# Prevent access to sensitive files
+<FilesMatch "(\.htaccess|\.env|composer\.json|composer\.lock|\.git)">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
