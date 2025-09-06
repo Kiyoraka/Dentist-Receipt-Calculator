@@ -102,6 +102,9 @@ if ($_POST && isset($_POST['action'])) {
             $conn->commit();
             $success_message = "Receipt saved successfully! Invoice #: " . $_POST['invoice_number'];
             
+            // Preserve form data for printing after successful save
+            $saved_receipt_data = $_POST;
+            
         }
     } catch (Exception $e) {
         $conn->rollback();
@@ -383,6 +386,49 @@ try {
             </div>
         </div>
     </div>
+
+<?php if (isset($saved_receipt_data)): ?>
+<script>
+// Restore form data after successful save for printing
+document.addEventListener('DOMContentLoaded', function() {
+    // Restore form fields
+    document.getElementById('invoice-date').value = '<?php echo $saved_receipt_data['invoice_date']; ?>';
+    document.getElementById('invoice-number').value = '<?php echo htmlspecialchars($saved_receipt_data['invoice_number']); ?>';
+    document.getElementById('customer-name').value = '<?php echo htmlspecialchars($saved_receipt_data['customer_name']); ?>';
+    
+    // Restore calculation data
+    calculationData.totalClinicFee = <?php echo $saved_receipt_data['clinic_fee']; ?>;
+    calculationData.totalDoctorFee = <?php echo $saved_receipt_data['doctor_fee']; ?>;
+    calculationData.paymentMethod = '<?php echo $saved_receipt_data['payment_method']; ?>';
+    calculationData.paymentFeePercentage = <?php echo $saved_receipt_data['payment_fee_percentage']; ?>;
+    calculationData.paymentFeeAmount = <?php echo $saved_receipt_data['payment_fee_amount']; ?>;
+    calculationData.subtotal = <?php echo $saved_receipt_data['subtotal']; ?>;
+    calculationData.totalAmount = <?php echo $saved_receipt_data['total_amount']; ?>;
+    
+    // Restore charges from JSON data
+    <?php if (!empty($saved_receipt_data['selected_services'])): ?>
+    calculationData.charges = <?php echo $saved_receipt_data['charges_list']; ?> || [];
+    <?php endif; ?>
+    
+    // Restore other charges
+    <?php if (!empty($saved_receipt_data['other_charges_list'])): ?>
+    calculationData.otherCharges = <?php echo $saved_receipt_data['other_charges_list']; ?> || [];
+    <?php endif; ?>
+    
+    // Update displays
+    updateChargesDisplay();
+    updateFinalCalculation();
+    
+    // Enable save and print buttons
+    document.getElementById('save-btn').disabled = false;
+    document.getElementById('print-btn').disabled = false;
+    
+    // Select correct payment method
+    const paymentRadio = document.querySelector(`input[name="payment_method"][value="<?php echo $saved_receipt_data['payment_method']; ?>"]`);
+    if (paymentRadio) paymentRadio.checked = true;
+});
+</script>
+<?php endif; ?>
 
 <?php 
 $additional_css = ['../assets/css/charge-calculator.css'];
