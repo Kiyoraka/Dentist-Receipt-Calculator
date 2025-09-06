@@ -96,10 +96,41 @@ if ($_POST && isset($_POST['action'])) {
             $success_message = "Patient updated successfully!";
             
         } elseif ($_POST['action'] === 'delete_patient') {
+            // Begin transaction for safe cascading delete
+            $conn->beginTransaction();
+            
+            // Get all receipts for this patient
+            $stmt = $conn->prepare("SELECT id FROM receipts WHERE patient_id = ?");
+            $stmt->execute([$_POST['patient_id']]);
+            $receipts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Delete receipt services and charges for each receipt
+            foreach ($receipts as $receipt) {
+                // Delete receipt services
+                $stmt = $conn->prepare("DELETE FROM receipt_services WHERE receipt_id = ?");
+                $stmt->execute([$receipt['id']]);
+                
+                // Delete receipt charges
+                $stmt = $conn->prepare("DELETE FROM receipt_charges WHERE receipt_id = ?");
+                $stmt->execute([$receipt['id']]);
+            }
+            
+            // Delete all receipts for this patient
+            $stmt = $conn->prepare("DELETE FROM receipts WHERE patient_id = ?");
+            $stmt->execute([$_POST['patient_id']]);
+            
+            // Finally delete the patient
             $stmt = $conn->prepare("DELETE FROM patients WHERE id = ?");
             $stmt->execute([$_POST['patient_id']]);
+            
+            $conn->commit();
+            $success_message = "Patient and all associated records deleted successfully!";
         }
     } catch (Exception $e) {
+        // Rollback transaction if it was started
+        if ($conn->inTransaction()) {
+            $conn->rollback();
+        }
         $error_message = "Error: " . $e->getMessage();
     }
 }
@@ -547,7 +578,7 @@ if (isset($_GET['patient_id'])) {
                     <i class="fas fa-exclamation-circle"></i> This action cannot be undone!
                 </p>
                 <p style="color: #64748b; font-size: 14px; margin-top: 10px;">
-                    All associated receipts and records will be permanently removed.
+                    All associated receipts, services, charges, and payment records will be permanently removed.
                 </p>
             </div>
             <form id="delete-patient-form" method="POST" style="display: none;">
