@@ -75,8 +75,6 @@ CREATE TABLE IF NOT EXISTS `receipts` (
   `payment_method` varchar(50) NOT NULL,
   `payment_fee_percentage` decimal(5,2) DEFAULT 0.00,
   `payment_fee_amount` decimal(10,2) DEFAULT 0.00,
-  `terminal_charge_percentage` decimal(5,2) DEFAULT 0.00,
-  `terminal_charge_amount` decimal(10,2) DEFAULT 0.00,
   `subtotal` decimal(10,2) NOT NULL,
   `total_amount` decimal(10,2) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),

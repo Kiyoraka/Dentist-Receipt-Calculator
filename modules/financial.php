@@ -175,8 +175,6 @@ try {
                     <input type="hidden" name="other_charges" id="other-charges-input">
                     <input type="hidden" name="payment_fee_percentage" id="payment-fee-percentage-input">
                     <input type="hidden" name="payment_fee_amount" id="payment-fee-amount-input">
-                    <input type="hidden" name="terminal_charge_percentage" id="terminal-charge-percentage-input">
-                    <input type="hidden" name="terminal_charge_amount" id="terminal-charge-amount-input">
                     <input type="hidden" name="subtotal" id="subtotal-input">
                     <input type="hidden" name="total_amount" id="total-amount-input">
 
@@ -293,13 +291,6 @@ try {
                                 <span><i class="fas fa-credit-card"></i> Mastercard (2.5%)</span>
                             </label>
                         </div>
-                        
-                        <div class="terminal-charge">
-                            <label class="checkbox-option">
-                                <input type="checkbox" id="terminal-charge" name="terminal_charge" checked>
-                                <span><i class="fas fa-mobile-alt"></i> Terminal Service Charge (8%)</span>
-                            </label>
-                        </div>
                     </div>
 
                     <!-- Final Summary -->
@@ -320,10 +311,6 @@ try {
                         <div class="summary-row">
                             <span>Payment Fee:</span>
                             <span id="payment-fee">RM 0.00</span>
-                        </div>
-                        <div class="summary-row">
-                            <span>Terminal Charge:</span>
-                            <span id="terminal-charge-amount">RM 0.00</span>
                         </div>
                         <div class="summary-row subtotal">
                             <span>Subtotal:</span>

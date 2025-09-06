@@ -8,9 +8,7 @@ let calculationData = {
     totalClinicFee: 0,
     otherCharges: [],
     paymentMethod: 'Cash',
-    paymentFeePercentage: 0,
-    terminalChargeEnabled: true,
-    terminalChargePercentage: 8
+    paymentFeePercentage: 0
 };
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -69,11 +67,6 @@ function setupEventListeners() {
         radio.addEventListener('change', updatePaymentMethod);
     });
     
-    // Terminal charge checkbox
-    const terminalChargeCheckbox = document.getElementById('terminal-charge');
-    if (terminalChargeCheckbox) {
-        terminalChargeCheckbox.addEventListener('change', updateFinalCalculation);
-    }
     
     // Other charges
     const addOtherChargeBtn = document.getElementById('add-charge');
@@ -288,23 +281,17 @@ function updateFinalCalculation() {
     // Calculate payment fee
     const paymentFeeAmount = baseSubtotal * (calculationData.paymentFeePercentage / 100);
     
-    // Calculate terminal charge
-    const terminalChargeEnabled = document.getElementById('terminal-charge').checked;
-    const terminalChargeAmount = terminalChargeEnabled ? baseSubtotal * (calculationData.terminalChargePercentage / 100) : 0;
-    
-    // Calculate final total (terminal charge is subtracted from the total)
-    const finalTotal = baseSubtotal + paymentFeeAmount - terminalChargeAmount;
+    // Calculate final total (no terminal charges)
+    const finalTotal = baseSubtotal + paymentFeeAmount;
     
     // Update display
     document.getElementById('other-charges-total').textContent = `RM ${otherChargesTotal.toFixed(2)}`;
     document.getElementById('payment-fee').textContent = `RM ${paymentFeeAmount.toFixed(2)}`;
-    document.getElementById('terminal-charge-amount').textContent = terminalChargeAmount > 0 ? `- RM ${terminalChargeAmount.toFixed(2)}` : `RM 0.00`;
     document.getElementById('subtotal-amount').textContent = `RM ${baseSubtotal.toFixed(2)}`;
     document.getElementById('total-amount').textContent = `RM ${finalTotal.toFixed(2)}`;
     
     // Store values for form submission
     calculationData.paymentFeeAmount = paymentFeeAmount;
-    calculationData.terminalChargeAmount = terminalChargeAmount;
     calculationData.subtotal = baseSubtotal;
     calculationData.totalAmount = finalTotal;
 }
@@ -376,19 +363,14 @@ function updateCalculation() {
     // Calculate payment fee
     const paymentFeeAmount = subtotal * (calculationData.paymentFeePercentage / 100);
     
-    // Calculate terminal charge
-    const terminalChargeEnabled = document.getElementById('terminal-charge').checked;
-    const terminalChargeAmount = terminalChargeEnabled ? subtotal * (calculationData.terminalChargePercentage / 100) : 0;
-    
-    // Calculate final total (terminal charge is subtracted from the total)
-    const totalAmount = subtotal + paymentFeeAmount - terminalChargeAmount;
+    // Calculate final total (no terminal charges)
+    const totalAmount = subtotal + paymentFeeAmount;
     
     // Update display
     document.getElementById('final-clinic-fee').textContent = `RM ${clinicFee.toFixed(2)}`;
     document.getElementById('final-doctor-fee').textContent = `RM ${doctorFee.toFixed(2)}`;
     document.getElementById('other-charges-total').textContent = `RM ${otherChargesTotal.toFixed(2)}`;
     document.getElementById('payment-fee').textContent = `RM ${paymentFeeAmount.toFixed(2)}`;
-    document.getElementById('terminal-charge-amount').textContent = terminalChargeAmount > 0 ? `- RM ${terminalChargeAmount.toFixed(2)}` : `RM 0.00`;
     document.getElementById('subtotal-amount').textContent = `RM ${subtotal.toFixed(2)}`;
     document.getElementById('total-amount').textContent = `RM ${totalAmount.toFixed(2)}`;
     
@@ -396,7 +378,6 @@ function updateCalculation() {
     calculationData.servicesTotal = 0; // No longer calculated
     calculationData.otherChargesTotal = otherChargesTotal;
     calculationData.paymentFeeAmount = paymentFeeAmount;
-    calculationData.terminalChargeAmount = terminalChargeAmount;
     calculationData.subtotal = subtotal;
     calculationData.totalAmount = totalAmount;
 }
@@ -425,8 +406,6 @@ function updateHiddenFields() {
     document.getElementById('other-charges-input').value = calculationData.otherCharges.reduce((sum, charge) => sum + charge.amount, 0);
     document.getElementById('payment-fee-percentage-input').value = calculationData.paymentFeePercentage;
     document.getElementById('payment-fee-amount-input').value = calculationData.paymentFeeAmount;
-    document.getElementById('terminal-charge-percentage-input').value = calculationData.terminalChargePercentage;
-    document.getElementById('terminal-charge-amount-input').value = calculationData.terminalChargeAmount;
     document.getElementById('subtotal-input').value = calculationData.subtotal;
     document.getElementById('total-amount-input').value = calculationData.totalAmount;
 }
@@ -599,9 +578,7 @@ function resetForm() {
         totalClinicFee: 0,
         otherCharges: [],
         paymentMethod: 'Cash',
-        paymentFeePercentage: 0,
-        terminalChargeEnabled: true,
-        terminalChargePercentage: 8
+        paymentFeePercentage: 0
     };
     
     // Clear any saved receipt flags
@@ -613,7 +590,6 @@ function resetForm() {
     const finalClinicFee = document.getElementById('final-clinic-fee');
     const otherChargesTotal = document.getElementById('other-charges-total');
     const paymentFee = document.getElementById('payment-fee');
-    const terminalChargeAmount = document.getElementById('terminal-charge-amount');
     const subtotalAmount = document.getElementById('subtotal-amount');
     const totalAmount = document.getElementById('total-amount');
     
@@ -621,7 +597,6 @@ function resetForm() {
     if (finalClinicFee) finalClinicFee.textContent = 'RM 0.00';
     if (otherChargesTotal) otherChargesTotal.textContent = 'RM 0.00';
     if (paymentFee) paymentFee.textContent = 'RM 0.00';
-    if (terminalChargeAmount) terminalChargeAmount.textContent = 'RM 0.00';
     if (subtotalAmount) subtotalAmount.textContent = 'RM 0.00';
     if (totalAmount) totalAmount.textContent = 'RM 0.00';
     
