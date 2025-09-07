@@ -52,11 +52,12 @@ if ($_POST && isset($_POST['action'])) {
             }
             
             // Insert receipt
-            $stmt = $conn->prepare("INSERT INTO receipts (patient_id, invoice_number, invoice_date, clinic_fee, doctor_fee, other_charges, payment_method, payment_fee_percentage, payment_fee_amount, terminal_charge_percentage, terminal_charge_amount, subtotal, total_amount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt = $conn->prepare("INSERT INTO receipts (patient_id, invoice_number, terminal_invoice_number, invoice_date, clinic_fee, doctor_fee, other_charges, payment_method, payment_fee_percentage, payment_fee_amount, terminal_charge_percentage, terminal_charge_amount, subtotal, total_amount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             
             $stmt->execute([
                 $patient_id,
                 $_POST['invoice_number'],
+                $_POST['terminal_invoice_number'] ?? '',
                 $_POST['invoice_date'],
                 $_POST['clinic_fee'],
                 $_POST['doctor_fee'],
@@ -177,6 +178,10 @@ try {
                             <div class="form-group">
                                 <label for="invoice-number">Invoice Number:</label>
                                 <input type="text" id="invoice-number" name="invoice_number" placeholder="INV-<?php echo date('Ymd'); ?>-001" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="terminal-invoice-number">Terminal Invoice Number:</label>
+                                <input type="text" id="terminal-invoice-number" name="terminal_invoice_number" placeholder="T-<?php echo date('Ymd'); ?>-001">
                             </div>
                         </div>
                         <div class="form-group">

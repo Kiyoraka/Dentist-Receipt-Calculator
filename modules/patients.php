@@ -158,15 +158,15 @@ try {
         $count_params = array_merge($count_params, [$searchTerm, $searchTerm, $searchTerm]);
     }
     
-    // Add date filtering if month/year specified
+    // Add date filtering if month/year specified - using invoice_date
     if ($filter_month && $filter_year) {
-        $where_conditions[] = "DATE_FORMAT(r.created_at, '%m') = ? AND DATE_FORMAT(r.created_at, '%Y') = ?";
+        $where_conditions[] = "DATE_FORMAT(r.invoice_date, '%m') = ? AND DATE_FORMAT(r.invoice_date, '%Y') = ?";
         $count_params = array_merge($count_params, [$filter_month, $filter_year]);
     } elseif ($filter_month) {
-        $where_conditions[] = "DATE_FORMAT(r.created_at, '%m') = ?";
+        $where_conditions[] = "DATE_FORMAT(r.invoice_date, '%m') = ?";
         $count_params[] = $filter_month;
     } elseif ($filter_year) {
-        $where_conditions[] = "DATE_FORMAT(r.created_at, '%Y') = ?";
+        $where_conditions[] = "DATE_FORMAT(r.invoice_date, '%Y') = ?";
         $count_params[] = $filter_year;
     }
     
@@ -187,6 +187,7 @@ try {
                 p.*,
                 r.id as receipt_id,
                 r.invoice_number,
+                r.terminal_invoice_number,
                 r.total_amount,
                 r.doctor_fee,
                 r.clinic_fee,
@@ -206,6 +207,7 @@ try {
                 p.*,
                 r.id as receipt_id,
                 r.invoice_number,
+                r.terminal_invoice_number,
                 r.total_amount,
                 r.doctor_fee,
                 r.clinic_fee,
@@ -230,15 +232,15 @@ try {
         $params = array_merge($params, [$searchTerm, $searchTerm, $searchTerm]);
     }
     
-    // Add date filtering for receipts - same logic for both search and date filtering
+    // Add date filtering for receipts - same logic for both search and date filtering - using invoice_date
     if ($filter_month && $filter_year) {
-        $where_conditions[] = "DATE_FORMAT(r.created_at, '%m') = ? AND DATE_FORMAT(r.created_at, '%Y') = ?";
+        $where_conditions[] = "DATE_FORMAT(r.invoice_date, '%m') = ? AND DATE_FORMAT(r.invoice_date, '%Y') = ?";
         $params = array_merge($params, [$filter_month, $filter_year]);
     } elseif ($filter_month) {
-        $where_conditions[] = "DATE_FORMAT(r.created_at, '%m') = ?";
+        $where_conditions[] = "DATE_FORMAT(r.invoice_date, '%m') = ?";
         $params[] = $filter_month;
     } elseif ($filter_year) {
-        $where_conditions[] = "DATE_FORMAT(r.created_at, '%Y') = ?";
+        $where_conditions[] = "DATE_FORMAT(r.invoice_date, '%Y') = ?";
         $params[] = $filter_year;
     }
     
@@ -246,7 +248,7 @@ try {
         $sql .= " WHERE " . implode(" AND ", $where_conditions);
     }
     
-    $sql .= " ORDER BY r.created_at DESC, p.name ASC LIMIT $records_per_page OFFSET $offset";
+    $sql .= " ORDER BY r.invoice_date DESC, p.name ASC LIMIT $records_per_page OFFSET $offset";
     
     $stmt = $conn->prepare($sql);
     $stmt->execute($params);
@@ -359,6 +361,7 @@ if (isset($_GET['patient_id'])) {
                             <tr>
                                 <th class="patient-id-col">ID</th>
                                 <th class="patient-name-col">Patient Name</th>
+                                <th class="terminal-invoice-col">Terminal Invoice</th>
                                 <th class="visits-col">Invoice Date</th>
                                 <th class="receipt-col">Invoice Number</th>
                                 <th class="clinic-fee-col">Clinic Fee</th>
@@ -385,6 +388,9 @@ if (isset($_GET['patient_id'])) {
                             <td class="charge-service" style="font-weight: bold; color: #2563eb; text-align: left; font-size: 15px; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9;">
                                 <i class="fas fa-user-circle" style="margin-right: 8px;"></i>
                                 <?php echo htmlspecialchars($patient['name']); ?>
+                            </td>
+                            <td style="text-align: center; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9; font-weight: bold; color: #7c3aed; font-size: 14px;">
+                                <?php echo htmlspecialchars($patient['terminal_invoice_number'] ?? 'N/A'); ?>
                             </td>
                             <td class="charge-amount" style="text-align: center; font-weight: bold; color: #374151; font-size: 15px; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9;"><?php echo date('M j, Y', strtotime($patient['invoice_date'])); ?></td>
                             <td style="text-align: center; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9; color: #374151;">
@@ -413,7 +419,7 @@ if (isset($_GET['patient_id'])) {
                         for ($i = $display_count; $i < $records_per_page; $i++):
                         ?>
                         <tr style="height: 48px;">
-                            <td colspan="8" style="background: transparent; border: none;">&nbsp;</td>
+                            <td colspan="9" style="background: transparent; border: none;">&nbsp;</td>
                         </tr>
                         <?php endfor; ?>
                     </tbody>
