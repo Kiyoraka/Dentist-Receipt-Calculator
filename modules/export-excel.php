@@ -25,6 +25,7 @@ try {
         SELECT 
             p.*,
             r.id as receipt_id,
+            r.invoice_number,
             r.total_amount,
             r.doctor_fee,
             r.clinic_fee,
@@ -191,7 +192,7 @@ try {
                 <th>ID</th>
                 <th>Patient Name</th>
                 <th>Invoice Date</th>
-                <th>Receipt ID</th>
+                <th>Invoice Number</th>
                 <th>Clinic Fee</th>
                 <th>Doctor Fee</th>
                 <th>Total Spent</th>
@@ -204,7 +205,7 @@ try {
                         <td><?php echo $index + 1; ?></td>
                         <td class="text-left bold"><?php echo htmlspecialchars($patient['name']); ?></td>
                         <td><?php echo date('M j, Y', strtotime($patient['invoice_date'])); ?></td>
-                        <td><?php echo $patient['receipt_id']; ?></td>
+                        <td><?php echo htmlspecialchars($patient['invoice_number']); ?></td>
                         <td>RM <?php echo number_format($patient['total_clinic_fee'], 2); ?></td>
                         <td>RM <?php echo number_format($patient['total_doctor_fee'], 2); ?></td>
                         <td class="bold">RM <?php echo number_format($patient['total_spent'], 2); ?></td>

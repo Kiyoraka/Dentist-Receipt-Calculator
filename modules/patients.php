@@ -186,6 +186,7 @@ try {
             SELECT 
                 p.*,
                 r.id as receipt_id,
+                r.invoice_number,
                 r.total_amount,
                 r.doctor_fee,
                 r.clinic_fee,
@@ -204,6 +205,7 @@ try {
             SELECT 
                 p.*,
                 r.id as receipt_id,
+                r.invoice_number,
                 r.total_amount,
                 r.doctor_fee,
                 r.clinic_fee,
@@ -358,7 +360,7 @@ if (isset($_GET['patient_id'])) {
                                 <th class="patient-id-col">ID</th>
                                 <th class="patient-name-col">Patient Name</th>
                                 <th class="visits-col">Invoice Date</th>
-                                <th class="receipt-col">Receipt ID</th>
+                                <th class="receipt-col">Invoice Number</th>
                                 <th class="clinic-fee-col">Clinic Fee</th>
                                 <th class="doctor-fee-col">Doctor Fee</th>
                                 <th class="spent-col">Total Spent</th>
@@ -386,7 +388,7 @@ if (isset($_GET['patient_id'])) {
                             </td>
                             <td class="charge-amount" style="text-align: center; font-weight: bold; color: #374151; font-size: 15px; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9;"><?php echo date('M j, Y', strtotime($patient['invoice_date'])); ?></td>
                             <td style="text-align: center; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9; color: #374151;">
-                                <?php echo $patient['receipt_id']; ?>
+                                <?php echo htmlspecialchars($patient['invoice_number']); ?>
                             </td>
                             <td class="charge-clinic" style="text-align: center; font-weight: bold; color: #dc2626; font-size: 14px; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9;">RM <?php echo number_format($patient['total_clinic_fee'], 2); ?></td>
                             <td class="charge-doctor" style="text-align: center; font-weight: bold; color: #059669; font-size: 14px; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9;">RM <?php echo number_format($patient['total_doctor_fee'], 2); ?></td>
