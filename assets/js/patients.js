@@ -736,7 +736,7 @@ function exportAllPatients() {
 function showExportOptionsModal() {
     const modalHTML = `
         <div id="export-options-modal" class="modal">
-            <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-content" style="max-width: 600px;">
                 <div class="modal-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
                     <h2><i class="fas fa-file-export"></i> Export Options</h2>
                     <button type="button" class="modal-close" onclick="closeExportModal()" style="color: white;">
@@ -744,10 +744,13 @@ function showExportOptionsModal() {
                     </button>
                 </div>
                 <div class="modal-body" style="padding: 30px; text-align: center;">
-                    <h3 style="margin-bottom: 20px;">Choose Export Type</h3>
-                    <div style="text-align: center;">
-                        <button type="button" class="btn btn-primary" onclick="exportAllReceipts()" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border: none; font-size: 16px; padding: 20px 30px;">
-                            <i class="fas fa-receipt"></i> 🦷 Export All Receipts
+                    <h3 style="margin-bottom: 30px;">Choose Export Type</h3>
+                    <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+                        <button type="button" class="btn btn-primary" onclick="exportAllReceipts()" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border: none; font-size: 16px; padding: 20px 30px; flex: 1; min-width: 200px;">
+                            <i class="fas fa-file-pdf"></i> 📄 Export PDF Report
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="exportToExcel()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; font-size: 16px; padding: 20px 30px; flex: 1; min-width: 200px;">
+                            <i class="fas fa-file-excel"></i> 📊 Export to Excel
                         </button>
                     </div>
                 </div>
@@ -1003,5 +1006,40 @@ function exportAllReceipts() {
     window.open(exportUrl, '_blank');
     
     hideLoading();
+}
+
+function exportToExcel() {
+    closeExportModal();
+    showLoading();
+    
+    showNotification('Generating Excel report...', 'info');
+    
+    // Get current filter values
+    const filterMonth = document.querySelector('select[name="filter_month"]')?.value || '';
+    const filterYear = document.querySelector('select[name="filter_year"]')?.value || '';
+    
+    // Build export URL with filters
+    let exportUrl = 'export-excel.php';
+    const params = new URLSearchParams();
+    
+    if (filterMonth) params.append('filter_month', filterMonth);
+    if (filterYear) params.append('filter_year', filterYear);
+    
+    if (params.toString()) {
+        exportUrl += '?' + params.toString();
+    }
+    
+    // Create a hidden iframe to trigger download
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = exportUrl;
+    document.body.appendChild(iframe);
+    
+    // Remove iframe after download starts
+    setTimeout(() => {
+        document.body.removeChild(iframe);
+        hideLoading();
+        showNotification('Excel file downloaded successfully!', 'success');
+    }, 2000);
 }
 
