@@ -22,6 +22,7 @@ try {
             p.*,
             r.id as receipt_id,
             r.invoice_number,
+            r.terminal_invoice_number,
             r.total_amount,
             r.doctor_fee,
             r.clinic_fee,
@@ -257,13 +258,14 @@ try {
         }
         
         /* Column Widths for Landscape */
-        .col-id { width: 8%; }
-        .col-name { width: 25%; text-align: left !important; font-weight: bold; color: #2563eb; }
-        .col-visitdate { width: 15%; }
+        .col-id { width: 6%; }
+        .col-name { width: 22%; text-align: left !important; font-weight: bold; color: #2563eb; }
+        .col-visitdate { width: 13%; }
         .col-receipt { width: 12%; }
-        .col-clinic { width: 13%; font-weight: bold; color: #dc2626; }
-        .col-doctor { width: 13%; font-weight: bold; color: #059669; }
-        .col-total { width: 14%; font-weight: bold; color: #2563eb; }
+        .col-terminal { width: 12%; }
+        .col-clinic { width: 12%; font-weight: bold; color: #dc2626; }
+        .col-doctor { width: 12%; font-weight: bold; color: #059669; }
+        .col-total { width: 13%; font-weight: bold; color: #2563eb; }
         
         /* Action Buttons */
         .action-buttons {
@@ -332,7 +334,7 @@ try {
     <!-- PAGE 1: PIE CHART -->
     <div class="page-1">
         <div class="report-header">
-            <h1>🦷 DENTAL PRACTICE</h1>
+            <h1>🦷 CANINEHUB SDN BHD</h1>
             <h2>
                 <?php if ($filter_month && $filter_year): ?>
                     Individual Visit Records Report - <?php echo date('F Y', mktime(0, 0, 0, $filter_month, 1, $filter_year)); ?>
@@ -378,7 +380,7 @@ try {
     <!-- PAGE 2: PATIENT TABLE (LANDSCAPE) -->
     <div class="page-break page-2">
         <div class="table-header">
-            <h2>🦷 Patient Management Report</h2>
+            <h2>🦷 CANINEHUB SDN BHD - Patient Management Report</h2>
             <p>Complete patient data with financial breakdown - Generated <?php echo date('F j, Y'); ?></p>
         </div>
 
@@ -390,6 +392,7 @@ try {
                         <th class="col-name">Patient Name</th>
                         <th class="col-visitdate">Invoice Date</th>
                         <th class="col-receipt">Invoice Number</th>
+                        <th class="col-terminal">Terminal Invoice</th>
                         <th class="col-clinic">Clinic Fee</th>
                         <th class="col-doctor">Doctor Fee</th>
                         <th class="col-total">Total Spent</th>
@@ -405,6 +408,7 @@ try {
                             </td>
                             <td class="col-visitdate"><?php echo date('M j, Y', strtotime($patient['invoice_date'])); ?></td>
                             <td class="col-receipt"><?php echo htmlspecialchars($patient['invoice_number']); ?></td>
+                            <td class="col-terminal"><?php echo htmlspecialchars($patient['terminal_invoice_number'] ?? 'N/A'); ?></td>
                             <td class="col-clinic">RM <?php echo number_format($patient['total_clinic_fee'], 2); ?></td>
                             <td class="col-doctor">RM <?php echo number_format($patient['total_doctor_fee'], 2); ?></td>
                             <td class="col-total">RM <?php echo number_format($patient['total_spent'], 2); ?></td>

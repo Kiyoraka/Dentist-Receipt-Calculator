@@ -26,6 +26,7 @@ try {
             p.*,
             r.id as receipt_id,
             r.invoice_number,
+            r.terminal_invoice_number,
             r.total_amount,
             r.doctor_fee,
             r.clinic_fee,
@@ -145,7 +146,7 @@ try {
 <body>
     <!-- Report Header -->
     <div align="center">
-        <h1 class="header">DENTAL PRACTICE REPORT</h1>
+        <h1 class="header">CANINEHUB SDN BHD REPORT</h1>
         <h2 class="subheader">
             <?php if ($filter_month && $filter_year): ?>
                 Individual Visit Records - <?php echo date('F Y', mktime(0, 0, 0, $filter_month, 1, $filter_year)); ?>
@@ -193,6 +194,7 @@ try {
                 <th>Patient Name</th>
                 <th>Invoice Date</th>
                 <th>Invoice Number</th>
+                <th>Terminal Invoice</th>
                 <th>Clinic Fee</th>
                 <th>Doctor Fee</th>
                 <th>Total Spent</th>
@@ -206,6 +208,7 @@ try {
                         <td class="text-left bold"><?php echo htmlspecialchars($patient['name']); ?></td>
                         <td><?php echo date('M j, Y', strtotime($patient['invoice_date'])); ?></td>
                         <td><?php echo htmlspecialchars($patient['invoice_number']); ?></td>
+                        <td><?php echo htmlspecialchars($patient['terminal_invoice_number'] ?? 'N/A'); ?></td>
                         <td>RM <?php echo number_format($patient['total_clinic_fee'], 2); ?></td>
                         <td>RM <?php echo number_format($patient['total_doctor_fee'], 2); ?></td>
                         <td class="bold">RM <?php echo number_format($patient['total_spent'], 2); ?></td>
@@ -214,14 +217,14 @@ try {
                 
                 <!-- Total Row -->
                 <tr class="total-row">
-                    <td colspan="4" class="text-left"><strong>TOTAL</strong></td>
+                    <td colspan="5" class="text-left"><strong>TOTAL</strong></td>
                     <td><strong>RM <?php echo number_format($total_clinic_fees, 2); ?></strong></td>
                     <td><strong>RM <?php echo number_format($total_doctor_fees, 2); ?></strong></td>
                     <td><strong>RM <?php echo number_format($total_amount, 2); ?></strong></td>
                 </tr>
             <?php else: ?>
                 <tr>
-                    <td colspan="7">No patient data found</td>
+                    <td colspan="8">No patient data found</td>
                 </tr>
             <?php endif; ?>
         </tbody>
