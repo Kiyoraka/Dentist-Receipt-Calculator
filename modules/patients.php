@@ -584,6 +584,6 @@ if (isset($_GET['patient_id'])) {
     </div>
 
 <?php 
-$additional_js = ['../assets/js/patients.js?v=20250907115900'];
+$additional_js = ['../assets/js/patients.js'];
 include '../includes/footer.php'; 
 ?>

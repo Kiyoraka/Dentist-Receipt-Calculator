@@ -734,7 +734,6 @@ function exportAllPatients() {
 }
 
 function showExportOptionsModal() {
-    console.log('showExportOptionsModal called - Updated version'); // Debug log
     
     // Remove any existing modal first
     const existingModal = document.getElementById('export-options-modal');
@@ -1021,7 +1020,6 @@ function exportAllReceipts() {
 }
 
 function exportToExcel() {
-    console.log('exportToExcel called'); // Debug log
     closeExportModal();
     showLoading();
     
