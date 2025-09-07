@@ -189,6 +189,7 @@ try {
                 r.total_amount,
                 r.doctor_fee,
                 r.clinic_fee,
+                r.invoice_date,
                 r.created_at as visit_date,
                 1 as receipt_count,
                 r.total_amount as total_spent,
@@ -206,6 +207,7 @@ try {
                 r.total_amount,
                 r.doctor_fee,
                 r.clinic_fee,
+                r.invoice_date,
                 r.created_at as visit_date,
                 1 as receipt_count,
                 COALESCE(r.total_amount, 0) as total_spent,
@@ -355,7 +357,7 @@ if (isset($_GET['patient_id'])) {
                             <tr>
                                 <th class="patient-id-col">ID</th>
                                 <th class="patient-name-col">Patient Name</th>
-                                <th class="visits-col">Visit Date</th>
+                                <th class="visits-col">Invoice Date</th>
                                 <th class="receipt-col">Receipt ID</th>
                                 <th class="clinic-fee-col">Clinic Fee</th>
                                 <th class="doctor-fee-col">Doctor Fee</th>
@@ -382,7 +384,7 @@ if (isset($_GET['patient_id'])) {
                                 <i class="fas fa-user-circle" style="margin-right: 8px;"></i>
                                 <?php echo htmlspecialchars($patient['name']); ?>
                             </td>
-                            <td class="charge-amount" style="text-align: center; font-weight: bold; color: #374151; font-size: 15px; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9;"><?php echo date('M j, Y', strtotime($patient['visit_date'])); ?></td>
+                            <td class="charge-amount" style="text-align: center; font-weight: bold; color: #374151; font-size: 15px; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9;"><?php echo date('M j, Y', strtotime($patient['invoice_date'])); ?></td>
                             <td style="text-align: center; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9; color: #374151;">
                                 <?php echo $patient['receipt_id']; ?>
                             </td>
