@@ -321,7 +321,7 @@ function addOtherCharge() {
     chargeItem.innerHTML = `
         <input type="text" placeholder="Description" class="charge-description">
         <input type="number" placeholder="0.00" min="0" step="0.01" class="charge-amount">
-        <button type="button" class="btn-remove" onclick="removeCharge(this)">
+        <button type="button" class="btn-remove" onclick="removeOtherCharge(this)">
             <i class="fas fa-times"></i>
         </button>
     `;
@@ -333,7 +333,7 @@ function addOtherCharge() {
     amountInput.addEventListener('input', updateOtherCharges);
 }
 
-function removeCharge(button) {
+function removeOtherCharge(button) {
     button.closest('.charge-item').remove();
     updateOtherCharges();
 }
@@ -626,7 +626,7 @@ function resetForm() {
         <div class="charge-item">
             <input type="text" placeholder="Description" class="charge-description">
             <input type="number" placeholder="0.00" min="0" step="0.01" class="charge-amount">
-            <button type="button" class="btn-remove" onclick="removeCharge(this)">
+            <button type="button" class="btn-remove" onclick="removeOtherCharge(this)">
                 <i class="fas fa-times"></i>
             </button>
         </div>
