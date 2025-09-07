@@ -28,6 +28,7 @@ try {
             r.total_amount,
             r.doctor_fee,
             r.clinic_fee,
+            r.invoice_date,
             r.created_at as visit_date,
             1 as receipt_count,
             COALESCE(r.total_amount, 0) as total_spent,
@@ -189,7 +190,7 @@ try {
             <tr>
                 <th>ID</th>
                 <th>Patient Name</th>
-                <th>Visit Date</th>
+                <th>Invoice Date</th>
                 <th>Receipt ID</th>
                 <th>Clinic Fee</th>
                 <th>Doctor Fee</th>
@@ -202,7 +203,7 @@ try {
                     <tr>
                         <td><?php echo $index + 1; ?></td>
                         <td class="text-left bold"><?php echo htmlspecialchars($patient['name']); ?></td>
-                        <td><?php echo date('M j, Y', strtotime($patient['visit_date'])); ?></td>
+                        <td><?php echo date('M j, Y', strtotime($patient['invoice_date'])); ?></td>
                         <td><?php echo $patient['receipt_id']; ?></td>
                         <td>RM <?php echo number_format($patient['total_clinic_fee'], 2); ?></td>
                         <td>RM <?php echo number_format($patient['total_doctor_fee'], 2); ?></td>

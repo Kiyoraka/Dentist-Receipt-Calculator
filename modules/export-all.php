@@ -24,6 +24,7 @@ try {
             r.total_amount,
             r.doctor_fee,
             r.clinic_fee,
+            r.invoice_date,
             r.created_at as visit_date,
             1 as receipt_count,
             COALESCE(r.total_amount, 0) as total_spent,
@@ -386,7 +387,7 @@ try {
                     <tr>
                         <th class="col-id">ID</th>
                         <th class="col-name">Patient Name</th>
-                        <th class="col-visitdate">Visit Date</th>
+                        <th class="col-visitdate">Invoice Date</th>
                         <th class="col-receipt">Receipt ID</th>
                         <th class="col-clinic">Clinic Fee</th>
                         <th class="col-doctor">Doctor Fee</th>
@@ -401,7 +402,7 @@ try {
                                 <i class="fas fa-user-circle" style="margin-right: 5px; color: #2563eb;"></i>
                                 <?php echo htmlspecialchars($patient['name']); ?>
                             </td>
-                            <td class="col-visitdate"><?php echo date('M j, Y', strtotime($patient['visit_date'])); ?></td>
+                            <td class="col-visitdate"><?php echo date('M j, Y', strtotime($patient['invoice_date'])); ?></td>
                             <td class="col-receipt"><?php echo $patient['receipt_id']; ?></td>
                             <td class="col-clinic">RM <?php echo number_format($patient['total_clinic_fee'], 2); ?></td>
                             <td class="col-doctor">RM <?php echo number_format($patient['total_doctor_fee'], 2); ?></td>
