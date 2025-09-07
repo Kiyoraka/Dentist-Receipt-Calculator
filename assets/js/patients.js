@@ -734,31 +734,43 @@ function exportAllPatients() {
 }
 
 function showExportOptionsModal() {
-    const modalHTML = `
-        <div id="export-options-modal" class="modal">
-            <div class="modal-content" style="max-width: 600px;">
-                <div class="modal-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
-                    <h2><i class="fas fa-file-export"></i> Export Options</h2>
-                    <button type="button" class="modal-close" onclick="closeExportModal()" style="color: white;">
-                        <i class="fas fa-times"></i>
+    console.log('showExportOptionsModal called - Updated version'); // Debug log
+    
+    // Remove any existing modal first
+    const existingModal = document.getElementById('export-options-modal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Create modal element
+    const modal = document.createElement('div');
+    modal.id = 'export-options-modal';
+    modal.className = 'modal';
+    modal.style.cssText = 'display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;';
+    
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 600px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+            <div class="modal-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="margin: 0;"><i class="fas fa-file-export"></i> Export Options</h2>
+                <button type="button" onclick="closeExportModal()" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 30px; text-align: center;">
+                <h3 style="margin-bottom: 30px; color: #333;">Choose Export Type</h3>
+                <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+                    <button type="button" onclick="exportAllReceipts()" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; border: none; font-size: 16px; padding: 20px 30px; border-radius: 8px; cursor: pointer; flex: 1; min-width: 200px;">
+                        <i class="fas fa-file-pdf"></i> 📄 Export PDF Report
                     </button>
-                </div>
-                <div class="modal-body" style="padding: 30px; text-align: center;">
-                    <h3 style="margin-bottom: 30px;">Choose Export Type</h3>
-                    <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
-                        <button type="button" class="btn btn-primary" onclick="exportAllReceipts()" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border: none; font-size: 16px; padding: 20px 30px; flex: 1; min-width: 200px;">
-                            <i class="fas fa-file-pdf"></i> 📄 Export PDF Report
-                        </button>
-                        <button type="button" class="btn btn-success" onclick="exportToExcel()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; font-size: 16px; padding: 20px 30px; flex: 1; min-width: 200px;">
-                            <i class="fas fa-file-excel"></i> 📊 Export to Excel
-                        </button>
-                    </div>
+                    <button type="button" onclick="exportToExcel()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; font-size: 16px; padding: 20px 30px; border-radius: 8px; cursor: pointer; flex: 1; min-width: 200px;">
+                        <i class="fas fa-file-excel"></i> 📊 Export to Excel
+                    </button>
                 </div>
             </div>
         </div>
     `;
     
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    document.body.appendChild(modal);
     hideLoading();
 }
 
@@ -1009,6 +1021,7 @@ function exportAllReceipts() {
 }
 
 function exportToExcel() {
+    console.log('exportToExcel called'); // Debug log
     closeExportModal();
     showLoading();
     
