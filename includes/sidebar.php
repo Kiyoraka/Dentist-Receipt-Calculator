@@ -60,10 +60,17 @@ if (!defined('BASE_URL')) {
                     <p class="login-time"><i class="fas fa-sign-in-alt"></i> <?php echo date('H:i', $user['login_time']); ?></p>
                 </div>
                 
-                <a href="?logout=1" class="logout-btn" onclick="return confirm('Are you sure you want to logout?');">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Logout</span>
-                </a>
+                <div class="user-actions">
+                    <button class="change-password-btn" onclick="openChangePasswordModal()">
+                        <i class="fas fa-key"></i>
+                        <span>Change Password</span>
+                    </button>
+                    
+                    <a href="?logout=1" class="logout-btn" onclick="return confirm('Are you sure you want to logout?');">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                </div>
             <?php endif; ?>
         </div>
     </div>

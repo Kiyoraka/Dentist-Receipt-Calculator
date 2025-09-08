@@ -295,11 +295,7 @@ $page_title = 'Login - Dental Practice Management';
         <!-- Login Information -->
         <div class="login-info">
             <p><i class="fas fa-info-circle"></i> Professional dental practice management access</p>
-            <div class="demo-credentials">
-                <strong>Default Credentials:</strong><br>
-                Username: <strong>admin</strong><br>
-                Password: <strong>dental2025</strong>
-            </div>
+            <p><i class="fas fa-shield-alt"></i> Secure authentication required</p>
         </div>
     </div>
 
