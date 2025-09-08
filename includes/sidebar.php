@@ -57,7 +57,7 @@ if (!defined('BASE_URL')) {
         if ($user): 
         ?>
             <div class="sidebar-logout">
-                <a href="?logout=1" class="logout-btn" onclick="return confirm('Are you sure you want to logout?');">
+                <a href="#" class="logout-btn" onclick="showLogoutModal(); return false;">
                     <i class="fas fa-sign-out-alt"></i>
                     <span>Logout</span>
                 </a>
@@ -65,6 +65,64 @@ if (!defined('BASE_URL')) {
         <?php endif; ?>
     </div>
 </aside>
+
+<!-- Logout Confirmation Modal -->
+<div id="logoutModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>
+                <i class="fas fa-sign-out-alt"></i>
+                Confirm Logout
+            </h3>
+            <button type="button" class="modal-close" onclick="hideLogoutModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p style="margin: 0; color: #64748b; font-size: 1rem; line-height: 1.6;">
+                Are you sure you want to logout from the dental practice management system?
+            </p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-secondary" onclick="hideLogoutModal()">
+                <i class="fas fa-times"></i>
+                Cancel
+            </button>
+            <button type="button" class="btn-primary" onclick="confirmLogout()">
+                <i class="fas fa-sign-out-alt"></i>
+                Yes, Logout
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function showLogoutModal() {
+    document.getElementById('logoutModal').style.display = 'flex';
+}
+
+function hideLogoutModal() {
+    document.getElementById('logoutModal').style.display = 'none';
+}
+
+function confirmLogout() {
+    window.location.href = '?logout=1';
+}
+
+// Close modal when clicking outside
+document.getElementById('logoutModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        hideLogoutModal();
+    }
+});
+
+// Close modal on Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && document.getElementById('logoutModal').style.display === 'flex') {
+        hideLogoutModal();
+    }
+});
+</script>
 
 <!-- Main Content Area -->
 <main class="main-content">
