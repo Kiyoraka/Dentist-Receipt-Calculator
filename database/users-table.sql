@@ -20,10 +20,10 @@ CREATE TABLE IF NOT EXISTS `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Insert default admin user (only if not exists)
--- Username: admin, Password: dental2025 (properly hashed)
+-- Username: admin, Password: admin123 (properly hashed)
 INSERT IGNORE INTO `users` (`username`, `password`, `full_name`, `email`, `role`, `is_active`) VALUES
-('admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'System Administrator', 'admin@dental-system.local', 'admin', 1);
+('admin', '$2y$10$Hgx3wz8TWHheT7pF8gl2YuXXhMwlh7c9KVxn5w/aKYnQHfLOHL1Xu', 'System Administrator', 'admin@dental-system.local', 'admin', 1);
 
--- Note: The password hash above is for 'dental2025'
--- Generated using: password_hash('dental2025', PASSWORD_DEFAULT)
+-- Note: The password hash above is for 'admin123'
+-- Generated using: password_hash('admin123', PASSWORD_DEFAULT)
 -- In production, always use proper password hashing!
