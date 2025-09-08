@@ -138,7 +138,14 @@ function changeUserPassword($currentPassword, $newPassword) {
 // Logout function
 function logout() {
     session_destroy();
-    header('Location: login.php');
+    // Check if we're on production or development
+    $isProduction = (isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], 'caninehubdentist.com') !== false);
+    
+    if ($isProduction) {
+        header('Location: https://caninehubdentist.com/login.php');
+    } else {
+        header('Location: login.php');
+    }
     exit();
 }
 

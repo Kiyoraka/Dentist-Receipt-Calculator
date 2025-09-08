@@ -106,7 +106,14 @@ function hideLogoutModal() {
 }
 
 function confirmLogout() {
-    window.location.href = '?logout=1';
+    // Check if we're on production
+    const isProduction = window.location.hostname === 'caninehubdentist.com';
+    
+    if (isProduction) {
+        window.location.href = 'https://caninehubdentist.com?logout=1';
+    } else {
+        window.location.href = '?logout=1';
+    }
 }
 
 // Close modal when clicking outside
