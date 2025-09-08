@@ -9,24 +9,27 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true) {
 
 $error_message = '';
 
+// Include authentication functions
+require_once 'includes/auth.php';
+
 // Handle login form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
     
-    // Simple authentication - In production, use database with hashed passwords
-    if ($username === 'admin' && $password === 'dental2025') {
-        $_SESSION['logged_in'] = true;
-        $_SESSION['username'] = $username;
-        $_SESSION['login_time'] = time();
-        
-        // Redirect to originally requested page or dashboard
-        $redirect_url = $_SESSION['redirect_after_login'] ?? 'index.php';
-        unset($_SESSION['redirect_after_login']);
-        header('Location: ' . $redirect_url);
-        exit();
+    if (empty($username) || empty($password)) {
+        $error_message = 'Please enter both username and password.';
     } else {
-        $error_message = 'Invalid username or password. Please try again.';
+        // Authenticate with database
+        if (authenticateUser($username, $password)) {
+            // Redirect to originally requested page or dashboard
+            $redirect_url = $_SESSION['redirect_after_login'] ?? 'index.php';
+            unset($_SESSION['redirect_after_login']);
+            header('Location: ' . $redirect_url);
+            exit();
+        } else {
+            $error_message = 'Invalid username or password. Please try again.';
+        }
     }
 }
 

@@ -24,15 +24,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
     } elseif (strlen($new_password) < 6) {
         $error_message = 'New password must be at least 6 characters long';
     } else {
-        // Get current user
-        $user = getCurrentUser();
+        // Change password using database
+        $result = changeUserPassword($current_password, $new_password);
         
-        // For now, use simple validation since we're using hardcoded credentials
-        if ($user['username'] === 'admin' && $current_password === 'dental2025') {
-            // In a real system, you would update the database here
-            $success_message = 'Password change simulated successfully. In production, this would update the database.';
+        if ($result['success']) {
+            $success_message = $result['message'];
         } else {
-            $error_message = 'Current password is incorrect';
+            $error_message = $result['message'];
         }
     }
 }
@@ -67,9 +65,12 @@ $user = getCurrentUser();
                         <i class="fas fa-user-md"></i>
                     </div>
                     <div class="profile-info">
-                        <h3><?php echo htmlspecialchars($user['username']); ?></h3>
-                        <p class="profile-role">Administrator</p>
+                        <h3><?php echo htmlspecialchars($user['full_name'] ?? $user['username']); ?></h3>
+                        <p class="profile-role"><?php echo ucfirst($user['role'] ?? 'Administrator'); ?></p>
                         <p class="profile-login">Last login: <?php echo date('Y-m-d H:i', $user['login_time']); ?></p>
+                        <?php if (!empty($user['email'])): ?>
+                            <p class="profile-email">Email: <?php echo htmlspecialchars($user['email']); ?></p>
+                        <?php endif; ?>
                     </div>
                 </div>
                 
@@ -77,7 +78,7 @@ $user = getCurrentUser();
                     <div class="stat-item">
                         <i class="fas fa-shield-alt"></i>
                         <span class="stat-label">Account Type</span>
-                        <span class="stat-value">Administrator</span>
+                        <span class="stat-value"><?php echo ucfirst($user['role'] ?? 'Administrator'); ?></span>
                     </div>
                     <div class="stat-item">
                         <i class="fas fa-clock"></i>
