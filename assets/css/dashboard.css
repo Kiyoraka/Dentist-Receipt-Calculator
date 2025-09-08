@@ -48,6 +48,8 @@ body {
     overflow-y: auto;
     box-shadow: 4px 0 12px rgba(37, 99, 235, 0.15);
     transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
 }
 
 .sidebar-header {
@@ -127,11 +129,9 @@ body {
 /* Sidebar Footer */
 .sidebar-footer {
     margin-top: auto;
-    padding: 1.5rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 0;
 }
 
 .system-info p {
@@ -145,9 +145,8 @@ body {
 
 /* Sidebar Logout Styles */
 .sidebar-logout {
-    margin-top: auto;
-    padding: 1rem 0 0 0;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1rem 0;
 }
 
 .logout-btn {
@@ -155,10 +154,10 @@ body {
     align-items: center;
     gap: 0.75rem;
     background: none;
-    color: rgba(255, 255, 255, 0.8);
+    color: #e2e8f0;
     text-decoration: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
+    padding: 1rem 1.5rem;
+    border-radius: 0;
     font-size: 0.95rem;
     font-weight: 500;
     transition: all 0.3s ease;
@@ -167,25 +166,15 @@ body {
     justify-content: flex-start;
     position: relative;
     overflow: hidden;
-    margin: 0 1rem;
+    border-left: 3px solid transparent;
 }
 
 .logout-btn:hover {
     background: rgba(255, 255, 255, 0.1);
     color: white;
-    transform: translateX(4px);
+    border-left-color: #dbeafe;
 }
 
-.logout-btn:hover::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    background: #ef4444;
-    border-radius: 0 2px 2px 0;
-}
 
 .logout-btn i {
     width: 20px;
