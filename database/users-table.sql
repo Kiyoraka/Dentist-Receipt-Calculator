@@ -3,7 +3,7 @@
 
 CREATE TABLE IF NOT EXISTS `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `username` varchar(50) NOT NULL UNIQUE,
+  `username` varchar(50) NOT NULL,
   `password` varchar(255) NOT NULL COMMENT 'Hashed password using PHP password_hash()',
   `full_name` varchar(100) NOT NULL,
   `email` varchar(100) DEFAULT NULL,
@@ -19,9 +19,9 @@ CREATE TABLE IF NOT EXISTS `users` (
   KEY `idx_role` (`role`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Insert default admin user
+-- Insert default admin user (only if not exists)
 -- Username: admin, Password: dental2025 (properly hashed)
-INSERT INTO `users` (`username`, `password`, `full_name`, `email`, `role`, `is_active`) VALUES
+INSERT IGNORE INTO `users` (`username`, `password`, `full_name`, `email`, `role`, `is_active`) VALUES
 ('admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'System Administrator', 'admin@dental-system.local', 'admin', 1);
 
 -- Note: The password hash above is for 'dental2025'
