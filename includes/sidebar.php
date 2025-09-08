@@ -50,11 +50,6 @@ if (!defined('BASE_URL')) {
     </nav>
 
     <div class="sidebar-footer">
-        <div class="system-info">
-            <p><i class="fas fa-clock"></i> <?php echo date('Y-m-d H:i'); ?></p>
-            <p><i class="fas fa-database"></i> Connected</p>
-        </div>
-        
         <!-- Logout Button -->
         <?php 
         require_once __DIR__ . '/auth.php';
