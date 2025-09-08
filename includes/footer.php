@@ -1,41 +1,6 @@
         </main>
     </div>
 
-    <!-- Change Password Modal -->
-    <div id="changePasswordModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-key"></i> Change Password</h3>
-                <button class="modal-close" onclick="closeChangePasswordModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="changePasswordForm">
-                    <div class="form-group">
-                        <label for="currentPassword">Current Password</label>
-                        <input type="password" id="currentPassword" name="current_password" required 
-                               placeholder="Enter your current password">
-                    </div>
-                    <div class="form-group">
-                        <label for="newPassword">New Password</label>
-                        <input type="password" id="newPassword" name="new_password" required 
-                               placeholder="Enter new password (min 6 characters)" minlength="6">
-                    </div>
-                    <div class="form-group">
-                        <label for="confirmPassword">Confirm New Password</label>
-                        <input type="password" id="confirmPassword" name="confirm_password" required 
-                               placeholder="Confirm your new password">
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn-secondary" onclick="closeChangePasswordModal()">Cancel</button>
-                <button type="button" class="btn-primary" onclick="changePassword()">
-                    <i class="fas fa-save"></i> Change Password
-                </button>
-            </div>
-        </div>
-    </div>
-
     <!-- JavaScript with Dynamic Paths -->
     <script src="<?php echo JS_URL; ?>/dashboard.js"></script>
     <script src="<?php echo JS_URL; ?>/calculator.js"></script>
@@ -143,90 +108,6 @@
             document.head.appendChild(style);
         }
         
-        // Change Password Modal Functions
-        function openChangePasswordModal() {
-            document.getElementById('changePasswordModal').style.display = 'flex';
-            document.getElementById('currentPassword').focus();
-        }
-
-        function closeChangePasswordModal() {
-            document.getElementById('changePasswordModal').style.display = 'none';
-            document.getElementById('changePasswordForm').reset();
-        }
-
-        function changePassword() {
-            const form = document.getElementById('changePasswordForm');
-            const formData = new FormData(form);
-            
-            const currentPassword = formData.get('current_password');
-            const newPassword = formData.get('new_password');
-            const confirmPassword = formData.get('confirm_password');
-
-            // Client-side validation
-            if (!currentPassword || !newPassword || !confirmPassword) {
-                showNotification('All fields are required', 'error');
-                return;
-            }
-
-            if (newPassword !== confirmPassword) {
-                showNotification('New passwords do not match', 'error');
-                return;
-            }
-
-            if (newPassword.length < 6) {
-                showNotification('New password must be at least 6 characters long', 'error');
-                return;
-            }
-
-            // Show loading
-            showLoading();
-
-            // Send request to backend (handle different path contexts)
-            const basePath = window.location.pathname.includes('/modules/') ? '../modules/' : 'modules/';
-            fetch(basePath + 'change-password.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    current_password: currentPassword,
-                    new_password: newPassword,
-                    confirm_password: confirmPassword
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                hideLoading();
-                
-                if (data.success) {
-                    showNotification('Password changed successfully!', 'success');
-                    closeChangePasswordModal();
-                } else {
-                    showNotification(data.message || 'Failed to change password', 'error');
-                }
-            })
-            .catch(error => {
-                hideLoading();
-                console.error('Error:', error);
-                showNotification('An error occurred while changing password', 'error');
-            });
-        }
-
-        // Close modal when clicking outside
-        document.addEventListener('click', function(e) {
-            const modal = document.getElementById('changePasswordModal');
-            if (e.target === modal) {
-                closeChangePasswordModal();
-            }
-        });
-
-        // Handle Escape key to close modal
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeChangePasswordModal();
-            }
-        });
-
         // Mobile sidebar toggle
         document.addEventListener('DOMContentLoaded', function() {
             const sidebarToggle = document.getElementById('sidebar-toggle');

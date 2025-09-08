@@ -39,6 +39,13 @@ if (!defined('BASE_URL')) {
                     <span>Patient Management</span>
                 </a>
             </li>
+            
+            <li class="nav-item <?php echo ($current_page == 'profile.php') ? 'active' : ''; ?>">
+                <a href="<?php echo BASE_URL; ?>/modules/profile.php" class="nav-link">
+                    <i class="fas fa-user-cog"></i>
+                    <span>Profile Management</span>
+                </a>
+            </li>
         </ul>
     </nav>
 
@@ -48,31 +55,19 @@ if (!defined('BASE_URL')) {
             <p><i class="fas fa-database"></i> Connected</p>
         </div>
         
-        <!-- User Info and Logout -->
-        <div class="user-info">
-            <?php 
-            require_once __DIR__ . '/auth.php';
-            $user = getCurrentUser();
-            if ($user): 
-            ?>
-                <div class="user-details">
-                    <p><i class="fas fa-user"></i> <?php echo htmlspecialchars($user['username']); ?></p>
-                    <p class="login-time"><i class="fas fa-sign-in-alt"></i> <?php echo date('H:i', $user['login_time']); ?></p>
-                </div>
-                
-                <div class="user-actions">
-                    <button class="change-password-btn" onclick="openChangePasswordModal()">
-                        <i class="fas fa-key"></i>
-                        <span>Change Password</span>
-                    </button>
-                    
-                    <a href="?logout=1" class="logout-btn" onclick="return confirm('Are you sure you want to logout?');">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span>Logout</span>
-                    </a>
-                </div>
-            <?php endif; ?>
-        </div>
+        <!-- Logout Button -->
+        <?php 
+        require_once __DIR__ . '/auth.php';
+        $user = getCurrentUser();
+        if ($user): 
+        ?>
+            <div class="sidebar-logout">
+                <a href="?logout=1" class="logout-btn" onclick="return confirm('Are you sure you want to logout?');">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        <?php endif; ?>
     </div>
 </aside>
 
