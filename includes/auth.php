@@ -1,6 +1,8 @@
 <?php
 // Authentication middleware - Database-based authentication
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Include database connection
 require_once __DIR__ . '/../config/database.php';
