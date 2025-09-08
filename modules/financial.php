@@ -1,4 +1,8 @@
 <?php
+// Authentication protection
+require_once '../includes/auth.php';
+requireAuth();
+
 $page_title = 'Financial Management - Dental Practice Management';
 require_once '../config/database.php';
 require_once '../includes/header.php';

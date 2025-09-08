@@ -4,6 +4,10 @@
  * Generates Excel file with same column structure as export-all.php
  */
 
+// Authentication protection
+require_once '../includes/auth.php';
+requireAuth();
+
 require_once '../config/database.php';
 require_once '../config/config.php';
 

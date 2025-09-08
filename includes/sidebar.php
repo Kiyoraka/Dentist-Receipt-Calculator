@@ -47,6 +47,25 @@ if (!defined('BASE_URL')) {
             <p><i class="fas fa-clock"></i> <?php echo date('Y-m-d H:i'); ?></p>
             <p><i class="fas fa-database"></i> Connected</p>
         </div>
+        
+        <!-- User Info and Logout -->
+        <div class="user-info">
+            <?php 
+            require_once __DIR__ . '/auth.php';
+            $user = getCurrentUser();
+            if ($user): 
+            ?>
+                <div class="user-details">
+                    <p><i class="fas fa-user"></i> <?php echo htmlspecialchars($user['username']); ?></p>
+                    <p class="login-time"><i class="fas fa-sign-in-alt"></i> <?php echo date('H:i', $user['login_time']); ?></p>
+                </div>
+                
+                <a href="?logout=1" class="logout-btn" onclick="return confirm('Are you sure you want to logout?');">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            <?php endif; ?>
+        </div>
     </div>
 </aside>
 
