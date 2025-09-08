@@ -171,34 +171,6 @@ $user = getCurrentUser();
                 </form>
             </div>
         </div>
-        
-        <!-- Security Information -->
-        <div class="content-section">
-            <div class="section-header">
-                <h2 class="section-title">
-                    <i class="fas fa-info-circle"></i>
-                    Security Information
-                </h2>
-            </div>
-            
-            <div class="security-info-card">
-                <div class="security-tips">
-                    <h4><i class="fas fa-lightbulb"></i> Password Security Tips</h4>
-                    <ul>
-                        <li>Use at least 6 characters (recommended 8 or more)</li>
-                        <li>Include a mix of letters, numbers, and special characters</li>
-                        <li>Avoid using personal information</li>
-                        <li>Change your password regularly</li>
-                        <li>Don't share your password with others</li>
-                    </ul>
-                </div>
-                
-                <div class="system-note">
-                    <h4><i class="fas fa-cog"></i> System Note</h4>
-                    <p>This system currently uses hardcoded authentication for simplicity. In production, implement the users table from the provided SQL file for secure password management with proper hashing.</p>
-                </div>
-            </div>
-        </div>
     </div>
 
 <?php include '../includes/footer.php'; ?>
