@@ -46,13 +46,13 @@ try {
     
     // Add date filtering if specified
     if ($filter_month && $filter_year) {
-        $where_conditions[] = "DATE_FORMAT(r.created_at, '%m') = ? AND DATE_FORMAT(r.created_at, '%Y') = ?";
+        $where_conditions[] = "DATE_FORMAT(r.invoice_date, '%m') = ? AND DATE_FORMAT(r.invoice_date, '%Y') = ?";
         $params = array_merge($params, [$filter_month, $filter_year]);
     } elseif ($filter_month) {
-        $where_conditions[] = "DATE_FORMAT(r.created_at, '%m') = ?";
+        $where_conditions[] = "DATE_FORMAT(r.invoice_date, '%m') = ?";
         $params[] = $filter_month;
     } elseif ($filter_year) {
-        $where_conditions[] = "DATE_FORMAT(r.created_at, '%Y') = ?";
+        $where_conditions[] = "DATE_FORMAT(r.invoice_date, '%Y') = ?";
         $params[] = $filter_year;
     }
     
