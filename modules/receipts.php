@@ -57,7 +57,26 @@ if (isset($_POST['action']) && $_POST['action'] === 'update_receipt') {
             $_POST['receipt_id']
         ]);
         
-        if ($stmt->rowCount() > 0) {
+        if ($stmt->rowCount() > 0 || true) { // Allow service updates even if receipt data unchanged
+            // Update services - delete existing and insert new ones
+            $stmt = $conn->prepare("DELETE FROM receipt_services WHERE receipt_id = ?");
+            $stmt->execute([$_POST['receipt_id']]);
+            
+            // Insert new services
+            if (!empty($_POST['selected_services'])) {
+                $services = json_decode($_POST['selected_services'], true);
+                if ($services && is_array($services)) {
+                    $stmt = $conn->prepare("INSERT INTO receipt_services (receipt_id, service_name) VALUES (?, ?)");
+                    
+                    foreach ($services as $service) {
+                        $stmt->execute([
+                            $_POST['receipt_id'],
+                            $service['name']
+                        ]);
+                    }
+                }
+            }
+            
             $conn->commit();
             echo json_encode(['success' => true, 'message' => 'Receipt updated successfully']);
         } else {
@@ -231,6 +250,11 @@ try {
     $stmt = $conn->prepare("SELECT DISTINCT payment_method FROM receipts ORDER BY payment_method");
     $stmt->execute();
     $payment_methods = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    
+    // Get dental services for edit modal
+    $stmt = $conn->prepare("SELECT * FROM dental_services ORDER BY service_name");
+    $stmt->execute();
+    $dental_services = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
 } catch (PDOException $e) {
     $error_message = 'Database error: ' . $e->getMessage();
@@ -568,10 +592,46 @@ try {
             <!-- Services Section -->
             <div style="margin-bottom: 20px;">
                 <h4 style="color: #2563eb; margin-bottom: 15px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">
-                    <i class="fas fa-tooth"></i> Services
+                    <i class="fas fa-tooth"></i> Services & Charges Management
                 </h4>
-                <div id="editServicesDisplay" style="background: #f8fafc; padding: 15px; border-radius: 6px; border: 2px solid #e5e7eb; min-height: 50px;">
-                    <em style="color: #6b7280;">Services will be displayed here</em>
+                
+                <!-- Add Service Section -->
+                <div style="display: flex; gap: 10px; margin-bottom: 15px; align-items: end;">
+                    <div style="flex: 1;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">Add Service:</label>
+                        <select id="editServiceSelect" style="width: 100%; padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 14px;">
+                            <option value="">Select a service to add</option>
+                            <?php foreach ($dental_services as $service): ?>
+                                <option value="<?php echo $service['percentage']; ?>" 
+                                        data-service="<?php echo htmlspecialchars($service['service_name']); ?>">
+                                    <?php 
+                                    if (floatval($service['percentage']) == 0) {
+                                        echo htmlspecialchars($service['service_name']) . ' (0% Doctor Fee)';
+                                    } else {
+                                        echo htmlspecialchars($service['service_name']) . ' (' . $service['percentage'] . '% Doctor Fee)';
+                                    }
+                                    ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">Charge Amount:</label>
+                        <input type="number" id="editServiceAmount" min="0" step="0.01" placeholder="0.00" 
+                               style="width: 120px; padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 14px;">
+                    </div>
+                    <button type="button" onclick="addServiceToEdit()" 
+                            style="background: #2563eb; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                        <i class="fas fa-plus"></i> Add
+                    </button>
+                </div>
+                
+                <!-- Selected Services Display -->
+                <div>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">Selected Services:</label>
+                    <div id="editSelectedServices" style="background: #f8fafc; padding: 15px; border-radius: 6px; border: 2px solid #e5e7eb; min-height: 60px;">
+                        <em style="color: #6b7280;">No services selected</em>
+                    </div>
                 </div>
             </div>
         </form>
@@ -621,6 +681,105 @@ try {
 
 <script>
 let currentReceiptId = null;
+let editModalServices = [];
+
+// Dental services data for percentage lookup
+const dentalServicesData = <?php echo json_encode(array_column($dental_services, 'percentage', 'service_name')); ?>;
+
+function getServicePercentage(serviceName) {
+    return dentalServicesData[serviceName] || 0;
+}
+
+// Service management functions for edit modal
+function addServiceToEdit() {
+    const serviceSelect = document.getElementById('editServiceSelect');
+    const amountInput = document.getElementById('editServiceAmount');
+    
+    if (!serviceSelect.value || !amountInput.value) {
+        showToast('Please select a service and enter an amount', 'error');
+        return;
+    }
+    
+    const serviceName = serviceSelect.options[serviceSelect.selectedIndex].dataset.service;
+    const percentage = parseFloat(serviceSelect.value);
+    const amount = parseFloat(amountInput.value);
+    
+    // Check if service already exists
+    if (editModalServices.some(s => s.name === serviceName)) {
+        showToast('Service already added', 'error');
+        return;
+    }
+    
+    // Calculate doctor and clinic fees
+    const doctorFee = (amount * percentage) / 100;
+    const clinicFee = amount - doctorFee;
+    
+    // Add to services array
+    editModalServices.push({
+        name: serviceName,
+        percentage: percentage,
+        amount: amount,
+        doctorFee: doctorFee,
+        clinicFee: clinicFee
+    });
+    
+    // Reset form
+    serviceSelect.value = '';
+    amountInput.value = '';
+    
+    // Update display
+    updateEditServicesDisplay();
+    calculateEditTotals();
+}
+
+function removeServiceFromEdit(serviceName) {
+    editModalServices = editModalServices.filter(s => s.name !== serviceName);
+    updateEditServicesDisplay();
+    calculateEditTotals();
+}
+
+function updateEditServicesDisplay() {
+    const container = document.getElementById('editSelectedServices');
+    
+    if (editModalServices.length === 0) {
+        container.innerHTML = '<em style="color: #6b7280;">No services selected</em>';
+        return;
+    }
+    
+    let html = '<div style="display: grid; gap: 8px;">';
+    
+    editModalServices.forEach(service => {
+        html += `
+            <div style="display: flex; justify-content: space-between; align-items: center; background: white; padding: 12px; border-radius: 6px; border: 1px solid #e5e7eb;">
+                <div style="flex: 1;">
+                    <div style="font-weight: 600; color: #374151; margin-bottom: 4px;">${service.name}</div>
+                    <div style="font-size: 12px; color: #6b7280;">
+                        Doctor: RM ${service.doctorFee.toFixed(2)} | Clinic: RM ${service.clinicFee.toFixed(2)} | Total: RM ${service.amount.toFixed(2)}
+                    </div>
+                </div>
+                <button type="button" onclick="removeServiceFromEdit('${service.name.replace(/'/g, "\\'")}')" 
+                        style="background: #dc2626; color: white; border: none; padding: 6px 8px; border-radius: 4px; cursor: pointer; margin-left: 10px;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+function calculateEditTotals() {
+    const totalDoctorFee = editModalServices.reduce((sum, s) => sum + s.doctorFee, 0);
+    const totalClinicFee = editModalServices.reduce((sum, s) => sum + s.clinicFee, 0);
+    const totalAmount = totalDoctorFee + totalClinicFee;
+    
+    // Update form fields
+    document.getElementById('editDoctorFee').value = totalDoctorFee.toFixed(2);
+    document.getElementById('editClinicFee').value = totalClinicFee.toFixed(2);
+    document.getElementById('editSubtotal').value = totalAmount.toFixed(2);
+    document.getElementById('editTotalAmount').value = totalAmount.toFixed(2);
+}
 
 function editReceipt(receiptId) {
     // Fetch receipt data and show modal
@@ -645,14 +804,36 @@ function editReceipt(receiptId) {
         document.getElementById('editSubtotal').value = data.subtotal;
         document.getElementById('editTotalAmount').value = data.total_amount;
         
-        // Display services
-        const servicesDisplay = document.getElementById('editServicesDisplay');
+        // Reset and populate services
+        editModalServices = [];
+        
         if (data.services && data.services.length > 0) {
-            servicesDisplay.innerHTML = data.services.map(service => 
-                `<span style="background: #dbeafe; color: #2563eb; padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-right: 8px; display: inline-block; margin-bottom: 4px;">${service}</span>`
-            ).join('');
+            // Calculate individual service amounts based on total fees and service percentages
+            const totalDoctorFee = parseFloat(data.doctor_fee);
+            const totalClinicFee = parseFloat(data.clinic_fee);
+            const totalAmount = totalDoctorFee + totalClinicFee;
+            
+            // For simplicity, divide total amount equally among services (or you can store individual amounts in database)
+            const amountPerService = totalAmount / data.services.length;
+            
+            data.services.forEach(serviceName => {
+                // Find service percentage from dental services data
+                const servicePercentage = getServicePercentage(serviceName);
+                const doctorFee = (amountPerService * servicePercentage) / 100;
+                const clinicFee = amountPerService - doctorFee;
+                
+                editModalServices.push({
+                    name: serviceName,
+                    percentage: servicePercentage,
+                    amount: amountPerService,
+                    doctorFee: doctorFee,
+                    clinicFee: clinicFee
+                });
+            });
+            
+            updateEditServicesDisplay();
         } else {
-            servicesDisplay.innerHTML = '<em style="color: #6b7280;">No services recorded</em>';
+            updateEditServicesDisplay();
         }
         
         // Show modal
@@ -682,6 +863,11 @@ function hideDeleteModal() {
 
 function hideEditModal() {
     document.getElementById('editReceiptModal').style.display = 'none';
+    // Clear the services array
+    editModalServices = [];
+    // Reset form
+    document.getElementById('editReceiptForm').reset();
+    updateEditServicesDisplay();
 }
 
 function saveEditedReceipt() {
@@ -703,6 +889,9 @@ function saveEditedReceipt() {
     formData.append('payment_method', document.getElementById('editPaymentMethod').value);
     formData.append('subtotal', document.getElementById('editSubtotal').value);
     formData.append('total_amount', document.getElementById('editTotalAmount').value);
+    
+    // Add services data
+    formData.append('selected_services', JSON.stringify(editModalServices));
     
     fetch('receipts.php', {
         method: 'POST',
