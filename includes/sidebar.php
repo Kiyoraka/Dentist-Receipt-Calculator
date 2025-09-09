@@ -33,6 +33,13 @@ if (!defined('BASE_URL')) {
                 </a>
             </li>
             
+            <li class="nav-item <?php echo ($current_page == 'receipts.php') ? 'active' : ''; ?>">
+                <a href="<?php echo BASE_URL; ?>/modules/receipts.php" class="nav-link">
+                    <i class="fas fa-receipt"></i>
+                    <span>Receipt Management</span>
+                </a>
+            </li>
+            
             <li class="nav-item <?php echo ($current_page == 'patients.php') ? 'active' : ''; ?>">
                 <a href="<?php echo BASE_URL; ?>/modules/patients.php" class="nav-link">
                     <i class="fas fa-users"></i>

@@ -11,6 +11,47 @@ require_once '../includes/header.php';
 $db = new Database();
 $conn = $db->getConnection();
 
+// Check if we're in edit mode
+$edit_mode = false;
+$edit_receipt = null;
+$edit_receipt_services = [];
+$edit_receipt_charges = [];
+
+if (isset($_GET['edit_receipt']) && !empty($_GET['edit_receipt'])) {
+    $edit_mode = true;
+    $edit_receipt_id = $_GET['edit_receipt'];
+    
+    try {
+        // Get receipt details
+        $stmt = $conn->prepare("
+            SELECT r.*, p.name as patient_name 
+            FROM receipts r 
+            LEFT JOIN patients p ON r.patient_id = p.id 
+            WHERE r.id = ?
+        ");
+        $stmt->execute([$edit_receipt_id]);
+        $edit_receipt = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($edit_receipt) {
+            // Get services for this receipt
+            $stmt = $conn->prepare("SELECT service_name FROM receipt_services WHERE receipt_id = ?");
+            $stmt->execute([$edit_receipt_id]);
+            $edit_receipt_services = $stmt->fetchAll(PDO::FETCH_COLUMN);
+            
+            // Get charges for this receipt
+            $stmt = $conn->prepare("SELECT description, amount FROM receipt_charges WHERE receipt_id = ?");
+            $stmt->execute([$edit_receipt_id]);
+            $edit_receipt_charges = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } else {
+            $error_message = "Receipt not found for editing.";
+            $edit_mode = false;
+        }
+    } catch (PDOException $e) {
+        $error_message = "Error loading receipt for editing: " . $e->getMessage();
+        $edit_mode = false;
+    }
+}
+
 // Handle form submission
 if ($_POST && isset($_POST['action'])) {
     try {
@@ -37,6 +78,8 @@ if ($_POST && isset($_POST['action'])) {
             // Begin transaction
             $conn->beginTransaction();
             
+            $is_update = isset($_POST['edit_receipt_id']) && !empty($_POST['edit_receipt_id']);
+            
             // Get or create patient
             $patient_id = null;
             if (!empty($_POST['customer_name'])) {
@@ -55,27 +98,60 @@ if ($_POST && isset($_POST['action'])) {
                 }
             }
             
-            // Insert receipt
-            $stmt = $conn->prepare("INSERT INTO receipts (patient_id, invoice_number, terminal_invoice_number, invoice_date, clinic_fee, doctor_fee, other_charges, payment_method, payment_fee_percentage, payment_fee_amount, terminal_charge_percentage, terminal_charge_amount, subtotal, total_amount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            
-            $stmt->execute([
-                $patient_id,
-                $_POST['invoice_number'],
-                $_POST['terminal_invoice_number'] ?? '',
-                $_POST['invoice_date'],
-                $_POST['clinic_fee'],
-                $_POST['doctor_fee'],
-                $_POST['other_charges'],
-                $_POST['payment_method'],
-                $_POST['payment_fee_percentage'],
-                $_POST['payment_fee_amount'],
-                $_POST['terminal_charge_percentage'] ?? 0,
-                $_POST['terminal_charge_amount'] ?? 0,
-                $_POST['subtotal'],
-                $_POST['total_amount']
-            ]);
-            
-            $receipt_id = $conn->lastInsertId();
+            if ($is_update) {
+                // Update existing receipt
+                $receipt_id = $_POST['edit_receipt_id'];
+                
+                $stmt = $conn->prepare("UPDATE receipts SET patient_id = ?, invoice_number = ?, terminal_invoice_number = ?, invoice_date = ?, clinic_fee = ?, doctor_fee = ?, other_charges = ?, payment_method = ?, payment_fee_percentage = ?, payment_fee_amount = ?, terminal_charge_percentage = ?, terminal_charge_amount = ?, subtotal = ?, total_amount = ? WHERE id = ?");
+                
+                $stmt->execute([
+                    $patient_id,
+                    $_POST['invoice_number'],
+                    $_POST['terminal_invoice_number'] ?? '',
+                    $_POST['invoice_date'],
+                    $_POST['clinic_fee'],
+                    $_POST['doctor_fee'],
+                    $_POST['other_charges'],
+                    $_POST['payment_method'],
+                    $_POST['payment_fee_percentage'],
+                    $_POST['payment_fee_amount'],
+                    $_POST['terminal_charge_percentage'] ?? 0,
+                    $_POST['terminal_charge_amount'] ?? 0,
+                    $_POST['subtotal'],
+                    $_POST['total_amount'],
+                    $receipt_id
+                ]);
+                
+                // Delete existing services and charges for this receipt
+                $stmt = $conn->prepare("DELETE FROM receipt_services WHERE receipt_id = ?");
+                $stmt->execute([$receipt_id]);
+                
+                $stmt = $conn->prepare("DELETE FROM receipt_charges WHERE receipt_id = ?");
+                $stmt->execute([$receipt_id]);
+                
+            } else {
+                // Insert new receipt
+                $stmt = $conn->prepare("INSERT INTO receipts (patient_id, invoice_number, terminal_invoice_number, invoice_date, clinic_fee, doctor_fee, other_charges, payment_method, payment_fee_percentage, payment_fee_amount, terminal_charge_percentage, terminal_charge_amount, subtotal, total_amount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                
+                $stmt->execute([
+                    $patient_id,
+                    $_POST['invoice_number'],
+                    $_POST['terminal_invoice_number'] ?? '',
+                    $_POST['invoice_date'],
+                    $_POST['clinic_fee'],
+                    $_POST['doctor_fee'],
+                    $_POST['other_charges'],
+                    $_POST['payment_method'],
+                    $_POST['payment_fee_percentage'],
+                    $_POST['payment_fee_amount'],
+                    $_POST['terminal_charge_percentage'] ?? 0,
+                    $_POST['terminal_charge_amount'] ?? 0,
+                    $_POST['subtotal'],
+                    $_POST['total_amount']
+                ]);
+                
+                $receipt_id = $conn->lastInsertId();
+            }
             
             // Insert services
             if (!empty($_POST['selected_services'])) {
@@ -105,7 +181,11 @@ if ($_POST && isset($_POST['action'])) {
             }
             
             $conn->commit();
-            $success_message = "Receipt saved successfully! Invoice #: " . $_POST['invoice_number'];
+            if ($is_update) {
+                $success_message = "Receipt updated successfully! Invoice #: " . $_POST['invoice_number'];
+            } else {
+                $success_message = "Receipt saved successfully! Invoice #: " . $_POST['invoice_number'];
+            }
             
             // Preserve form data for printing after successful save
             $saved_receipt_data = $_POST;
@@ -141,9 +221,22 @@ try {
     <div class="content-header">
         <h1 class="content-title">
             <i class="fas fa-calculator"></i>
-            Financial Management
+            <?php if ($edit_mode): ?>
+                Edit Receipt - Financial Management
+            <?php else: ?>
+                Financial Management
+            <?php endif; ?>
         </h1>
-        <p class="content-subtitle">Receipt calculator and financial tracking</p>
+        <p class="content-subtitle">
+            <?php if ($edit_mode): ?>
+                Editing receipt: <?php echo htmlspecialchars($edit_receipt['invoice_number']); ?>
+                <a href="../modules/financial.php" style="margin-left: 15px; color: #2563eb; text-decoration: none;">
+                    <i class="fas fa-plus"></i> Create New Receipt
+                </a>
+            <?php else: ?>
+                Receipt calculator and financial tracking
+            <?php endif; ?>
+        </p>
     </div>
 
 
@@ -160,6 +253,9 @@ try {
 
                 <form id="receipt-form" method="POST" class="receipt-form">
                     <input type="hidden" name="action" value="save_receipt">
+                    <?php if ($edit_mode): ?>
+                        <input type="hidden" name="edit_receipt_id" value="<?php echo $edit_receipt['id']; ?>">
+                    <?php endif; ?>
                     <input type="hidden" name="charges_list" id="charges-list-data">
                     <input type="hidden" name="clinic_fee" id="clinic-fee-input">
                     <input type="hidden" name="doctor_fee" id="doctor-fee-input"> 
@@ -177,20 +273,38 @@ try {
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="invoice-date">Invoice Date:</label>
-                                <input type="date" id="invoice-date" name="invoice_date" required value="<?php echo date('Y-m-d'); ?>">
+                                <input type="date" 
+                                       id="invoice-date" 
+                                       name="invoice_date" 
+                                       required 
+                                       value="<?php echo $edit_mode ? $edit_receipt['invoice_date'] : date('Y-m-d'); ?>">
                             </div>
                             <div class="form-group">
                                 <label for="invoice-number">Invoice Number:</label>
-                                <input type="text" id="invoice-number" name="invoice_number" placeholder="INV-<?php echo date('Ymd'); ?>-001" required>
+                                <input type="text" 
+                                       id="invoice-number" 
+                                       name="invoice_number" 
+                                       placeholder="INV-<?php echo date('Ymd'); ?>-001" 
+                                       required
+                                       value="<?php echo $edit_mode ? htmlspecialchars($edit_receipt['invoice_number']) : ''; ?>">
                             </div>
                             <div class="form-group">
                                 <label for="terminal-invoice-number">Terminal Invoice Number:</label>
-                                <input type="text" id="terminal-invoice-number" name="terminal_invoice_number" placeholder="T-<?php echo date('Ymd'); ?>-001">
+                                <input type="text" 
+                                       id="terminal-invoice-number" 
+                                       name="terminal_invoice_number" 
+                                       placeholder="T-<?php echo date('Ymd'); ?>-001"
+                                       value="<?php echo $edit_mode ? htmlspecialchars($edit_receipt['terminal_invoice_number'] ?? '') : ''; ?>">
                             </div>
                         </div>
                         <div class="form-group">
                             <label for="customer-name">Customer Name:</label>
-                            <input type="text" id="customer-name" name="customer_name" placeholder="Patient Name" required>
+                            <input type="text" 
+                                   id="customer-name" 
+                                   name="customer_name" 
+                                   placeholder="Patient Name" 
+                                   required
+                                   value="<?php echo $edit_mode ? htmlspecialchars($edit_receipt['patient_name'] ?? '') : ''; ?>">
                         </div>
                     </div>
 
@@ -382,6 +496,69 @@ try {
             </div>
         </div>
     </div>
+
+<?php if ($edit_mode && $edit_receipt): ?>
+<script>
+// Pre-populate form data for editing
+document.addEventListener('DOMContentLoaded', function() {
+    // Restore calculation data from edit receipt
+    calculationData.totalClinicFee = <?php echo $edit_receipt['clinic_fee']; ?>;
+    calculationData.totalDoctorFee = <?php echo $edit_receipt['doctor_fee']; ?>;
+    calculationData.paymentMethod = '<?php echo $edit_receipt['payment_method']; ?>';
+    calculationData.paymentFeePercentage = <?php echo $edit_receipt['payment_fee_percentage']; ?>;
+    calculationData.paymentFeeAmount = <?php echo $edit_receipt['payment_fee_amount']; ?>;
+    calculationData.subtotal = <?php echo $edit_receipt['subtotal']; ?>;
+    calculationData.totalAmount = <?php echo $edit_receipt['total_amount']; ?>;
+    
+    // Restore services and calculate charges for editing
+    <?php if (!empty($edit_receipt_services)): ?>
+    const editServices = <?php echo json_encode($edit_receipt_services); ?>;
+    const serviceFees = {};
+    
+    // Get service percentages from dental services
+    <?php foreach ($dental_services as $service): ?>
+    serviceFees['<?php echo addslashes($service['service_name']); ?>'] = <?php echo $service['percentage']; ?>;
+    <?php endforeach; ?>
+    
+    // Calculate charges based on services and fees
+    calculationData.charges = [];
+    const clinicFee = <?php echo $edit_receipt['clinic_fee']; ?>;
+    const doctorFee = <?php echo $edit_receipt['doctor_fee']; ?>;
+    const totalServiceFee = clinicFee + doctorFee;
+    
+    editServices.forEach(function(serviceName) {
+        const servicePercentage = serviceFees[serviceName] || 0;
+        const calculatedDoctorFee = (totalServiceFee * servicePercentage) / 100;
+        const calculatedClinicFee = totalServiceFee - calculatedDoctorFee;
+        
+        calculationData.charges.push({
+            name: serviceName,
+            amount: totalServiceFee,
+            doctorFee: calculatedDoctorFee,
+            clinicFee: calculatedClinicFee
+        });
+    });
+    <?php endif; ?>
+    
+    // Restore other charges
+    <?php if (!empty($edit_receipt_charges)): ?>
+    calculationData.otherCharges = <?php echo json_encode($edit_receipt_charges); ?>;
+    <?php endif; ?>
+    
+    // Update displays
+    updateChargesDisplay();
+    updateFinalCalculation();
+    
+    // Enable save and print buttons
+    document.getElementById('save-btn').disabled = false;
+    document.getElementById('print-btn').disabled = false;
+    
+    // Select correct payment method
+    const paymentRadio = document.querySelector(`input[name="payment_method"][value="<?php echo $edit_receipt['payment_method']; ?>"]`);
+    if (paymentRadio) paymentRadio.checked = true;
+});
+</script>
+<?php endif; ?>
 
 <?php if (isset($saved_receipt_data)): ?>
 <script>
