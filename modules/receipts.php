@@ -10,6 +10,67 @@ require_once '../config/config.php';
 $db = new Database();
 $conn = $db->getConnection();
 
+// Handle AJAX request for receipt update
+if (isset($_POST['action']) && $_POST['action'] === 'update_receipt') {
+    header('Content-Type: application/json');
+    
+    if (!isset($_POST['receipt_id'])) {
+        echo json_encode(['success' => false, 'message' => 'Receipt ID required']);
+        exit;
+    }
+    
+    try {
+        $conn->beginTransaction();
+        
+        // Get or create patient
+        $patient_id = null;
+        if (!empty($_POST['customer_name'])) {
+            // Check if patient exists
+            $stmt = $conn->prepare("SELECT id FROM patients WHERE name = ? LIMIT 1");
+            $stmt->execute([$_POST['customer_name']]);
+            $patient = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($patient) {
+                $patient_id = $patient['id'];
+            } else {
+                // Create new patient
+                $stmt = $conn->prepare("INSERT INTO patients (name) VALUES (?)");
+                $stmt->execute([$_POST['customer_name']]);
+                $patient_id = $conn->lastInsertId();
+            }
+        }
+        
+        // Update receipt
+        $stmt = $conn->prepare("UPDATE receipts SET patient_id = ?, invoice_number = ?, terminal_invoice_number = ?, invoice_date = ?, clinic_fee = ?, doctor_fee = ?, other_charges = ?, payment_method = ?, subtotal = ?, total_amount = ? WHERE id = ?");
+        
+        $stmt->execute([
+            $patient_id,
+            $_POST['invoice_number'],
+            $_POST['terminal_invoice_number'] ?? '',
+            $_POST['invoice_date'],
+            $_POST['clinic_fee'],
+            $_POST['doctor_fee'],
+            $_POST['other_charges'] ?? 0,
+            $_POST['payment_method'],
+            $_POST['subtotal'],
+            $_POST['total_amount'],
+            $_POST['receipt_id']
+        ]);
+        
+        if ($stmt->rowCount() > 0) {
+            $conn->commit();
+            echo json_encode(['success' => true, 'message' => 'Receipt updated successfully']);
+        } else {
+            $conn->rollback();
+            echo json_encode(['success' => false, 'message' => 'Receipt not found or no changes made']);
+        }
+    } catch (PDOException $e) {
+        $conn->rollback();
+        echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
+    }
+    exit;
+}
+
 // Handle AJAX request for receipt deletion
 if (isset($_POST['action']) && $_POST['action'] === 'delete_receipt') {
     header('Content-Type: application/json');
@@ -338,16 +399,14 @@ try {
                                 </span>
                             </td>
                             <td style="padding: 15px; text-align: center;">
-                                <button onclick="editReceipt(<?php echo $receipt['id']; ?>)" 
-                                        style="background: #f59e0b; color: white; border: none; padding: 6px 12px; border-radius: 4px; margin-right: 5px; cursor: pointer; font-size: 12px;"
-                                        title="Edit Receipt">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button onclick="deleteReceipt(<?php echo $receipt['id']; ?>, '<?php echo htmlspecialchars($receipt['invoice_number']); ?>')" 
-                                        style="background: #dc2626; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;"
-                                        title="Delete Receipt">
-                                    <i class="fas fa-trash"></i>
-                                </button>
+                                <div class="action-buttons-row">
+                                    <button type="button" class="btn-action btn-edit" onclick="editReceipt(<?php echo $receipt['id']; ?>)" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button type="button" class="btn-action btn-delete" onclick="deleteReceipt(<?php echo $receipt['id']; ?>, '<?php echo htmlspecialchars($receipt['invoice_number']); ?>')" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -380,6 +439,117 @@ try {
             </div>
         </div>
     <?php endif; ?>
+</div>
+
+<!-- Edit Receipt Modal -->
+<div id="editReceiptModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; overflow-y: auto;">
+    <div class="modal-content" style="background: white; padding: 0; border-radius: 10px; max-width: 800px; width: 95%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3); margin: 20px;">
+        <div class="modal-header" style="background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: white; padding: 20px; border-radius: 10px 10px 0 0; display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0; font-size: 20px;">
+                <i class="fas fa-edit" style="margin-right: 10px;"></i>
+                Edit Receipt
+            </h3>
+            <button type="button" onclick="hideEditModal()" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 0; line-height: 1;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <form id="editReceiptForm" style="padding: 20px;">
+            <input type="hidden" id="editReceiptId" name="receipt_id">
+            
+            <!-- Invoice Details Section -->
+            <div style="margin-bottom: 20px;">
+                <h4 style="color: #2563eb; margin-bottom: 15px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">
+                    <i class="fas fa-file-invoice"></i> Invoice Details
+                </h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">Invoice Date:</label>
+                        <input type="date" id="editInvoiceDate" name="invoice_date" required style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 14px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">Invoice Number:</label>
+                        <input type="text" id="editInvoiceNumber" name="invoice_number" required style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 14px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">Terminal Invoice:</label>
+                        <input type="text" id="editTerminalInvoice" name="terminal_invoice_number" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 14px;">
+                    </div>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">Patient Name:</label>
+                    <input type="text" id="editPatientName" name="patient_name" required style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 14px;">
+                </div>
+            </div>
+            
+            <!-- Financial Details Section -->
+            <div style="margin-bottom: 20px;">
+                <h4 style="color: #2563eb; margin-bottom: 15px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">
+                    <i class="fas fa-calculator"></i> Financial Details
+                </h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">Doctor Fee:</label>
+                        <input type="number" id="editDoctorFee" name="doctor_fee" step="0.01" min="0" required style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 14px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">Clinic Fee:</label>
+                        <input type="number" id="editClinicFee" name="clinic_fee" step="0.01" min="0" required style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 14px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">Other Charges:</label>
+                        <input type="number" id="editOtherCharges" name="other_charges" step="0.01" min="0" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 14px;">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Payment Details Section -->
+            <div style="margin-bottom: 20px;">
+                <h4 style="color: #2563eb; margin-bottom: 15px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">
+                    <i class="fas fa-credit-card"></i> Payment Details
+                </h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">Payment Method:</label>
+                        <select id="editPaymentMethod" name="payment_method" required style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 14px;">
+                            <option value="Cash">Cash</option>
+                            <option value="Online">Online</option>
+                            <option value="Debit Card">Debit Card</option>
+                            <option value="Credit Card">Credit Card</option>
+                            <option value="Mastercard">Mastercard</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">Subtotal:</label>
+                        <input type="number" id="editSubtotal" name="subtotal" step="0.01" min="0" readonly style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 14px; background: #f9fafb;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">Total Amount:</label>
+                        <input type="number" id="editTotalAmount" name="total_amount" step="0.01" min="0" required style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 14px; font-weight: 600; color: #059669;">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Services Section -->
+            <div style="margin-bottom: 20px;">
+                <h4 style="color: #2563eb; margin-bottom: 15px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">
+                    <i class="fas fa-tooth"></i> Services
+                </h4>
+                <div id="editServicesDisplay" style="background: #f8fafc; padding: 15px; border-radius: 6px; border: 2px solid #e5e7eb; min-height: 50px;">
+                    <em style="color: #6b7280;">Services will be displayed here</em>
+                </div>
+            </div>
+        </form>
+        
+        <div class="modal-footer" style="padding: 20px; border-top: 1px solid #e5e7eb; background: #f8fafc; border-radius: 0 0 10px 10px; display: flex; justify-content: end; gap: 15px;">
+            <button type="button" onclick="hideEditModal()" style="background: #6b7280; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                <i class="fas fa-times"></i> Cancel
+            </button>
+            <button type="button" onclick="saveEditedReceipt()" style="background: #2563eb; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                <i class="fas fa-save"></i> Save Changes
+            </button>
+        </div>
+    </div>
 </div>
 
 <!-- Delete Confirmation Modal -->
@@ -418,8 +588,45 @@ try {
 let currentReceiptId = null;
 
 function editReceipt(receiptId) {
-    // Redirect to financial management with edit parameter
-    window.location.href = '../modules/financial.php?edit_receipt=' + receiptId;
+    // Fetch receipt data and show modal
+    fetch('receipts.php?action=get_receipt&receipt_id=' + receiptId)
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            showToast(data.error, 'error');
+            return;
+        }
+        
+        // Populate modal form with receipt data
+        document.getElementById('editReceiptId').value = receiptId;
+        document.getElementById('editInvoiceDate').value = data.invoice_date;
+        document.getElementById('editInvoiceNumber').value = data.invoice_number;
+        document.getElementById('editTerminalInvoice').value = data.terminal_invoice_number || '';
+        document.getElementById('editPatientName').value = data.patient_name || '';
+        document.getElementById('editDoctorFee').value = data.doctor_fee;
+        document.getElementById('editClinicFee').value = data.clinic_fee;
+        document.getElementById('editOtherCharges').value = data.other_charges || '0';
+        document.getElementById('editPaymentMethod').value = data.payment_method;
+        document.getElementById('editSubtotal').value = data.subtotal;
+        document.getElementById('editTotalAmount').value = data.total_amount;
+        
+        // Display services
+        const servicesDisplay = document.getElementById('editServicesDisplay');
+        if (data.services && data.services.length > 0) {
+            servicesDisplay.innerHTML = data.services.map(service => 
+                `<span style="background: #dbeafe; color: #2563eb; padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-right: 8px; display: inline-block; margin-bottom: 4px;">${service}</span>`
+            ).join('');
+        } else {
+            servicesDisplay.innerHTML = '<em style="color: #6b7280;">No services recorded</em>';
+        }
+        
+        // Show modal
+        document.getElementById('editReceiptModal').style.display = 'flex';
+    })
+    .catch(error => {
+        showToast('Error loading receipt data', 'error');
+        console.error('Error:', error);
+    });
 }
 
 function deleteReceipt(receiptId, invoiceNumber) {
@@ -436,6 +643,53 @@ function deleteReceipt(receiptId, invoiceNumber) {
 function hideDeleteModal() {
     document.getElementById('deleteModal').style.display = 'none';
     currentReceiptId = null;
+}
+
+function hideEditModal() {
+    document.getElementById('editReceiptModal').style.display = 'none';
+}
+
+function saveEditedReceipt() {
+    const form = document.getElementById('editReceiptForm');
+    const formData = new FormData();
+    
+    // Add action and receipt ID
+    formData.append('action', 'update_receipt');
+    formData.append('receipt_id', document.getElementById('editReceiptId').value);
+    
+    // Add all form data
+    formData.append('invoice_date', document.getElementById('editInvoiceDate').value);
+    formData.append('invoice_number', document.getElementById('editInvoiceNumber').value);
+    formData.append('terminal_invoice_number', document.getElementById('editTerminalInvoice').value);
+    formData.append('customer_name', document.getElementById('editPatientName').value);
+    formData.append('doctor_fee', document.getElementById('editDoctorFee').value);
+    formData.append('clinic_fee', document.getElementById('editClinicFee').value);
+    formData.append('other_charges', document.getElementById('editOtherCharges').value || '0');
+    formData.append('payment_method', document.getElementById('editPaymentMethod').value);
+    formData.append('subtotal', document.getElementById('editSubtotal').value);
+    formData.append('total_amount', document.getElementById('editTotalAmount').value);
+    
+    fetch('receipts.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message || 'Receipt updated successfully', 'success');
+            hideEditModal();
+            // Reload page to show updated data
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showToast(data.message || 'Error updating receipt', 'error');
+        }
+    })
+    .catch(error => {
+        showToast('Network error occurred', 'error');
+        console.error('Error:', error);
+    });
 }
 
 function confirmDelete(receiptId) {
@@ -515,17 +769,28 @@ function showToast(message, type = 'info') {
     }, 3000);
 }
 
-// Close modal when clicking outside
+// Close modals when clicking outside
 document.getElementById('deleteModal').addEventListener('click', function(e) {
     if (e.target === this) {
         hideDeleteModal();
     }
 });
 
-// Close modal on Escape key
+document.getElementById('editReceiptModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        hideEditModal();
+    }
+});
+
+// Close modals on Escape key
 document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && document.getElementById('deleteModal').style.display === 'flex') {
-        hideDeleteModal();
+    if (e.key === 'Escape') {
+        if (document.getElementById('deleteModal').style.display === 'flex') {
+            hideDeleteModal();
+        }
+        if (document.getElementById('editReceiptModal').style.display === 'flex') {
+            hideEditModal();
+        }
     }
 });
 </script>
