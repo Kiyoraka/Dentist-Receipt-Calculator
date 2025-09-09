@@ -245,13 +245,13 @@ try {
             </div>
             
             <!-- Filter Buttons -->
-            <div>
+            <div style="display: flex; gap: 10px;">
                 <button type="submit" 
-                        style="background: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-right: 10px;">
+                        style="background: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; min-width: 100px;">
                     <i class="fas fa-filter"></i> Filter
                 </button>
                 <a href="?" 
-                   style="background: #6b7280; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; text-decoration: none; display: inline-block;">
+                   style="background: #6b7280; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; text-decoration: none; display: inline-block; text-align: center; min-width: 100px; box-sizing: border-box;">
                     <i class="fas fa-times"></i> Clear
                 </a>
             </div>
