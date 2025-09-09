@@ -162,10 +162,10 @@ $additional_css = ['../assets/css/charge-calculator.css'];
 require_once '../includes/header.php';
 
 // Pagination and filtering
+$records_per_page = 10;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$limit = isset($_GET['per_page']) ? (int)$_GET['per_page'] : 10;
-$limit = in_array($limit, [10, 25, 50]) ? $limit : 10; // Validate limit
-$offset = ($page - 1) * $limit;
+$page = max(1, $page); // Ensure page is at least 1
+$offset = ($page - 1) * $records_per_page;
 
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $date_from = isset($_GET['date_from']) ? $_GET['date_from'] : '';
@@ -206,7 +206,7 @@ try {
     $stmt = $conn->prepare($count_sql);
     $stmt->execute($params);
     $total_receipts = $stmt->fetchColumn();
-    $total_pages = ceil($total_receipts / $limit);
+    $total_pages = ceil($total_receipts / $records_per_page);
     
     // Get receipts with patient info and services
     $sql = "
@@ -220,7 +220,7 @@ try {
         WHERE $where_clause
         GROUP BY r.id 
         ORDER BY r.created_at DESC 
-        LIMIT $limit OFFSET $offset
+        LIMIT $records_per_page OFFSET $offset
     ";
     
     $stmt = $conn->prepare($sql);
@@ -416,97 +416,61 @@ try {
         </table>
     </div>
     
-    <!-- Enhanced Pagination Section -->
-    <div style="padding: 20px; border-top: 1px solid #e5e7eb; background: #f8fafc;">
-        <div style="display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap;">
+    <!-- Pagination Controls -->
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px; background: #f9fafb; border-top: 2px solid #e5e7eb; margin-top: -1px;">
+        <div style="color: #6b7280; font-size: 14px;">
+            <?php if($total_receipts > 0): ?>
+                Showing <strong><?php echo $offset + 1; ?></strong> to <strong><?php echo min($offset + $records_per_page, $total_receipts); ?></strong> of <strong><?php echo $total_receipts; ?></strong> receipts
+            <?php else: ?>
+                No receipts to display
+            <?php endif; ?>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <?php 
+            // Build query parameters for pagination links
+            $query_params = [];
+            if (!empty($search)) $query_params[] = 'search=' . urlencode($search);
+            if (!empty($date_from)) $query_params[] = 'date_from=' . urlencode($date_from);
+            if (!empty($date_to)) $query_params[] = 'date_to=' . urlencode($date_to);
+            if (!empty($payment_method)) $query_params[] = 'payment_method=' . urlencode($payment_method);
+            $query_string = !empty($query_params) ? '&' . implode('&', $query_params) : '';
+            ?>
             
-            <!-- Pagination Info & Page Size Selector -->
-            <div style="display: flex; align-items: center; gap: 20px; flex: 1;">
-                <div style="color: #6b7280; font-weight: 500; font-size: 14px;">
-                    <?php 
-                    $start = $offset + 1;
-                    $end = min($offset + $limit, $total_receipts);
-                    echo "Showing $start-$end of " . number_format($total_receipts) . " receipts";
-                    ?>
-                </div>
-                
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <label style="color: #374151; font-weight: 500; font-size: 14px;">Show:</label>
-                    <select onchange="changePageSize(this.value)" style="padding: 6px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; background: white;">
-                        <option value="10" <?php echo $limit == 10 ? 'selected' : ''; ?>>10</option>
-                        <option value="25" <?php echo $limit == 25 ? 'selected' : ''; ?>>25</option>
-                        <option value="50" <?php echo $limit == 50 ? 'selected' : ''; ?>>50</option>
-                    </select>
-                    <span style="color: #6b7280; font-size: 14px;">entries</span>
-                </div>
-            </div>
+            <?php if ($page > 1): ?>
+                <a href="?page=1<?php echo $query_string; ?>" 
+                   style="padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 6px; color: #374151; text-decoration: none; background: white;">
+                    <i class="fas fa-angle-double-left"></i>
+                </a>
+                <a href="?page=<?php echo $page - 1; ?><?php echo $query_string; ?>" 
+                   style="padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 6px; color: #374151; text-decoration: none; background: white;">
+                    <i class="fas fa-angle-left"></i> Previous
+                </a>
+            <?php endif; ?>
             
-            <!-- Pagination Navigation -->
-            <?php if ($total_pages > 1): ?>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    
-                    <!-- First Page -->
-                    <?php if ($page > 2): ?>
-                        <a href="?<?php echo http_build_query(array_merge($_GET, ['page' => 1])); ?>" 
-                           style="padding: 8px 12px; background: #f3f4f6; color: #374151; text-decoration: none; border-radius: 6px; font-size: 14px; border: 1px solid #d1d5db; display: flex; align-items: center; gap: 4px; transition: all 0.2s;"
-                           onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='#f3f4f6'">
-                            <i class="fas fa-angle-double-left"></i> First
-                        </a>
-                    <?php endif; ?>
-                    
-                    <!-- Previous Page -->
-                    <?php if ($page > 1): ?>
-                        <a href="?<?php echo http_build_query(array_merge($_GET, ['page' => $page - 1])); ?>" 
-                           style="padding: 8px 12px; background: #2563eb; color: white; text-decoration: none; border-radius: 6px; font-size: 14px; display: flex; align-items: center; gap: 4px; transition: all 0.2s;"
-                           onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
-                            <i class="fas fa-chevron-left"></i> Previous
-                        </a>
-                    <?php endif; ?>
-                    
-                    <!-- Page Numbers -->
-                    <div style="display: flex; align-items: center; gap: 4px; margin: 0 8px;">
-                        <?php
-                        $start_page = max(1, $page - 2);
-                        $end_page = min($total_pages, $page + 2);
-                        
-                        for ($i = $start_page; $i <= $end_page; $i++):
-                        ?>
-                            <?php if ($i == $page): ?>
-                                <span style="padding: 8px 12px; background: #2563eb; color: white; border-radius: 6px; font-weight: 600; font-size: 14px; min-width: 40px; text-align: center;">
-                                    <?php echo $i; ?>
-                                </span>
-                            <?php else: ?>
-                                <a href="?<?php echo http_build_query(array_merge($_GET, ['page' => $i])); ?>" 
-                                   style="padding: 8px 12px; background: #f9fafb; color: #374151; text-decoration: none; border-radius: 6px; font-size: 14px; border: 1px solid #d1d5db; min-width: 40px; text-align: center; transition: all 0.2s;"
-                                   onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='#f9fafb'">
-                                    <?php echo $i; ?>
-                                </a>
-                            <?php endif; ?>
-                        <?php endfor; ?>
-                        
-                        <?php if ($end_page < $total_pages): ?>
-                            <span style="color: #6b7280; padding: 0 8px;">...</span>
-                        <?php endif; ?>
-                    </div>
-                    
-                    <!-- Next Page -->
-                    <?php if ($page < $total_pages): ?>
-                        <a href="?<?php echo http_build_query(array_merge($_GET, ['page' => $page + 1])); ?>" 
-                           style="padding: 8px 12px; background: #2563eb; color: white; text-decoration: none; border-radius: 6px; font-size: 14px; display: flex; align-items: center; gap: 4px; transition: all 0.2s;"
-                           onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
-                            Next <i class="fas fa-chevron-right"></i>
-                        </a>
-                    <?php endif; ?>
-                    
-                    <!-- Last Page -->
-                    <?php if ($page < $total_pages - 1): ?>
-                        <a href="?<?php echo http_build_query(array_merge($_GET, ['page' => $total_pages])); ?>" 
-                           style="padding: 8px 12px; background: #f3f4f6; color: #374151; text-decoration: none; border-radius: 6px; font-size: 14px; border: 1px solid #d1d5db; display: flex; align-items: center; gap: 4px; transition: all 0.2s;"
-                           onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='#f3f4f6'">
-                            Last <i class="fas fa-angle-double-right"></i>
-                        </a>
-                    <?php endif; ?>
-                </div>
+            <?php
+            // Calculate page range to display
+            $start_page = max(1, $page - 2);
+            $end_page = min($total_pages, $page + 2);
+            
+            for ($i = $start_page; $i <= $end_page; $i++):
+            ?>
+                <a href="?page=<?php echo $i; ?><?php echo $query_string; ?>" 
+                   style="padding: 8px 12px; border: 1px solid <?php echo $i == $page ? '#2563eb' : '#e5e7eb'; ?>; 
+                          border-radius: 6px; color: <?php echo $i == $page ? 'white' : '#374151'; ?>; 
+                          background: <?php echo $i == $page ? '#2563eb' : 'white'; ?>; text-decoration: none; font-weight: 500;">
+                    <?php echo $i; ?>
+                </a>
+            <?php endfor; ?>
+            
+            <?php if ($page < $total_pages): ?>
+                <a href="?page=<?php echo $page + 1; ?><?php echo $query_string; ?>" 
+                   style="padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 6px; color: #374151; text-decoration: none; background: white;">
+                    Next <i class="fas fa-angle-right"></i>
+                </a>
+                <a href="?page=<?php echo $total_pages; ?><?php echo $query_string; ?>" 
+                   style="padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 6px; color: #374151; text-decoration: none; background: white;">
+                    <i class="fas fa-angle-double-right"></i>
+                </a>
             <?php endif; ?>
         </div>
     </div>
@@ -657,13 +621,6 @@ try {
 
 <script>
 let currentReceiptId = null;
-
-function changePageSize(newSize) {
-    const urlParams = new URLSearchParams(window.location.search);
-    urlParams.set('per_page', newSize);
-    urlParams.set('page', 1); // Reset to first page when changing page size
-    window.location.href = '?' + urlParams.toString();
-}
 
 function editReceipt(receiptId) {
     // Fetch receipt data and show modal
