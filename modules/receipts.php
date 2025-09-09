@@ -648,32 +648,34 @@ try {
 </div>
 
 <!-- Delete Confirmation Modal -->
-<div id="deleteModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
-    <div class="modal-content" style="background: white; padding: 30px; border-radius: 10px; max-width: 500px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
-        <div class="modal-header" style="margin-bottom: 20px; text-align: center;">
-            <h3 style="color: #dc2626; margin: 0; font-size: 24px;">
-                <i class="fas fa-exclamation-triangle" style="margin-right: 10px;"></i>
-                Confirm Deletion
-            </h3>
+<div id="deleteModal" class="modal hidden">
+    <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-header" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white;">
+            <h2><i class="fas fa-exclamation-triangle"></i> Confirm Deletion</h2>
+            <button type="button" class="modal-close" onclick="hideDeleteModal()" style="color: white;">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
-        <div class="modal-body" style="margin-bottom: 30px; text-align: center;">
-            <p style="margin: 0; color: #64748b; font-size: 16px; line-height: 1.6;">
-                Are you sure you want to delete receipt <strong id="deleteInvoiceNumber"></strong>?
+        <div class="modal-body" style="padding: 20px; text-align: center;">
+            <i class="fas fa-receipt" style="font-size: 3em; color: #ef4444; margin-bottom: 20px;"></i>
+            <p style="font-size: 16px; margin-bottom: 10px;">Are you sure you want to delete receipt:</p>
+            <h3 id="deleteInvoiceNumber" style="color: #1e293b; margin: 10px 0;"></h3>
+            <div class="delete-receipt-info" style="background: #f8fafc; padding: 16px; border-radius: 8px; margin: 16px 0; border: 1px solid #e2e8f0;">
+                <p id="deleteReceiptDetails" style="color: #64748b; margin: 0;">Receipt information will be loaded here</p>
+            </div>
+            <p style="color: #ef4444; font-weight: 500; margin-top: 15px;">
+                <i class="fas fa-exclamation-circle"></i> This action cannot be undone!
             </p>
-            <p style="margin: 10px 0 0 0; color: #dc2626; font-size: 14px; font-weight: 500;">
-                This action cannot be undone and will also delete all related services and charges.
+            <p style="color: #64748b; font-size: 14px; margin-top: 10px;">
+                All associated services and charges will be permanently removed.
             </p>
         </div>
-        <div class="modal-footer" style="display: flex; justify-content: center; gap: 15px;">
-            <button type="button" 
-                    onclick="hideDeleteModal()" 
-                    style="background: #6b7280; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer;">
+        <div class="modal-actions" style="justify-content: center; gap: 10px; padding: 20px; background: #f9fafb;">
+            <button type="button" class="btn btn-secondary" onclick="hideDeleteModal()">
                 <i class="fas fa-times"></i> Cancel
             </button>
-            <button type="button" 
-                    id="confirmDeleteBtn"
-                    style="background: #dc2626; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer;">
-                <i class="fas fa-trash"></i> Yes, Delete
+            <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                <i class="fas fa-trash"></i> Delete Receipt
             </button>
         </div>
     </div>
@@ -847,17 +849,55 @@ function editReceipt(receiptId) {
 
 function deleteReceipt(receiptId, invoiceNumber) {
     currentReceiptId = receiptId;
-    document.getElementById('deleteInvoiceNumber').textContent = invoiceNumber;
-    document.getElementById('deleteModal').style.display = 'flex';
     
-    // Set up confirm button click
-    document.getElementById('confirmDeleteBtn').onclick = function() {
-        confirmDelete(receiptId);
-    };
+    // Fetch receipt details for the modal
+    fetch('receipts.php?action=get_receipt&receipt_id=' + receiptId)
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            showToast(data.error, 'error');
+            return;
+        }
+        
+        // Populate modal with receipt information
+        document.getElementById('deleteInvoiceNumber').textContent = data.invoice_number;
+        
+        // Create receipt details display
+        const receiptInfo = `
+            <div style="text-align: left;">
+                <p style="margin: 8px 0;"><strong>Patient:</strong> ${data.patient_name || 'Unknown'}</p>
+                <p style="margin: 8px 0;"><strong>Date:</strong> ${new Date(data.invoice_date).toLocaleDateString()}</p>
+                <p style="margin: 8px 0;"><strong>Total Amount:</strong> RM ${parseFloat(data.total_amount).toFixed(2)}</p>
+                <p style="margin: 8px 0;"><strong>Payment Method:</strong> ${data.payment_method}</p>
+                ${data.services && data.services.length > 0 ? 
+                    `<p style="margin: 8px 0;"><strong>Services:</strong> ${data.services.join(', ')}</p>` : 
+                    ''
+                }
+            </div>
+        `;
+        
+        document.getElementById('deleteReceiptDetails').innerHTML = receiptInfo;
+        
+        // Show modal using CSS class
+        const modal = document.getElementById('deleteModal');
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+        
+        // Set up confirm button click
+        document.getElementById('confirmDeleteBtn').onclick = function() {
+            confirmDelete(receiptId);
+        };
+    })
+    .catch(error => {
+        showToast('Error loading receipt details', 'error');
+        console.error('Error:', error);
+    });
 }
 
 function hideDeleteModal() {
-    document.getElementById('deleteModal').style.display = 'none';
+    const modal = document.getElementById('deleteModal');
+    modal.classList.add('hidden');
+    modal.style.display = 'none';
     currentReceiptId = null;
 }
 
@@ -1009,10 +1049,13 @@ document.getElementById('editReceiptModal').addEventListener('click', function(e
 // Close modals on Escape key
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
-        if (document.getElementById('deleteModal').style.display === 'flex') {
+        const deleteModal = document.getElementById('deleteModal');
+        const editModal = document.getElementById('editReceiptModal');
+        
+        if (!deleteModal.classList.contains('hidden')) {
             hideDeleteModal();
         }
-        if (document.getElementById('editReceiptModal').style.display === 'flex') {
+        if (editModal.style.display === 'flex') {
             hideEditModal();
         }
     }
