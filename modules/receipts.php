@@ -238,7 +238,7 @@ try {
         LEFT JOIN receipt_services rs ON r.id = rs.receipt_id
         WHERE $where_clause
         GROUP BY r.id 
-        ORDER BY r.created_at DESC 
+        ORDER BY r.invoice_number DESC 
         LIMIT $records_per_page OFFSET $offset
     ";
     
