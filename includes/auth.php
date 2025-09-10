@@ -6,6 +6,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Include database connection
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/config.php';
 
 // Check if user is logged in
 function isAuthenticated() {
@@ -17,7 +18,7 @@ function requireAuth() {
     if (!isAuthenticated()) {
         // Store the current page to redirect back after login
         $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'];
-        header('Location: login.php');
+        header('Location: ' . BASE_URL . '/login.php');
         exit();
     }
 }
@@ -144,7 +145,7 @@ function logout() {
     if ($isProduction) {
         header('Location: https://caninehubdentist.com/login.php');
     } else {
-        header('Location: login.php');
+        header('Location: ' . BASE_URL . '/login.php');
     }
     exit();
 }
