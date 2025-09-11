@@ -10,7 +10,7 @@ A professional dental service cost calculator with blue & white medical theme, f
 - Clean, medical-themed form interface
 
 ### 🦷 **Dental Services Calculator**
-- **12 Dental Procedures** with exact percentages:
+- **15 Dental Procedures** with exact percentages:
   - Medication (0%)
   - Consult (80%)
   - Filling (40%)
@@ -23,6 +23,9 @@ A professional dental service cost calculator with blue & white medical theme, f
   - Denture (40%)
   - X-ray (20%)
   - Trauma (40%)
+  - **Whitening (20%)** ✨ *New*
+  - **RCT (40%)** ✨ *New*
+  - **Surgery (30%)** ✨ *New*
 - Base cost input with real-time percentage calculations
 - Multiple service selection with checkbox interface
 
