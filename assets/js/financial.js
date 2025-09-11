@@ -502,9 +502,7 @@ function generateReceiptHTML() {
         calculationData.charges.forEach(charge => {
             chargesHTML += `
                 <div style="margin: 10px 0; padding: 10px; background: #f8f9ff; border-left: 4px solid #2563eb;">
-                    <strong>${charge.service}</strong> - RM ${charge.amount.toFixed(2)}<br>
-                    <small style="color: #2563eb;">Doctor Fee: RM ${charge.doctorFee.toFixed(2)}</small><br>
-                    <small style="color: #2563eb;">Clinic Fee: RM ${charge.clinicFee.toFixed(2)}</small>
+                    <strong>${charge.service}</strong> - RM ${charge.amount.toFixed(2)}
                 </div>
             `;
         });
@@ -549,17 +547,6 @@ function generateReceiptHTML() {
             <div class="customer-name">${customerName}</div>
             
             ${chargesHTML}
-            
-            <div class="fee-totals" style="margin: 20px 0; padding: 15px; background: #f0f9ff; border: 1px solid #2563eb; border-radius: 8px;">
-                <div style="display: flex; justify-content: space-between; margin: 5px 0;">
-                    <span><strong>Total Doctor Fee:</strong></span>
-                    <span><strong style="color: #2563eb;">RM ${calculationData.totalDoctorFee.toFixed(2)}</strong></span>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin: 5px 0;">
-                    <span><strong>Total Clinic Fee:</strong></span>
-                    <span><strong style="color: #2563eb;">RM ${calculationData.totalClinicFee.toFixed(2)}</strong></span>
-                </div>
-            </div>
             
             ${otherChargesHTML}
             
