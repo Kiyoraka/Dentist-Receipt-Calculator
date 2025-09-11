@@ -503,8 +503,8 @@ function generateReceiptHTML() {
             chargesHTML += `
                 <div style="margin: 10px 0; padding: 10px; background: #f8f9ff; border-left: 4px solid #2563eb;">
                     <strong>${charge.service}</strong> - RM ${charge.amount.toFixed(2)}<br>
-                    <small style="color: #059669;">Doctor Fee: RM ${charge.doctorFee.toFixed(2)} (${charge.percentage}%)</small><br>
-                    <small style="color: #dc2626;">Clinic Fee: RM ${charge.clinicFee.toFixed(2)} (${100-charge.percentage}%)</small>
+                    <small style="color: #059669;">Doctor Fee: RM ${charge.doctorFee.toFixed(2)}</small><br>
+                    <small style="color: #dc2626;">Clinic Fee: RM ${charge.clinicFee.toFixed(2)}</small>
                 </div>
             `;
         });
