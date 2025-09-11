@@ -5,3 +5,4 @@ project-scope.md
 .claude/settings.local.json
 database/dentist-system-mod.sql
 database/dentist-system.sql
+hostinger-new-services.sql
