@@ -425,8 +425,11 @@ try {
                             </td>
                             <td style="padding: 15px; text-align: center;">
                                 <div class="action-buttons-row">
-                                    <button type="button" class="btn-action btn-view" onclick="viewReceipt(<?php echo $receipt['id']; ?>)" title="View & Print">
+                                    <button type="button" class="btn-action btn-view" onclick="viewReceipt(<?php echo $receipt['id']; ?>)" title="View Receipt">
                                         <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button type="button" class="btn-action btn-print" onclick="downloadReceiptPDF(<?php echo $receipt['id']; ?>)" title="Download PDF">
+                                        <i class="fas fa-download"></i>
                                     </button>
                                     <button type="button" class="btn-action btn-edit" onclick="editReceipt(<?php echo $receipt['id']; ?>)" title="Edit">
                                         <i class="fas fa-edit"></i>
@@ -1064,9 +1067,9 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// View and Print Receipt Function
+// View Receipt Function (Display Only)
 function viewReceipt(receiptId) {
-    // Fetch receipt data for printing
+    // Fetch receipt data for viewing
     fetch('receipts.php?action=get_receipt&receipt_id=' + receiptId)
     .then(response => response.json())
     .then(data => {
@@ -1074,8 +1077,8 @@ function viewReceipt(receiptId) {
             showToast(data.error, 'error');
             return;
         }
-        // Generate and print receipt HTML
-        printReceiptData(data);
+        // Generate and display receipt HTML
+        displayReceiptData(data);
     })
     .catch(error => {
         showToast('Error loading receipt data', 'error');
@@ -1083,7 +1086,26 @@ function viewReceipt(receiptId) {
     });
 }
 
-function printReceiptData(receiptData) {
+// Download Receipt as PDF Function
+function downloadReceiptPDF(receiptId) {
+    // Fetch receipt data for PDF generation
+    fetch('receipts.php?action=get_receipt&receipt_id=' + receiptId)
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            showToast(data.error, 'error');
+            return;
+        }
+        // Generate PDF and download
+        generateReceiptPDF(data);
+    })
+    .catch(error => {
+        showToast('Error loading receipt data', 'error');
+        console.error('Error:', error);
+    });
+}
+
+function displayReceiptData(receiptData) {
     // Generate receipt HTML similar to financial.js print functionality
     const receiptHTML = `
         <!DOCTYPE html>
@@ -1280,11 +1302,215 @@ function printReceiptData(receiptData) {
     printWindow.document.write(receiptHTML);
     printWindow.document.close();
     
-    // Print after content loads
-    printWindow.onload = function() {
-        printWindow.print();
-        // Window stays open after printing - user can close manually if needed
-    };
+    // Just display the receipt - no automatic print
+    printWindow.focus();
+}
+
+function generateReceiptPDF(receiptData) {
+    // Use jsPDF library to generate PDF
+    // For now, we'll use the browser's print-to-PDF functionality
+    const receiptHTML = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Receipt - ${receiptData.invoice_number}</title>
+            <style>
+                @page { margin: 0.5in; }
+                body {
+                    font-family: 'Arial', sans-serif;
+                    margin: 0;
+                    padding: 20px;
+                    background: white;
+                    color: black;
+                }
+                .receipt-container {
+                    max-width: 500px;
+                    margin: 0 auto;
+                    background: white;
+                    border: 2px solid #2563eb;
+                    border-radius: 10px;
+                    overflow: hidden;
+                }
+                .receipt-header {
+                    background: #2563eb;
+                    color: white;
+                    padding: 20px;
+                    text-align: center;
+                }
+                .clinic-name {
+                    font-size: 22px;
+                    font-weight: bold;
+                    margin-bottom: 8px;
+                }
+                .clinic-subtitle {
+                    font-size: 13px;
+                    margin-bottom: 12px;
+                }
+                .receipt-info {
+                    background: rgba(255,255,255,0.2);
+                    padding: 10px;
+                    border-radius: 6px;
+                    font-size: 12px;
+                }
+                .receipt-body {
+                    padding: 20px;
+                }
+                .info-row {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 8px;
+                    padding: 4px 0;
+                    border-bottom: 1px solid #eee;
+                    font-size: 14px;
+                }
+                .info-label {
+                    font-weight: bold;
+                }
+                .services-section {
+                    margin: 15px 0;
+                    padding: 15px;
+                    background: #f8f9fa;
+                    border-radius: 6px;
+                    border-left: 3px solid #2563eb;
+                }
+                .services-title {
+                    font-size: 14px;
+                    font-weight: bold;
+                    color: #2563eb;
+                    margin-bottom: 8px;
+                }
+                .service-item {
+                    padding: 3px 0;
+                    font-size: 12px;
+                }
+                .totals-section {
+                    margin-top: 20px;
+                    padding-top: 15px;
+                    border-top: 2px solid #ddd;
+                }
+                .total-row {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 8px;
+                    font-size: 14px;
+                }
+                .total-row.final {
+                    font-weight: bold;
+                    font-size: 16px;
+                    padding: 10px;
+                    background: #f0f9ff;
+                    border-radius: 6px;
+                    margin-top: 10px;
+                    border: 1px solid #2563eb;
+                }
+                .payment-method {
+                    text-align: center;
+                    margin-top: 15px;
+                    padding: 8px;
+                    background: #e0f2fe;
+                    color: #0369a1;
+                    border-radius: 4px;
+                    font-weight: 500;
+                    font-size: 12px;
+                }
+                .receipt-footer {
+                    text-align: center;
+                    margin-top: 20px;
+                    padding: 15px;
+                    border-top: 1px solid #ddd;
+                    color: #666;
+                    font-size: 10px;
+                }
+                @media print {
+                    body { background: white !important; }
+                    .receipt-container { border: 2px solid #2563eb !important; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="receipt-container">
+                <div class="receipt-header">
+                    <div class="clinic-name">🦷 Dental Practice</div>
+                    <div class="clinic-subtitle">Professional Dental Care Services</div>
+                    <div class="receipt-info">
+                        <div><strong>Invoice:</strong> ${receiptData.invoice_number}</div>
+                        <div><strong>Date:</strong> ${new Date(receiptData.invoice_date).toLocaleDateString()}</div>
+                    </div>
+                </div>
+                
+                <div class="receipt-body">
+                    <div class="info-row">
+                        <span class="info-label">Patient Name:</span>
+                        <span>${receiptData.patient_name || 'Walk-in Patient'}</span>
+                    </div>
+                    ${receiptData.terminal_invoice_number ? 
+                        `<div class="info-row">
+                            <span class="info-label">Terminal Invoice:</span>
+                            <span>${receiptData.terminal_invoice_number}</span>
+                        </div>` : ''
+                    }
+                    
+                    <div class="services-section">
+                        <div class="services-title">Services Provided</div>
+                        ${receiptData.services && receiptData.services.length > 0 ? 
+                            receiptData.services.map(service => 
+                                `<div class="service-item">• ${service}</div>`
+                            ).join('') : 
+                            '<div class="service-item">• General Consultation</div>'
+                        }
+                    </div>
+                    
+                    <div class="totals-section">
+                        <div class="total-row">
+                            <span>Clinic Fee:</span>
+                            <span>RM ${parseFloat(receiptData.clinic_fee).toFixed(2)}</span>
+                        </div>
+                        <div class="total-row">
+                            <span>Doctor Fee:</span>
+                            <span>RM ${parseFloat(receiptData.doctor_fee).toFixed(2)}</span>
+                        </div>
+                        ${receiptData.other_charges && parseFloat(receiptData.other_charges) > 0 ?
+                            `<div class="total-row">
+                                <span>Other Charges:</span>
+                                <span>RM ${parseFloat(receiptData.other_charges).toFixed(2)}</span>
+                            </div>` : ''
+                        }
+                        <div class="total-row final">
+                            <span>Total Amount:</span>
+                            <span>RM ${parseFloat(receiptData.total_amount).toFixed(2)}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="payment-method">
+                        Payment Method: ${receiptData.payment_method}
+                    </div>
+                </div>
+                
+                <div class="receipt-footer">
+                    Thank you for choosing our dental practice!<br>
+                    Generated on ${new Date().toLocaleString()}
+                </div>
+            </div>
+            
+            <script>
+                // Auto-trigger print dialog for PDF save
+                window.onload = function() {
+                    window.print();
+                    // Close window after print dialog
+                    setTimeout(() => {
+                        window.close();
+                    }, 100);
+                };
+            </script>
+        </body>
+        </html>
+    `;
+    
+    // Open print window optimized for PDF generation
+    const printWindow = window.open('', '_blank', 'width=600,height=800');
+    printWindow.document.write(receiptHTML);
+    printWindow.document.close();
 }
 </script>
 
