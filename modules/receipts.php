@@ -1135,15 +1135,23 @@ function displayReceiptData(receiptData) {
                     text-align: center;
                 }
                 .clinic-name {
-                    font-size: 24px;
+                    font-size: 20px;
                     font-weight: bold;
-                    margin-bottom: 8px;
+                    margin-bottom: 4px;
                     text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                    line-height: 1.2;
                 }
-                .clinic-subtitle {
-                    font-size: 14px;
+                .clinic-address {
+                    font-size: 12px;
                     opacity: 0.9;
+                    margin: 10px 0 8px 0;
+                    line-height: 1.4;
+                }
+                .clinic-phone {
+                    font-size: 14px;
+                    font-weight: bold;
                     margin-bottom: 15px;
+                    opacity: 0.95;
                 }
                 .receipt-info {
                     background: rgba(255,255,255,0.15);
@@ -1232,8 +1240,13 @@ function displayReceiptData(receiptData) {
         <body>
             <div class="receipt-container">
                 <div class="receipt-header">
-                    <div class="clinic-name">🦷 CASSIA DENTAL CARE</div>
-                    <div class="clinic-subtitle">Professional Dental Care Services</div>
+                    <div class="clinic-name">🦷 KLINIK PERGIGIAN</div>
+                    <div class="clinic-name">CASSIA DENTAL CARE</div>
+                    <div class="clinic-address">
+                        No. 2 & 24, Jalan Besar 14,<br>
+                        Taman Mutiara Rini, 81300 Skudai, Johor.
+                    </div>
+                    <div class="clinic-phone">011-1201 1202</div>
                     <div class="receipt-info">
                         <div><strong>Invoice:</strong> ${receiptData.invoice_number}</div>
                         <div><strong>Date:</strong> ${new Date(receiptData.invoice_date).toLocaleDateString()}</div>
@@ -1289,7 +1302,7 @@ function displayReceiptData(receiptData) {
                 </div>
                 
                 <div class="receipt-footer">
-                    Thank you for choosing CASSIA DENTAL CARE!<br>
+                    Thank you for choosing KLINIK PERGIGIAN CASSIA DENTAL CARE!<br>
                     Generated on ${new Date().toLocaleString()}
                 </div>
             </div>
@@ -1343,13 +1356,22 @@ function generateReceiptPDF(receiptData) {
                     print-color-adjust: exact !important;
                 }
                 .clinic-name {
-                    font-size: 22px;
+                    font-size: 18px;
                     font-weight: bold;
-                    margin-bottom: 8px;
+                    margin-bottom: 3px;
+                    line-height: 1.2;
                 }
-                .clinic-subtitle {
+                .clinic-address {
+                    font-size: 11px;
+                    margin: 8px 0 6px 0;
+                    line-height: 1.3;
+                    opacity: 0.9;
+                }
+                .clinic-phone {
                     font-size: 13px;
+                    font-weight: bold;
                     margin-bottom: 12px;
+                    opacity: 0.95;
                 }
                 .receipt-info {
                     background: rgba(255,255,255,0.2);
@@ -1453,8 +1475,13 @@ function generateReceiptPDF(receiptData) {
         <body>
             <div class="receipt-container">
                 <div class="receipt-header">
-                    <div class="clinic-name">🦷 CASSIA DENTAL CARE</div>
-                    <div class="clinic-subtitle">Professional Dental Care Services</div>
+                    <div class="clinic-name">🦷 KLINIK PERGIGIAN</div>
+                    <div class="clinic-name">CASSIA DENTAL CARE</div>
+                    <div class="clinic-address">
+                        No. 2 & 24, Jalan Besar 14,<br>
+                        Taman Mutiara Rini, 81300 Skudai, Johor.
+                    </div>
+                    <div class="clinic-phone">011-1201 1202</div>
                     <div class="receipt-info">
                         <div><strong>Invoice:</strong> ${receiptData.invoice_number}</div>
                         <div><strong>Date:</strong> ${new Date(receiptData.invoice_date).toLocaleDateString()}</div>
@@ -1510,7 +1537,7 @@ function generateReceiptPDF(receiptData) {
                 </div>
                 
                 <div class="receipt-footer">
-                    Thank you for choosing CASSIA DENTAL CARE!<br>
+                    Thank you for choosing KLINIK PERGIGIAN CASSIA DENTAL CARE!<br>
                     Generated on ${new Date().toLocaleString()}
                 </div>
             </div>
