@@ -1334,10 +1334,13 @@ function generateReceiptPDF(receiptData) {
                     overflow: hidden;
                 }
                 .receipt-header {
-                    background: #2563eb;
-                    color: white;
+                    background: #1d4ed8 !important;
+                    color: white !important;
                     padding: 20px;
                     text-align: center;
+                    -webkit-print-color-adjust: exact !important;
+                    color-adjust: exact !important;
+                    print-color-adjust: exact !important;
                 }
                 .clinic-name {
                     font-size: 22px;
@@ -1424,8 +1427,26 @@ function generateReceiptPDF(receiptData) {
                     font-size: 10px;
                 }
                 @media print {
-                    body { background: white !important; }
-                    .receipt-container { border: 2px solid #2563eb !important; }
+                    * {
+                        -webkit-print-color-adjust: exact !important;
+                        color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
+                    body { 
+                        background: white !important;
+                        -webkit-print-color-adjust: exact !important;
+                    }
+                    .receipt-container { 
+                        border: 2px solid #2563eb !important;
+                        -webkit-print-color-adjust: exact !important;
+                    }
+                    .receipt-header {
+                        background: #1d4ed8 !important;
+                        color: white !important;
+                        -webkit-print-color-adjust: exact !important;
+                        color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
                 }
             </style>
         </head>
