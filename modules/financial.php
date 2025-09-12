@@ -385,7 +385,12 @@ try {
 
                     <!-- Payment Method -->
                     <div class="form-section">
-                        <h3><i class="fas fa-credit-card"></i> Payment Method</h3>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <h3><i class="fas fa-credit-card"></i> Payment Method</h3>
+                            <button type="button" id="payment-settings-btn" class="btn-settings" title="Configure Payment Fees">
+                                <i class="fas fa-cog"></i> Settings
+                            </button>
+                        </div>
                         <div class="payment-options">
                             <label class="payment-option">
                                 <input type="radio" name="payment_method" value="Cash" data-fee="0" checked>
@@ -602,6 +607,199 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 <?php endif; ?>
+
+<!-- Payment Settings Modal -->
+<div id="payment-settings-modal" class="modal" style="display: none;">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-cog"></i> Payment Method Fee Settings</h3>
+            <button type="button" class="close-modal" onclick="closePaymentSettingsModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <p style="color: #6b7280; margin-bottom: 25px; font-size: 14px;">
+                Configure the processing fees for each payment method. Changes will be applied to all future calculations.
+            </p>
+            
+            <div class="form-group">
+                <label for="debit-card-fee">
+                    <i class="fas fa-credit-card"></i> Debit Card Fee (%)
+                </label>
+                <input type="number" id="debit-card-fee" step="0.1" min="0" max="10" placeholder="e.g., 0.5">
+            </div>
+            
+            <div class="form-group">
+                <label for="credit-card-fee">
+                    <i class="fas fa-credit-card"></i> Credit Card Fee (%)
+                </label>
+                <input type="number" id="credit-card-fee" step="0.1" min="0" max="10" placeholder="e.g., 1.2">
+            </div>
+            
+            <div class="form-group">
+                <label for="mastercard-fee">
+                    <i class="fas fa-credit-card"></i> Mastercard Fee (%)
+                </label>
+                <input type="number" id="mastercard-fee" step="0.1" min="0" max="10" placeholder="e.g., 2.5">
+            </div>
+            
+            <div style="background: #f0f9ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 15px; margin-top: 20px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                    <i class="fas fa-info-circle" style="color: #2563eb;"></i>
+                    <strong style="color: #1e40af;">Preview</strong>
+                </div>
+                <div id="fee-preview" style="color: #374151; font-size: 14px;">
+                    Current settings will be shown here...
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" onclick="closePaymentSettingsModal()">
+                <i class="fas fa-times"></i> Cancel
+            </button>
+            <button type="button" class="btn btn-primary" onclick="savePaymentSettings()">
+                <i class="fas fa-save"></i> Save Settings
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Payment Settings Modal Functions
+function openPaymentSettingsModal() {
+    // Load current settings
+    loadCurrentPaymentSettings();
+    
+    // Show modal
+    document.getElementById('payment-settings-modal').style.display = 'flex';
+    updateFeePreview();
+}
+
+function closePaymentSettingsModal() {
+    document.getElementById('payment-settings-modal').style.display = 'none';
+}
+
+function loadCurrentPaymentSettings() {
+    // Get current fees from the payment options
+    const debitFee = document.querySelector('input[value="Debit Card"]').getAttribute('data-fee');
+    const creditFee = document.querySelector('input[value="Credit Card"]').getAttribute('data-fee');
+    const mastercardFee = document.querySelector('input[value="Mastercard"]').getAttribute('data-fee');
+    
+    // Populate modal inputs
+    document.getElementById('debit-card-fee').value = debitFee;
+    document.getElementById('credit-card-fee').value = creditFee;
+    document.getElementById('mastercard-fee').value = mastercardFee;
+}
+
+function updateFeePreview() {
+    const debitFee = document.getElementById('debit-card-fee').value || '0';
+    const creditFee = document.getElementById('credit-card-fee').value || '0';
+    const mastercardFee = document.getElementById('mastercard-fee').value || '0';
+    
+    const preview = document.getElementById('fee-preview');
+    preview.innerHTML = `
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+            <span>🏧 Debit Card:</span> <span>${debitFee}%</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+            <span>💳 Credit Card:</span> <span>${creditFee}%</span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+            <span>🔴 Mastercard:</span> <span>${mastercardFee}%</span>
+        </div>
+    `;
+}
+
+function savePaymentSettings() {
+    const debitFee = parseFloat(document.getElementById('debit-card-fee').value) || 0;
+    const creditFee = parseFloat(document.getElementById('credit-card-fee').value) || 0;
+    const mastercardFee = parseFloat(document.getElementById('mastercard-fee').value) || 0;
+    
+    // Validate inputs
+    if (debitFee < 0 || debitFee > 10 || creditFee < 0 || creditFee > 10 || mastercardFee < 0 || mastercardFee > 10) {
+        alert('Please enter valid fee percentages between 0 and 10.');
+        return;
+    }
+    
+    // Update the payment options in the form
+    document.querySelector('input[value="Debit Card"]').setAttribute('data-fee', debitFee);
+    document.querySelector('input[value="Credit Card"]').setAttribute('data-fee', creditFee);
+    document.querySelector('input[value="Mastercard"]').setAttribute('data-fee', mastercardFee);
+    
+    // Update the display labels
+    document.querySelector('input[value="Debit Card"]').nextElementSibling.innerHTML = 
+        `<i class="fas fa-credit-card"></i> Debit Card (${debitFee}%)`;
+    document.querySelector('input[value="Credit Card"]').nextElementSibling.innerHTML = 
+        `<i class="fas fa-credit-card"></i> Credit Card (${creditFee}%)`;
+    document.querySelector('input[value="Mastercard"]').nextElementSibling.innerHTML = 
+        `<i class="fas fa-credit-card"></i> Mastercard (${mastercardFee}%)`;
+    
+    // Save to localStorage for persistence
+    localStorage.setItem('paymentFees', JSON.stringify({
+        debit: debitFee,
+        credit: creditFee,
+        mastercard: mastercardFee
+    }));
+    
+    // Recalculate if there's an active calculation
+    if (typeof recalculateTotal === 'function') {
+        recalculateTotal();
+    }
+    
+    // Close modal
+    closePaymentSettingsModal();
+    
+    // Show success message
+    if (typeof showToast === 'function') {
+        showToast('Payment method fees updated successfully!', 'success');
+    } else {
+        alert('Payment method fees updated successfully!');
+    }
+}
+
+// Add event listeners for live preview
+document.addEventListener('DOMContentLoaded', function() {
+    // Load saved settings on page load
+    const savedFees = localStorage.getItem('paymentFees');
+    if (savedFees) {
+        const fees = JSON.parse(savedFees);
+        
+        // Update payment options
+        document.querySelector('input[value="Debit Card"]').setAttribute('data-fee', fees.debit);
+        document.querySelector('input[value="Credit Card"]').setAttribute('data-fee', fees.credit);
+        document.querySelector('input[value="Mastercard"]').setAttribute('data-fee', fees.mastercard);
+        
+        // Update display labels
+        document.querySelector('input[value="Debit Card"]').nextElementSibling.innerHTML = 
+            `<i class="fas fa-credit-card"></i> Debit Card (${fees.debit}%)`;
+        document.querySelector('input[value="Credit Card"]').nextElementSibling.innerHTML = 
+            `<i class="fas fa-credit-card"></i> Credit Card (${fees.credit}%)`;
+        document.querySelector('input[value="Mastercard"]').nextElementSibling.innerHTML = 
+            `<i class="fas fa-credit-card"></i> Mastercard (${fees.mastercard}%)`;
+    }
+    
+    // Settings button click event
+    document.getElementById('payment-settings-btn').addEventListener('click', openPaymentSettingsModal);
+    
+    // Live preview updates
+    ['debit-card-fee', 'credit-card-fee', 'mastercard-fee'].forEach(id => {
+        const input = document.getElementById(id);
+        if (input) {
+            input.addEventListener('input', updateFeePreview);
+        }
+    });
+    
+    // Close modal when clicking outside
+    document.getElementById('payment-settings-modal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closePaymentSettingsModal();
+        }
+    });
+});
+</script>
 
 <?php 
 $additional_css = ['../assets/css/charge-calculator.css'];
