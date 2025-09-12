@@ -1276,14 +1276,6 @@ function displayReceiptData(receiptData) {
                     </div>
                     
                     <div class="totals-section">
-                        <div class="total-row">
-                            <span>Clinic Fee:</span>
-                            <span>RM ${parseFloat(receiptData.clinic_fee).toFixed(2)}</span>
-                        </div>
-                        <div class="total-row">
-                            <span>Doctor Fee:</span>
-                            <span>RM ${parseFloat(receiptData.doctor_fee).toFixed(2)}</span>
-                        </div>
                         ${receiptData.other_charges && parseFloat(receiptData.other_charges) > 0 ?
                             `<div class="total-row">
                                 <span>Other Charges:</span>
@@ -1512,14 +1504,6 @@ function generateReceiptPDF(receiptData) {
                     </div>
                     
                     <div class="totals-section">
-                        <div class="total-row">
-                            <span>Clinic Fee:</span>
-                            <span>RM ${parseFloat(receiptData.clinic_fee).toFixed(2)}</span>
-                        </div>
-                        <div class="total-row">
-                            <span>Doctor Fee:</span>
-                            <span>RM ${parseFloat(receiptData.doctor_fee).toFixed(2)}</span>
-                        </div>
                         ${receiptData.other_charges && parseFloat(receiptData.other_charges) > 0 ?
                             `<div class="total-row">
                                 <span>Other Charges:</span>
