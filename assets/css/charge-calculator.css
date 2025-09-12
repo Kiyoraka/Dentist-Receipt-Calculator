@@ -913,22 +913,31 @@
     }
 }
 
-/* Payment Settings Button - Force Override All Styles */
-button#payment-settings-btn,
-#payment-settings-btn,
-.btn-settings {
-    /* Reset all default button styles first */
+/* CRITICAL: Payment Settings Button - HIGHEST PRIORITY OVERRIDE */
+div.payment-method-header button#payment-settings-btn.btn-settings,
+div.form-section button#payment-settings-btn.btn-settings,
+button#payment-settings-btn.btn-settings,
+#payment-settings-btn.btn-settings,
+.payment-method-header .btn-settings {
+    /* NUCLEAR OPTION: Reset everything */
     all: unset !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
     
-    /* Apply our custom styling */
+    /* FORCE our styling with maximum specificity */
     background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+    background-color: #2563eb !important;
     color: white !important;
     border: none !important;
+    border-style: none !important;
+    border-width: 0 !important;
     padding: 12px 20px !important;
+    margin: 0 !important;
     border-radius: 8px !important;
     font-size: 14px !important;
     font-weight: 600 !important;
-    font-family: inherit !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
     cursor: pointer !important;
     transition: all 0.3s ease !important;
     display: inline-flex !important;
@@ -943,11 +952,17 @@ button#payment-settings-btn,
     text-decoration: none !important;
     outline: none !important;
     min-width: 120px !important;
+    width: auto !important;
     height: auto !important;
+    min-height: 40px !important;
     line-height: 1.4 !important;
     box-sizing: border-box !important;
     vertical-align: middle !important;
     white-space: nowrap !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+    z-index: 999 !important;
 }
 
 #payment-settings-btn::before,
@@ -964,13 +979,18 @@ button#payment-settings-btn,
     pointer-events: none !important;
 }
 
-button#payment-settings-btn:hover,
-#payment-settings-btn:hover,
-.btn-settings:hover {
+div.payment-method-header button#payment-settings-btn.btn-settings:hover,
+div.form-section button#payment-settings-btn.btn-settings:hover,
+button#payment-settings-btn.btn-settings:hover,
+#payment-settings-btn.btn-settings:hover,
+.payment-method-header .btn-settings:hover {
     background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%) !important;
+    background-color: #1d4ed8 !important;
     transform: translateY(-2px) !important;
     box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4) !important;
     border-color: rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+    opacity: 1 !important;
 }
 
 #payment-settings-btn:hover::before,

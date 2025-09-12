@@ -387,8 +387,25 @@ try {
                     <div class="form-section">
                         <div class="payment-method-header">
                             <h3><i class="fas fa-credit-card"></i> Payment Method</h3>
-                            <button type="button" id="payment-settings-btn" class="btn-settings" title="Configure Payment Method Processing Fees">
-                                <i class="fas fa-cog"></i> Settings
+                            <button type="button" id="payment-settings-btn" class="btn-settings" title="Configure Payment Method Processing Fees" 
+                                    style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important; 
+                                           color: white !important; 
+                                           border: none !important; 
+                                           padding: 12px 20px !important; 
+                                           border-radius: 8px !important; 
+                                           font-size: 14px !important; 
+                                           font-weight: 600 !important; 
+                                           cursor: pointer !important; 
+                                           display: inline-flex !important; 
+                                           align-items: center !important; 
+                                           gap: 8px !important; 
+                                           box-shadow: 0 3px 10px rgba(37, 99, 235, 0.3) !important;
+                                           transition: all 0.3s ease !important;
+                                           position: relative !important;
+                                           overflow: hidden !important;
+                                           min-width: 120px !important;">
+                                <i class="fas fa-cog" style="color: white !important; font-size: 13px !important;"></i> 
+                                <span style="color: white !important;">Settings</span>
                             </button>
                         </div>
                         <div class="payment-options">
@@ -781,8 +798,30 @@ document.addEventListener('DOMContentLoaded', function() {
             `<i class="fas fa-credit-card"></i> Mastercard (${fees.mastercard}%)`;
     }
     
-    // Settings button click event
-    document.getElementById('payment-settings-btn').addEventListener('click', openPaymentSettingsModal);
+    // Settings button click event and styling enforcement
+    const settingsBtn = document.getElementById('payment-settings-btn');
+    settingsBtn.addEventListener('click', openPaymentSettingsModal);
+    
+    // Force hover effects via JavaScript since CSS might be overridden
+    settingsBtn.addEventListener('mouseenter', function() {
+        this.style.setProperty('background', 'linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)', 'important');
+        this.style.setProperty('transform', 'translateY(-2px)', 'important');
+        this.style.setProperty('box-shadow', '0 6px 20px rgba(37, 99, 235, 0.4)', 'important');
+        const icon = this.querySelector('i');
+        if (icon) {
+            icon.style.setProperty('transform', 'rotate(90deg)', 'important');
+        }
+    });
+    
+    settingsBtn.addEventListener('mouseleave', function() {
+        this.style.setProperty('background', 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)', 'important');
+        this.style.setProperty('transform', 'translateY(0)', 'important');
+        this.style.setProperty('box-shadow', '0 3px 10px rgba(37, 99, 235, 0.3)', 'important');
+        const icon = this.querySelector('i');
+        if (icon) {
+            icon.style.setProperty('transform', 'rotate(0deg)', 'important');
+        }
+    });
     
     // Live preview updates
     ['debit-card-fee', 'credit-card-fee', 'mastercard-fee'].forEach(id => {
