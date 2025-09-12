@@ -1503,7 +1503,7 @@ function generateReceiptPDF(receiptData) {
                         window.close();
                     }, 100);
                 };
-            </script>
+            <\/script>
         </body>
         </html>
     `;
