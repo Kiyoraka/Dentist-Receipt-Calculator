@@ -78,7 +78,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_patient_receipts') {
 }
 
 // Regular page rendering starts here
-$page_title = 'Patient Management - Dental Practice Management';
+$page_title = 'Patient Management - CASSIA DENTAL CARE Management';
 
 // Add financial management CSS for consistent styling
 $additional_css = ['../assets/css/charge-calculator.css', CSS_URL . '/patients.css'];

@@ -12,7 +12,7 @@ if (!defined('BASE_URL')) {
     <div class="sidebar-header">
         <div class="logo">
             <i class="fas fa-tooth"></i>
-            <h2>Dental System</h2>
+            <h2>CASSIA DENTAL CARE</h2>
         </div>
         <p class="subtitle">Practice Management</p>
     </div>

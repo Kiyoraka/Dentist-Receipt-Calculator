@@ -1,5 +1,5 @@
 // Patient Management JavaScript
-// Professional dental practice management system with export functionality
+// CASSIA DENTAL CARE management system with export functionality
 
 // Notification system functions
 function showNotification(message, type = 'info') {
@@ -640,7 +640,7 @@ function generatePatientReportHTML(patient) {
         </head>
         <body>
             <div class=\"header\">
-                <h1>🦷 DENTAL PRACTICE</h1>
+                <h1>🦷 CASSIA DENTAL CARE</h1>
                 <h2>Patient Treatment Report</h2>
             </div>
             
@@ -698,7 +698,7 @@ function generatePatientReportHTML(patient) {
                 <p>This report contains confidential patient information and should be handled according to medical privacy regulations.</p>
                 <div class=\"generated-info\">
                     <p><strong>Generated:</strong> ${new Date().toLocaleString()}</p>
-                    <p><strong>System:</strong> Dental Practice Management System v1.0</p>
+                    <p><strong>System:</strong> CASSIA DENTAL CARE Management System v1.0</p>
                 </div>
             </div>
         </body>

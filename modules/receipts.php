@@ -173,7 +173,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_receipt') {
 }
 
 // Regular page rendering starts here
-$page_title = 'Receipt Management - Dental Practice Management';
+$page_title = 'Receipt Management - CASSIA DENTAL CARE Management';
 
 // Add CSS for styling
 $additional_css = ['../assets/css/charge-calculator.css'];
@@ -1232,7 +1232,7 @@ function displayReceiptData(receiptData) {
         <body>
             <div class="receipt-container">
                 <div class="receipt-header">
-                    <div class="clinic-name">🦷 Dental Practice</div>
+                    <div class="clinic-name">🦷 CASSIA DENTAL CARE</div>
                     <div class="clinic-subtitle">Professional Dental Care Services</div>
                     <div class="receipt-info">
                         <div><strong>Invoice:</strong> ${receiptData.invoice_number}</div>
@@ -1289,7 +1289,7 @@ function displayReceiptData(receiptData) {
                 </div>
                 
                 <div class="receipt-footer">
-                    Thank you for choosing our dental practice!<br>
+                    Thank you for choosing CASSIA DENTAL CARE!<br>
                     Generated on ${new Date().toLocaleString()}
                 </div>
             </div>
@@ -1453,7 +1453,7 @@ function generateReceiptPDF(receiptData) {
         <body>
             <div class="receipt-container">
                 <div class="receipt-header">
-                    <div class="clinic-name">🦷 Dental Practice</div>
+                    <div class="clinic-name">🦷 CASSIA DENTAL CARE</div>
                     <div class="clinic-subtitle">Professional Dental Care Services</div>
                     <div class="receipt-info">
                         <div><strong>Invoice:</strong> ${receiptData.invoice_number}</div>
@@ -1510,7 +1510,7 @@ function generateReceiptPDF(receiptData) {
                 </div>
                 
                 <div class="receipt-footer">
-                    Thank you for choosing our dental practice!<br>
+                    Thank you for choosing CASSIA DENTAL CARE!<br>
                     Generated on ${new Date().toLocaleString()}
                 </div>
             </div>

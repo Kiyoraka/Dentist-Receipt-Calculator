@@ -3,7 +3,7 @@
 require_once '../includes/auth.php';
 requireAuth();
 
-$page_title = 'Profile Management - Dental Practice Management';
+$page_title = 'Profile Management - CASSIA DENTAL CARE Management';
 require_once '../config/database.php';
 require_once '../includes/header.php';
 

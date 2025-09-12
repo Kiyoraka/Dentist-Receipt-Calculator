@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$page_title = 'Login - Dental Practice Management';
+$page_title = 'Login - CASSIA DENTAL CARE Management';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -43,7 +43,7 @@ $page_title = 'Login - Dental Practice Management';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $page_title; ?></title>
-    <meta name="description" content="Login to dental practice management system">
+    <meta name="description" content="Login to CASSIA DENTAL CARE management system">
     
     <!-- Favicon - Tooth Icon (Same as main system) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'><path fill='%232563eb' d='M443.4 92.7C443.4 41.5 401.9 0 350.7 0c-31.1 0-58.7 15.4-75.7 38.9C258 15.4 230.4 0 199.3 0 148.1 0 106.6 41.5 106.6 92.7c0 22.1 7.4 42.5 19.9 58.8 16.4 21.4 38.7 43.6 46.4 70.9 6.3 22.4 8.5 46.1 8.5 70.1 0 75.8-19.9 136.8-19.9 212.6 0 55.1 44.9 100 100 100s100-44.9 100-100c0-75.8-19.9-136.8-19.9-212.6 0-24 2.2-47.7 8.5-70.1 7.7-27.3 30-49.5 46.4-70.9 12.5-16.3 19.9-36.7 19.9-58.8z'/></svg>">
@@ -248,7 +248,7 @@ $page_title = 'Login - Dental Practice Management';
                 <i class="fas fa-tooth"></i>
             </div>
             <h1>CANINEHUB SDN BHD</h1>
-            <p>Dental Practice Management System</p>
+            <p>CASSIA DENTAL CARE Management System</p>
         </div>
 
         <!-- Login Form -->
@@ -299,7 +299,7 @@ $page_title = 'Login - Dental Practice Management';
 
         <!-- Login Information -->
         <div class="login-info">
-            <p><i class="fas fa-info-circle"></i> Professional dental practice management access</p>
+            <p><i class="fas fa-info-circle"></i> Professional CASSIA DENTAL CARE management access</p>
             <p><i class="fas fa-shield-alt"></i> Secure authentication required</p>
         </div>
     </div>

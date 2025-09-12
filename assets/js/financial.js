@@ -1,5 +1,5 @@
 // Enhanced Charge-Based Financial Calculator
-// Professional dental practice management system with itemized billing
+// CASSIA DENTAL CARE management system with itemized billing
 
 let calculationData = {
     charges: [],          // Array of {service, amount, doctorFee, clinicFee}
@@ -536,7 +536,7 @@ function generateReceiptHTML() {
         </head>
         <body>
             <div class="header">
-                <h1>🦷 DENTAL PRACTICE</h1>
+                <h1>🦷 CASSIA DENTAL CARE</h1>
             </div>
             
             <div class="header-row">
@@ -556,7 +556,7 @@ function generateReceiptHTML() {
             
             <div class="footer">
                 <p>Payment Method: ${calculationData.paymentMethod}</p>
-                <p>Thank you for choosing our dental practice!</p>
+                <p>Thank you for choosing CASSIA DENTAL CARE!</p>
                 <p>Generated on ${new Date().toLocaleString()}</p>
             </div>
         </body>
