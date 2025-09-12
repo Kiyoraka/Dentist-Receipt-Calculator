@@ -1283,10 +1283,7 @@ function printReceiptData(receiptData) {
     // Print after content loads
     printWindow.onload = function() {
         printWindow.print();
-        // Close after printing (optional)
-        setTimeout(() => {
-            printWindow.close();
-        }, 1000);
+        // Window stays open after printing - user can close manually if needed
     };
 }
 </script>
