@@ -387,26 +387,6 @@ try {
                     <div class="form-section">
                         <div class="payment-method-header">
                             <h3><i class="fas fa-credit-card"></i> Payment Method</h3>
-                            <button type="button" id="payment-settings-btn" class="btn-settings" title="Configure Payment Method Processing Fees" 
-                                    style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important; 
-                                           color: white !important; 
-                                           border: none !important; 
-                                           padding: 12px 20px !important; 
-                                           border-radius: 8px !important; 
-                                           font-size: 14px !important; 
-                                           font-weight: 600 !important; 
-                                           cursor: pointer !important; 
-                                           display: inline-flex !important; 
-                                           align-items: center !important; 
-                                           gap: 8px !important; 
-                                           box-shadow: 0 3px 10px rgba(37, 99, 235, 0.3) !important;
-                                           transition: all 0.3s ease !important;
-                                           position: relative !important;
-                                           overflow: hidden !important;
-                                           min-width: 120px !important;">
-                                <i class="fas fa-cog" style="color: white !important; font-size: 13px !important;"></i> 
-                                <span style="color: white !important;">Settings</span>
-                            </button>
                         </div>
                         <div class="payment-options">
                             <label class="payment-option">
@@ -425,6 +405,30 @@ try {
                                 <input type="radio" name="payment_method" value="Credit Card" data-fee="1.2">
                                 <span><i class="fas fa-credit-card"></i> Credit Card (1.2%)</span>
                             </label>
+                            
+                            <!-- Settings Button Above Mastercard -->
+                            <div style="grid-column: 1 / -1; margin: 15px 0 10px 0; text-align: center;">
+                                <button type="button" id="payment-settings-btn" class="btn-settings" title="Configure Payment Method Processing Fees" 
+                                        style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important; 
+                                               color: white !important; 
+                                               border: none !important; 
+                                               padding: 10px 16px !important; 
+                                               border-radius: 6px !important; 
+                                               font-size: 13px !important; 
+                                               font-weight: 600 !important; 
+                                               cursor: pointer !important; 
+                                               display: inline-flex !important; 
+                                               align-items: center !important; 
+                                               gap: 6px !important; 
+                                               box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25) !important;
+                                               transition: all 0.3s ease !important;
+                                               position: relative !important;
+                                               overflow: hidden !important;">
+                                    <i class="fas fa-cog" style="color: white !important; font-size: 12px !important;"></i> 
+                                    <span style="color: white !important;">Configure Fees</span>
+                                </button>
+                            </div>
+                            
                             <label class="payment-option">
                                 <input type="radio" name="payment_method" value="Mastercard" data-fee="2.5">
                                 <span><i class="fas fa-credit-card"></i> Mastercard (2.5%)</span>
