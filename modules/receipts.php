@@ -1307,8 +1307,9 @@ function displayReceiptData(receiptData) {
 }
 
 function generateReceiptPDF(receiptData) {
-    // Use jsPDF library to generate PDF
-    // For now, we'll use the browser's print-to-PDF functionality
+    console.log('generateReceiptPDF called with:', receiptData);
+    
+    // Create simplified receipt HTML for PDF generation  
     const receiptHTML = `
         <!DOCTYPE html>
         <html>
@@ -1508,9 +1509,18 @@ function generateReceiptPDF(receiptData) {
     `;
     
     // Open print window optimized for PDF generation
+    console.log('Opening print window...');
     const printWindow = window.open('', '_blank', 'width=600,height=800');
+    
+    if (!printWindow) {
+        alert('Popup blocked! Please allow popups for this site to download PDF.');
+        return;
+    }
+    
+    console.log('Writing HTML to print window...');
     printWindow.document.write(receiptHTML);
     printWindow.document.close();
+    console.log('Print window setup complete.');
 }
 </script>
 
