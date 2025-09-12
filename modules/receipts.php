@@ -1190,9 +1190,15 @@ function displayReceiptData(receiptData) {
                     margin-bottom: 12px;
                 }
                 .service-item {
-                    padding: 6px 0;
+                    padding: 8px 0;
                     color: #374151;
                     font-size: 14px;
+                    border-bottom: 1px solid #f1f5f9;
+                    margin-bottom: 4px;
+                }
+                .service-item:last-child {
+                    border-bottom: none;
+                    margin-bottom: 0;
                 }
                 .totals-section {
                     margin-top: 25px;
@@ -1267,9 +1273,14 @@ function displayReceiptData(receiptData) {
                     
                     <div class="services-section">
                         <div class="services-title">📋 Services Provided</div>
-                        ${receiptData.services && receiptData.services.length > 0 ? 
-                            receiptData.services.map(service => 
-                                `<div class="service-item">• ${service}</div>`
+                        ${receiptData.charges && receiptData.charges.length > 0 ? 
+                            receiptData.charges.map(charge => 
+                                `<div class="service-item">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span>• ${charge.description}</span>
+                                        <span style="font-weight: bold; color: #059669;">RM ${parseFloat(charge.amount).toFixed(2)}</span>
+                                    </div>
+                                </div>`
                             ).join('') : 
                             '<div class="service-item">• General Consultation</div>'
                         }
@@ -1400,8 +1411,14 @@ function generateReceiptPDF(receiptData) {
                     margin-bottom: 8px;
                 }
                 .service-item {
-                    padding: 3px 0;
+                    padding: 6px 0;
                     font-size: 12px;
+                    border-bottom: 1px solid #eee;
+                    margin-bottom: 3px;
+                }
+                .service-item:last-child {
+                    border-bottom: none;
+                    margin-bottom: 0;
                 }
                 .totals-section {
                     margin-top: 20px;
