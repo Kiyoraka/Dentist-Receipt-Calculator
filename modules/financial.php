@@ -629,40 +629,42 @@ document.addEventListener('DOMContentLoaded', function() {
 <?php endif; ?>
 
 <!-- Payment Settings Modal -->
-<div id="payment-settings-modal" class="modal" style="display: none;">
-    <div class="modal-backdrop"></div>
-    <div class="modal-content" style="max-width: 500px;">
-        <div class="modal-header">
-            <h3><i class="fas fa-cog"></i> Payment Method Fee Settings</h3>
-            <button type="button" class="close-modal" onclick="closePaymentSettingsModal()">
+<div id="payment-settings-modal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; overflow-y: auto;">
+    <div class="modal-content" style="background: white; padding: 0; border-radius: 10px; max-width: 500px; width: 95%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3); margin: 20px;">
+        <div class="modal-header" style="background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: white; padding: 20px; border-radius: 10px 10px 0 0; display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0; font-size: 20px;">
+                <i class="fas fa-cog" style="margin-right: 10px;"></i>
+                Payment Method Fee Settings
+            </h3>
+            <button type="button" onclick="closePaymentSettingsModal()" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 0; line-height: 1;">
                 <i class="fas fa-times"></i>
             </button>
         </div>
         
-        <div class="modal-body">
+        <div style="padding: 25px;">
             <p style="color: #6b7280; margin-bottom: 25px; font-size: 14px;">
                 Configure the processing fees for each payment method. Changes will be applied to all future calculations.
             </p>
             
-            <div class="form-group">
-                <label for="debit-card-fee">
-                    <i class="fas fa-credit-card"></i> Debit Card Fee (%)
+            <div style="margin-bottom: 20px;">
+                <label for="debit-card-fee" style="display: block; margin-bottom: 6px; font-weight: 600; color: #374151; font-size: 14px;">
+                    <i class="fas fa-credit-card" style="margin-right: 8px; color: #2563eb;"></i> Debit Card Fee (%)
                 </label>
-                <input type="number" id="debit-card-fee" step="0.1" min="0" max="10" placeholder="e.g., 0.5">
+                <input type="number" id="debit-card-fee" step="0.1" min="0" max="10" placeholder="e.g., 0.5" style="width: 100%; padding: 12px 16px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; background: white; transition: all 0.2s ease; box-sizing: border-box;">
             </div>
             
-            <div class="form-group">
-                <label for="credit-card-fee">
-                    <i class="fas fa-credit-card"></i> Credit Card Fee (%)
+            <div style="margin-bottom: 20px;">
+                <label for="credit-card-fee" style="display: block; margin-bottom: 6px; font-weight: 600; color: #374151; font-size: 14px;">
+                    <i class="fas fa-credit-card" style="margin-right: 8px; color: #2563eb;"></i> Credit Card Fee (%)
                 </label>
-                <input type="number" id="credit-card-fee" step="0.1" min="0" max="10" placeholder="e.g., 1.2">
+                <input type="number" id="credit-card-fee" step="0.1" min="0" max="10" placeholder="e.g., 1.2" style="width: 100%; padding: 12px 16px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; background: white; transition: all 0.2s ease; box-sizing: border-box;">
             </div>
             
-            <div class="form-group">
-                <label for="mastercard-fee">
-                    <i class="fas fa-credit-card"></i> Mastercard Fee (%)
+            <div style="margin-bottom: 20px;">
+                <label for="mastercard-fee" style="display: block; margin-bottom: 6px; font-weight: 600; color: #374151; font-size: 14px;">
+                    <i class="fas fa-credit-card" style="margin-right: 8px; color: #2563eb;"></i> Mastercard Fee (%)
                 </label>
-                <input type="number" id="mastercard-fee" step="0.1" min="0" max="10" placeholder="e.g., 2.5">
+                <input type="number" id="mastercard-fee" step="0.1" min="0" max="10" placeholder="e.g., 2.5" style="width: 100%; padding: 12px 16px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; background: white; transition: all 0.2s ease; box-sizing: border-box;">
             </div>
             
             <div style="background: #f0f9ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 15px; margin-top: 20px;">
@@ -676,11 +678,11 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         </div>
         
-        <div class="modal-actions">
-            <button type="button" class="btn btn-secondary" onclick="closePaymentSettingsModal()">
+        <div style="padding: 20px; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 12px; border-radius: 0 0 10px 10px;">
+            <button type="button" onclick="closePaymentSettingsModal()" style="background: #6b7280; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 16px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s ease;">
                 <i class="fas fa-times"></i> Cancel
             </button>
-            <button type="button" class="btn btn-primary" onclick="savePaymentSettings()">
+            <button type="button" onclick="savePaymentSettings()" style="background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 16px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(37,99,235,0.3);">
                 <i class="fas fa-save"></i> Save Settings
             </button>
         </div>
@@ -838,6 +840,32 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('payment-settings-modal').addEventListener('click', function(e) {
         if (e.target === this) {
             closePaymentSettingsModal();
+        }
+    });
+    
+    // Add focus effects to inputs
+    ['debit-card-fee', 'credit-card-fee', 'mastercard-fee'].forEach(id => {
+        const input = document.getElementById(id);
+        if (input) {
+            input.addEventListener('focus', function() {
+                this.style.setProperty('border-color', '#2563eb', 'important');
+                this.style.setProperty('box-shadow', '0 0 0 3px rgba(37, 99, 235, 0.1)', 'important');
+            });
+            
+            input.addEventListener('blur', function() {
+                this.style.setProperty('border-color', '#e5e7eb', 'important');
+                this.style.setProperty('box-shadow', 'none', 'important');
+            });
+        }
+    });
+    
+    // Close modal on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('payment-settings-modal');
+            if (modal.style.display === 'flex') {
+                closePaymentSettingsModal();
+            }
         }
     });
 });
