@@ -690,6 +690,54 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 
 <script>
+// Toast Notification Function
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        z-index: 10000;
+        min-width: 300px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+    `;
+    
+    switch(type) {
+        case 'success':
+            toast.style.background = '#059669';
+            toast.innerHTML = '<i class="fas fa-check-circle" style="margin-right: 8px;"></i>' + message;
+            break;
+        case 'error':
+            toast.style.background = '#dc2626';
+            toast.innerHTML = '<i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i>' + message;
+            break;
+        default:
+            toast.style.background = '#2563eb';
+            toast.innerHTML = '<i class="fas fa-info-circle" style="margin-right: 8px;"></i>' + message;
+    }
+    
+    document.body.appendChild(toast);
+    
+    // Slide in
+    setTimeout(() => {
+        toast.style.transform = 'translateX(0)';
+    }, 100);
+    
+    // Auto remove
+    setTimeout(() => {
+        toast.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            document.body.removeChild(toast);
+        }, 300);
+    }, 3000);
+}
+
 // Payment Settings Modal Functions
 function openPaymentSettingsModal() {
     // Load current settings
@@ -742,7 +790,7 @@ function savePaymentSettings() {
     
     // Validate inputs
     if (debitFee < 0 || debitFee > 10 || creditFee < 0 || creditFee > 10 || mastercardFee < 0 || mastercardFee > 10) {
-        alert('Please enter valid fee percentages between 0 and 10.');
+        showToast('Please enter valid fee percentages between 0 and 10.', 'error');
         return;
     }
     
@@ -775,11 +823,7 @@ function savePaymentSettings() {
     closePaymentSettingsModal();
     
     // Show success message
-    if (typeof showToast === 'function') {
-        showToast('Payment method fees updated successfully!', 'success');
-    } else {
-        alert('Payment method fees updated successfully!');
-    }
+    showToast('Payment method fees updated successfully!', 'success');
 }
 
 // Add event listeners for live preview
