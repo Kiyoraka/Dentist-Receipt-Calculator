@@ -1303,7 +1303,8 @@ function displayReceiptData(receiptData) {
                 
                 <div class="receipt-footer">
                     Thank you for choosing KLINIK PERGIGIAN CASSIA DENTAL CARE!<br>
-                    Generated on ${new Date().toLocaleString()}
+                    Generated on ${new Date().toLocaleString()}<br><br>
+                    <em>This is a computer-generated invoice. No signature is required.</em>
                 </div>
             </div>
         </body>
@@ -1538,7 +1539,8 @@ function generateReceiptPDF(receiptData) {
                 
                 <div class="receipt-footer">
                     Thank you for choosing KLINIK PERGIGIAN CASSIA DENTAL CARE!<br>
-                    Generated on ${new Date().toLocaleString()}
+                    Generated on ${new Date().toLocaleString()}<br><br>
+                    <em>This is a computer-generated invoice. No signature is required.</em>
                 </div>
             </div>
             
