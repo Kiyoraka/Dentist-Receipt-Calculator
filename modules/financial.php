@@ -385,9 +385,9 @@ try {
 
                     <!-- Payment Method -->
                     <div class="form-section">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <div class="payment-method-header">
                             <h3><i class="fas fa-credit-card"></i> Payment Method</h3>
-                            <button type="button" id="payment-settings-btn" class="btn-settings" title="Configure Payment Fees">
+                            <button type="button" id="payment-settings-btn" class="btn-settings" title="Configure Payment Method Processing Fees">
                                 <i class="fas fa-cog"></i> Settings
                             </button>
                         </div>
