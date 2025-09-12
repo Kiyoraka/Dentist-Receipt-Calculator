@@ -426,7 +426,7 @@ try {
                                                    overflow: hidden !important;
                                                    white-space: nowrap !important;">
                                         <i class="fas fa-cog" style="color: white !important; font-size: 10px !important;"></i> 
-                                        <span style="color: white !important;">⚙️</span>
+                                        <span style="color: white !important;">Settings</span>
                                     </button>
                                 </div>
                                 <input type="radio" name="payment_method" value="Mastercard" data-fee="2.5">
