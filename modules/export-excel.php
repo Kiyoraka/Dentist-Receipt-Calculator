@@ -202,7 +202,7 @@ try {
                 <th>Terminal Invoice</th>
                 <th>Clinic Fee</th>
                 <th>Doctor Fee</th>
-                <th>Payment Method</th>
+                <th style="width: 80px;">Payment Method</th>
                 <th>Total Spent</th>
             </tr>
         </thead>

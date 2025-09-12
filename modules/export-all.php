@@ -270,7 +270,7 @@ try {
         .col-terminal { width: 12%; }
         .col-clinic { width: 10%; font-weight: bold; color: #dc2626; }
         .col-doctor { width: 10%; font-weight: bold; color: #059669; }
-        .col-payment { width: 12%; font-weight: bold; color: #7c3aed; }
+        .col-payment { width: 8%; font-weight: bold; color: #7c3aed; }
         .col-total { width: 13%; font-weight: bold; color: #2563eb; }
         
         /* Action Buttons */
