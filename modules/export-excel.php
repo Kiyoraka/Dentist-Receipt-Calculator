@@ -35,6 +35,7 @@ try {
             r.doctor_fee,
             r.clinic_fee,
             r.invoice_date,
+            r.payment_method,
             r.created_at as visit_date,
             1 as receipt_count,
             COALESCE(r.total_amount, 0) as total_spent,
@@ -153,13 +154,13 @@ try {
         <h1 class="header">CANINEHUB SDN BHD REPORT</h1>
         <h2 class="subheader">
             <?php if ($filter_month && $filter_year): ?>
-                Individual Visit Records - <?php echo date('F Y', mktime(0, 0, 0, $filter_month, 1, $filter_year)); ?>
+                Sales Listing - <?php echo date('F Y', mktime(0, 0, 0, $filter_month, 1, $filter_year)); ?>
             <?php elseif ($filter_month): ?>
-                Individual Visit Records - <?php echo date('F', mktime(0, 0, 0, $filter_month, 1)); ?> (All Years)
+                Sales Listing - <?php echo date('F', mktime(0, 0, 0, $filter_month, 1)); ?> (All Years)
             <?php elseif ($filter_year): ?>
-                Individual Visit Records - <?php echo $filter_year; ?>
+                Sales Listing - <?php echo $filter_year; ?>
             <?php else: ?>
-                Individual Visit Records - All Time
+                Sales Listing - All Time
             <?php endif; ?>
         </h2>
         <p>Generated on: <?php echo date('F j, Y \a\t g:i A'); ?></p>
@@ -201,6 +202,7 @@ try {
                 <th>Terminal Invoice</th>
                 <th>Clinic Fee</th>
                 <th>Doctor Fee</th>
+                <th>Payment Method</th>
                 <th>Total Spent</th>
             </tr>
         </thead>
@@ -215,13 +217,14 @@ try {
                         <td><?php echo htmlspecialchars($patient['terminal_invoice_number'] ?? 'N/A'); ?></td>
                         <td>RM <?php echo number_format($patient['total_clinic_fee'], 2); ?></td>
                         <td>RM <?php echo number_format($patient['total_doctor_fee'], 2); ?></td>
+                        <td class="text-left bold"><?php echo htmlspecialchars($patient['payment_method'] ?? 'N/A'); ?></td>
                         <td class="bold">RM <?php echo number_format($patient['total_spent'], 2); ?></td>
                     </tr>
                 <?php endforeach; ?>
                 
                 <!-- Total Row -->
                 <tr class="total-row">
-                    <td colspan="5" class="text-left"><strong>TOTAL</strong></td>
+                    <td colspan="6" class="text-left"><strong>TOTAL</strong></td>
                     <td><strong>RM <?php echo number_format($total_clinic_fees, 2); ?></strong></td>
                     <td><strong>RM <?php echo number_format($total_doctor_fees, 2); ?></strong></td>
                     <td><strong>RM <?php echo number_format($total_amount, 2); ?></strong></td>

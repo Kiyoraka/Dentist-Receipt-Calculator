@@ -2,7 +2,7 @@
 /**
  * Export All - Two Page Report  
  * Page 1: Pie Chart with Financial Summary
- * Page 2: Individual Visit Records Table (Landscape)
+ * Page 2: Sales Listing Table (Landscape)
  */
 
 // Authentication protection
@@ -31,6 +31,7 @@ try {
             r.doctor_fee,
             r.clinic_fee,
             r.invoice_date,
+            r.payment_method,
             r.created_at as visit_date,
             1 as receipt_count,
             COALESCE(r.total_amount, 0) as total_spent,
@@ -267,8 +268,9 @@ try {
         .col-visitdate { width: 13%; }
         .col-receipt { width: 12%; }
         .col-terminal { width: 12%; }
-        .col-clinic { width: 12%; font-weight: bold; color: #dc2626; }
-        .col-doctor { width: 12%; font-weight: bold; color: #059669; }
+        .col-clinic { width: 10%; font-weight: bold; color: #dc2626; }
+        .col-doctor { width: 10%; font-weight: bold; color: #059669; }
+        .col-payment { width: 12%; font-weight: bold; color: #7c3aed; }
         .col-total { width: 13%; font-weight: bold; color: #2563eb; }
         
         /* Action Buttons */
@@ -341,13 +343,13 @@ try {
             <h1>🦷 CANINEHUB SDN BHD</h1>
             <h2>
                 <?php if ($filter_month && $filter_year): ?>
-                    Individual Visit Records Report - <?php echo date('F Y', mktime(0, 0, 0, $filter_month, 1, $filter_year)); ?>
+                    Sales Listing Report - <?php echo date('F Y', mktime(0, 0, 0, $filter_month, 1, $filter_year)); ?>
                 <?php elseif ($filter_month): ?>
-                    Individual Visit Records Report - <?php echo date('F', mktime(0, 0, 0, $filter_month, 1)); ?> (All Years)
+                    Sales Listing Report - <?php echo date('F', mktime(0, 0, 0, $filter_month, 1)); ?> (All Years)
                 <?php elseif ($filter_year): ?>
-                    Individual Visit Records Report - <?php echo $filter_year; ?>
+                    Sales Listing Report - <?php echo $filter_year; ?>
                 <?php else: ?>
-                    Individual Visit Records Report - All Time
+                    Sales Listing Report - All Time
                 <?php endif; ?>
             </h2>
             <p>Generated on <?php echo date('F j, Y \a\t g:i A'); ?></p>
@@ -399,6 +401,7 @@ try {
                         <th class="col-terminal">Terminal Invoice</th>
                         <th class="col-clinic">Clinic Fee</th>
                         <th class="col-doctor">Doctor Fee</th>
+                        <th class="col-payment">Payment Method</th>
                         <th class="col-total">Total Spent</th>
                     </tr>
                 </thead>
@@ -415,6 +418,7 @@ try {
                             <td class="col-terminal"><?php echo htmlspecialchars($patient['terminal_invoice_number'] ?? 'N/A'); ?></td>
                             <td class="col-clinic">RM <?php echo number_format($patient['total_clinic_fee'], 2); ?></td>
                             <td class="col-doctor">RM <?php echo number_format($patient['total_doctor_fee'], 2); ?></td>
+                            <td class="col-payment"><?php echo htmlspecialchars($patient['payment_method'] ?? 'N/A'); ?></td>
                             <td class="col-total">RM <?php echo number_format($patient['total_spent'], 2); ?></td>
                         </tr>
                     <?php endforeach; ?>
