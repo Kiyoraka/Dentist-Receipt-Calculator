@@ -494,7 +494,8 @@ function generateReceiptHTML() {
     const invoiceNumber = document.getElementById('invoice-number').value;
     const invoiceDate = document.getElementById('invoice-date').value;
     const customerName = document.getElementById('customer-name').value;
-    const terminalInvoice = document.getElementById('terminal-invoice').value;
+    const terminalInvoiceElement = document.getElementById('terminal-invoice');
+    const terminalInvoice = terminalInvoiceElement ? terminalInvoiceElement.value : '';
 
     // Generate dental services section
     let servicesHTML = '';
