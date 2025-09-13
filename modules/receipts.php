@@ -419,7 +419,7 @@ try {
                                 </span>
                             </td>
                             <td style="padding: 15px;">
-                                <?php echo date('M d, Y', strtotime($receipt['invoice_date'])); ?>
+                                <?php echo date('d/m/Y', strtotime($receipt['invoice_date'])); ?>
                             </td>
                             <td style="padding: 15px; max-width: 200px;">
                                 <span style="font-size: 13px; color: #4b5563;">
@@ -885,7 +885,7 @@ function deleteReceipt(receiptId, invoiceNumber) {
         const receiptInfo = `
             <div style="text-align: left;">
                 <p style="margin: 8px 0;"><strong>Patient:</strong> ${data.patient_name || 'Unknown'}</p>
-                <p style="margin: 8px 0;"><strong>Date:</strong> ${new Date(data.invoice_date).toLocaleDateString()}</p>
+                <p style="margin: 8px 0;"><strong>Date:</strong> ${new Date(data.invoice_date).toLocaleDateString('en-GB')}</p>
                 <p style="margin: 8px 0;"><strong>Total Amount:</strong> RM ${parseFloat(data.total_amount).toFixed(2)}</p>
                 <p style="margin: 8px 0;"><strong>Payment Method:</strong> ${data.payment_method}</p>
                 ${data.services && data.services.length > 0 ? 
@@ -1268,7 +1268,7 @@ function displayReceiptData(receiptData) {
                     <div class="clinic-phone">011-1201 1202</div>
                     <div class="receipt-info">
                         <div><strong>Invoice:</strong> ${receiptData.invoice_number}</div>
-                        <div><strong>Date:</strong> ${new Date(receiptData.invoice_date).toLocaleDateString()}</div>
+                        <div><strong>Date:</strong> ${new Date(receiptData.invoice_date).toLocaleDateString('en-GB')}</div>
                     </div>
                 </div>
                 
@@ -1518,7 +1518,7 @@ function generateReceiptPDF(receiptData) {
                     <div class="clinic-phone">011-1201 1202</div>
                     <div class="receipt-info">
                         <div><strong>Invoice:</strong> ${receiptData.invoice_number}</div>
-                        <div><strong>Date:</strong> ${new Date(receiptData.invoice_date).toLocaleDateString()}</div>
+                        <div><strong>Date:</strong> ${new Date(receiptData.invoice_date).toLocaleDateString('en-GB')}</div>
                     </div>
                 </div>
                 

@@ -390,7 +390,7 @@ if (isset($_GET['patient_id'])) {
                                 <i class="fas fa-user-circle" style="margin-right: 8px;"></i>
                                 <?php echo htmlspecialchars($patient['name']); ?>
                             </td>
-                            <td class="charge-amount" style="text-align: center; font-weight: bold; color: #374151; font-size: 15px; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9;"><?php echo date('M j, Y', strtotime($patient['invoice_date'])); ?></td>
+                            <td class="charge-amount" style="text-align: center; font-weight: bold; color: #374151; font-size: 15px; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9;"><?php echo date('d/m/Y', strtotime($patient['invoice_date'])); ?></td>
                             <td style="text-align: center; padding: 16px 12px; vertical-align: middle; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f1f5f9; color: #374151;">
                                 <?php echo htmlspecialchars($patient['invoice_number']); ?>
                             </td>

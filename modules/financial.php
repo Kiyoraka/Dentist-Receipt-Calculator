@@ -502,7 +502,7 @@ try {
                         <div class="receipt-item">
                             <div class="receipt-header">
                                 <strong><?php echo htmlspecialchars($receipt['invoice_number']); ?></strong>
-                                <span class="receipt-date"><?php echo date('M j, Y', strtotime($receipt['invoice_date'])); ?></span>
+                                <span class="receipt-date"><?php echo date('d/m/Y', strtotime($receipt['invoice_date'])); ?></span>
                             </div>
                             <div class="receipt-details">
                                 <p><i class="fas fa-user"></i> <?php echo htmlspecialchars($receipt['patient_name'] ?? 'Walk-in'); ?></p>

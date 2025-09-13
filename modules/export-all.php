@@ -413,7 +413,7 @@ try {
                                 <i class="fas fa-user-circle" style="margin-right: 5px; color: #2563eb;"></i>
                                 <?php echo htmlspecialchars($patient['name']); ?>
                             </td>
-                            <td class="col-visitdate"><?php echo date('M j, Y', strtotime($patient['invoice_date'])); ?></td>
+                            <td class="col-visitdate"><?php echo date('d/m/Y', strtotime($patient['invoice_date'])); ?></td>
                             <td class="col-receipt"><?php echo htmlspecialchars($patient['invoice_number']); ?></td>
                             <td class="col-terminal"><?php echo htmlspecialchars($patient['terminal_invoice_number'] ?? 'N/A'); ?></td>
                             <td class="col-clinic">RM <?php echo number_format($patient['total_clinic_fee'], 2); ?></td>

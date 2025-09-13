@@ -212,7 +212,7 @@ try {
                     <tr>
                         <td><?php echo $index + 1; ?></td>
                         <td class="text-left bold"><?php echo htmlspecialchars($patient['name']); ?></td>
-                        <td><?php echo date('M j, Y', strtotime($patient['invoice_date'])); ?></td>
+                        <td><?php echo date('d/m/Y', strtotime($patient['invoice_date'])); ?></td>
                         <td><?php echo htmlspecialchars($patient['invoice_number']); ?></td>
                         <td><?php echo htmlspecialchars($patient['terminal_invoice_number'] ?? 'N/A'); ?></td>
                         <td>RM <?php echo number_format($patient['total_clinic_fee'], 2); ?></td>

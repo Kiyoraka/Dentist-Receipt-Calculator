@@ -689,7 +689,7 @@ function generateReceiptHTML() {
                     <div class="clinic-phone">011-1201 1202</div>
                     <div class="receipt-info">
                         <div><strong>Invoice:</strong> ${invoiceNumber}</div>
-                        <div><strong>Date:</strong> ${new Date(invoiceDate).toLocaleDateString()}</div>
+                        <div><strong>Date:</strong> ${new Date(invoiceDate).toLocaleDateString('en-GB')}</div>
                     </div>
                 </div>
 
