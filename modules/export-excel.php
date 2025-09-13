@@ -224,14 +224,15 @@ try {
                 
                 <!-- Total Row -->
                 <tr class="total-row">
-                    <td colspan="6" class="text-left"><strong>TOTAL</strong></td>
+                    <td colspan="5" class="text-left"><strong>TOTAL</strong></td>
                     <td><strong>RM <?php echo number_format($total_clinic_fees, 2); ?></strong></td>
                     <td><strong>RM <?php echo number_format($total_doctor_fees, 2); ?></strong></td>
+                    <td></td>
                     <td><strong>RM <?php echo number_format($total_amount, 2); ?></strong></td>
                 </tr>
             <?php else: ?>
                 <tr>
-                    <td colspan="8">No patient data found</td>
+                    <td colspan="9">No patient data found</td>
                 </tr>
             <?php endif; ?>
         </tbody>
