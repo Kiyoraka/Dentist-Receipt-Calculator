@@ -662,7 +662,18 @@ function generateReceiptHTML() {
                 }
                 @media print {
                     body { background: white; padding: 0; }
-                    .receipt-container { box-shadow: none; }
+                    .receipt-container {
+                        box-shadow: none;
+                        border: 2px solid #2563eb !important;
+                        -webkit-print-color-adjust: exact !important;
+                    }
+                    .receipt-header {
+                        background: #1d4ed8 !important;
+                        color: white !important;
+                        -webkit-print-color-adjust: exact !important;
+                        color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
                 }
             </style>
         </head>
