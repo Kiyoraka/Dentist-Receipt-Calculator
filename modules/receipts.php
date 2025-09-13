@@ -1262,7 +1262,7 @@ function displayReceiptData(receiptData) {
                     <div class="clinic-name">🦷 KLINIK PERGIGIAN</div>
                     <div class="clinic-name">CASSIA DENTAL CARE</div>
                     <div class="clinic-address">
-                        No. 2 & 24, Jalan Bestari 14,<br>
+                        No 2 & 2A, Jalan Bestari 14,<br>
                         Taman Mutiara Rini, 81300 Skudai, Johor.
                     </div>
                     <div class="clinic-phone">011-1201 1202</div>
@@ -1512,7 +1512,7 @@ function generateReceiptPDF(receiptData) {
                     <div class="clinic-name">🦷 KLINIK PERGIGIAN</div>
                     <div class="clinic-name">CASSIA DENTAL CARE</div>
                     <div class="clinic-address">
-                        No. 2 & 24, Jalan Bestari 14,<br>
+                        No 2 & 2A, Jalan Bestari 14,<br>
                         Taman Mutiara Rini, 81300 Skudai, Johor.
                     </div>
                     <div class="clinic-phone">011-1201 1202</div>
