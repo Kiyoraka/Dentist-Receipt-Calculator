@@ -494,70 +494,228 @@ function generateReceiptHTML() {
     const invoiceNumber = document.getElementById('invoice-number').value;
     const invoiceDate = document.getElementById('invoice-date').value;
     const customerName = document.getElementById('customer-name').value;
-    
-    // Generate itemized charges list
-    let chargesHTML = '';
+    const terminalInvoice = document.getElementById('terminal-invoice').value;
+
+    // Generate dental services section
+    let servicesHTML = '';
     if (calculationData.charges.length > 0) {
-        chargesHTML = '<div style="margin: 20px 0;"><h4 style="color: #2563eb;">Itemized Charges:</h4>';
-        calculationData.charges.forEach(charge => {
-            chargesHTML += `
-                <div style="margin: 10px 0; padding: 10px; background: #f8f9ff; border-left: 4px solid #2563eb;">
-                    <strong>${charge.service}</strong> - RM ${charge.amount.toFixed(2)}
+        servicesHTML = calculationData.charges.map(charge =>
+            `<div class="service-item">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <span style="font-weight: bold; color: #2563eb;">• ${charge.service}</span>
+                    <span style="font-weight: bold; color: #059669;">RM ${charge.amount.toFixed(2)}</span>
                 </div>
-            `;
-        });
-        chargesHTML += '</div>';
+            </div>`
+        ).join('');
+    } else {
+        servicesHTML = '<div class="service-item">• General Consultation</div>';
     }
-    
+
     // Generate other charges section
     let otherChargesHTML = '';
     if (calculationData.otherCharges.length > 0) {
-        otherChargesHTML = `<div style="margin: 15px 0;"><strong>Additional Charges: RM ${calculationData.otherCharges.reduce((sum, charge) => sum + charge.amount, 0).toFixed(2)}</strong></div>`;
+        otherChargesHTML = `
+            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e5e7eb;">
+                <div style="font-weight: bold; color: #7c3aed; margin-bottom: 8px;">📋 Additional Charges</div>
+                ${calculationData.otherCharges.map(charge =>
+                    `<div class="service-item">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>• ${charge.description}</span>
+                            <span style="font-weight: bold; color: #059669;">RM ${charge.amount.toFixed(2)}</span>
+                        </div>
+                    </div>`
+                ).join('')}
+            </div>
+        `;
     }
-    
+
     return `
         <!DOCTYPE html>
         <html>
         <head>
+            <meta charset="UTF-8">
             <title>Receipt - ${invoiceNumber}</title>
             <style>
-                body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; line-height: 1.4; }
-                .header { text-align: center; border-bottom: 2px solid #2563eb; padding-bottom: 20px; margin-bottom: 20px; }
-                .header h1 { color: #2563eb; margin: 0; font-size: 24px; }
-                .header-row { display: flex; justify-content: space-between; margin-bottom: 20px; font-weight: bold; }
-                .customer-name { font-size: 18px; margin: 20px 0; font-weight: bold; }
-                .fee-section { margin: 15px 0; }
-                .fee-amount { font-size: 16px; font-weight: bold; }
-                .services-section { margin: 10px 0 15px 0; }
-                .total-section { margin: 20px 0; padding: 10px; border: 2px solid #2563eb; background-color: #f8f9ff; }
-                .total-amount { font-size: 20px; font-weight: bold; color: #2563eb; }
-                .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #ddd; padding-top: 15px; }
+                body {
+                    font-family: 'Arial', sans-serif;
+                    margin: 0;
+                    padding: 20px;
+                    background: #f8fafc;
+                }
+                .receipt-container {
+                    max-width: 400px;
+                    margin: 0 auto;
+                    background: white;
+                    border-radius: 12px;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+                    overflow: hidden;
+                }
+                .receipt-header {
+                    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+                    color: white;
+                    padding: 25px;
+                    text-align: center;
+                }
+                .clinic-name {
+                    font-size: 20px;
+                    font-weight: bold;
+                    margin-bottom: 4px;
+                    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                    line-height: 1.2;
+                }
+                .clinic-address {
+                    font-size: 12px;
+                    opacity: 0.9;
+                    margin: 10px 0 8px 0;
+                    line-height: 1.4;
+                }
+                .clinic-phone {
+                    font-size: 14px;
+                    font-weight: bold;
+                    margin-bottom: 15px;
+                    opacity: 0.95;
+                }
+                .receipt-info {
+                    background: rgba(255,255,255,0.15);
+                    padding: 12px;
+                    border-radius: 8px;
+                    font-size: 13px;
+                }
+                .receipt-body {
+                    padding: 25px;
+                }
+                .info-row {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 12px;
+                    padding: 8px 0;
+                    border-bottom: 1px solid #f1f5f9;
+                }
+                .info-label {
+                    font-weight: bold;
+                    color: #374151;
+                }
+                .info-value {
+                    color: #6b7280;
+                }
+                .services-section {
+                    margin: 20px 0;
+                    padding: 20px;
+                    background: #f8fafc;
+                    border-radius: 8px;
+                    border-left: 4px solid #2563eb;
+                }
+                .services-title {
+                    font-size: 16px;
+                    font-weight: bold;
+                    color: #2563eb;
+                    margin-bottom: 12px;
+                }
+                .service-item {
+                    padding: 8px 0;
+                    color: #374151;
+                    font-size: 14px;
+                    border-bottom: 1px solid #f1f5f9;
+                    margin-bottom: 4px;
+                }
+                .service-item:last-child {
+                    border-bottom: none;
+                    margin-bottom: 0;
+                }
+                .totals-section {
+                    margin-top: 25px;
+                    padding-top: 20px;
+                    border-top: 2px solid #e5e7eb;
+                }
+                .total-row {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 10px;
+                    font-size: 16px;
+                }
+                .total-row.final {
+                    font-weight: bold;
+                    font-size: 20px;
+                    color: #059669;
+                    padding: 15px;
+                    background: #f0fdf4;
+                    border-radius: 8px;
+                    margin-top: 15px;
+                }
+                .payment-method {
+                    text-align: center;
+                    margin-top: 20px;
+                    padding: 12px;
+                    background: #dbeafe;
+                    color: #2563eb;
+                    border-radius: 6px;
+                    font-weight: 500;
+                }
+                .receipt-footer {
+                    text-align: center;
+                    margin-top: 30px;
+                    padding: 20px;
+                    border-top: 1px solid #e5e7eb;
+                    color: #6b7280;
+                    font-size: 12px;
+                }
+                @media print {
+                    body { background: white; padding: 0; }
+                    .receipt-container { box-shadow: none; }
+                }
             </style>
         </head>
         <body>
-            <div class="header">
-                <h1>🦷 CASSIA DENTAL CARE</h1>
-            </div>
-            
-            <div class="header-row">
-                <div>${new Date(invoiceDate).toLocaleDateString()}</div>
-                <div>${invoiceNumber}</div>
-            </div>
-            
-            <div class="customer-name">${customerName}</div>
-            
-            ${chargesHTML}
-            
-            ${otherChargesHTML}
-            
-            <div class="total-section">
-                <div class="total-amount">Total Amount: RM ${(calculationData.totalDoctorFee + calculationData.totalClinicFee).toFixed(2)}</div>
-            </div>
-            
-            <div class="footer">
-                <p>Payment Method: ${calculationData.paymentMethod}</p>
-                <p>Thank you for choosing CASSIA DENTAL CARE!</p>
-                <p>Generated on ${new Date().toLocaleString()}</p>
+            <div class="receipt-container">
+                <div class="receipt-header">
+                    <div class="clinic-name">🦷 KLINIK PERGIGIAN</div>
+                    <div class="clinic-name">CASSIA DENTAL CARE</div>
+                    <div class="clinic-address">
+                        No 2 & 2A, Jalan Bestari 14,<br>
+                        Taman Mutiara Rini, 81300 Skudai, Johor.
+                    </div>
+                    <div class="clinic-phone">011-1201 1202</div>
+                    <div class="receipt-info">
+                        <div><strong>Invoice:</strong> ${invoiceNumber}</div>
+                        <div><strong>Date:</strong> ${new Date(invoiceDate).toLocaleDateString()}</div>
+                    </div>
+                </div>
+
+                <div class="receipt-body">
+                    <div class="info-row">
+                        <span class="info-label">Patient Name:</span>
+                        <span class="info-value">${customerName || 'Walk-in Patient'}</span>
+                    </div>
+                    ${terminalInvoice ?
+                        `<div class="info-row">
+                            <span class="info-label">Terminal Invoice:</span>
+                            <span class="info-value">${terminalInvoice}</span>
+                        </div>` : ''
+                    }
+
+                    <div class="services-section">
+                        <div class="services-title">🦷 Dental Services Provided</div>
+                        ${servicesHTML}
+                        ${otherChargesHTML}
+                    </div>
+
+                    <div class="totals-section">
+                        <div class="total-row final">
+                            <span>Total Amount:</span>
+                            <span>RM ${(calculationData.totalDoctorFee + calculationData.totalClinicFee).toFixed(2)}</span>
+                        </div>
+                    </div>
+
+                    <div class="payment-method">
+                        💳 Payment Method: ${calculationData.paymentMethod}
+                    </div>
+                </div>
+
+                <div class="receipt-footer">
+                    Thank you for choosing KLINIK PERGIGIAN CASSIA DENTAL CARE!<br>
+                    Generated on ${new Date().toLocaleString()}<br><br>
+                    <em>This is a computer-generated invoice. No signature is required.</em>
+                </div>
             </div>
         </body>
         </html>
