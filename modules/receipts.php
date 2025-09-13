@@ -149,17 +149,30 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_receipt') {
         $receipt = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if ($receipt) {
-            // Get services for this receipt
-            $stmt = $conn->prepare("SELECT service_name FROM receipt_services WHERE receipt_id = ?");
-            $stmt->execute([$_GET['receipt_id']]);
-            $services = $stmt->fetchAll(PDO::FETCH_COLUMN);
-            
-            // Get charges for this receipt
+            // Get dental services for this receipt with their details
+            $stmt = $conn->prepare("
+                SELECT rs.service_name, ds.percentage,
+                       ROUND((? * ds.percentage / 100), 2) as doctor_amount,
+                       ROUND((? * (100 - ds.percentage) / 100), 2) as clinic_amount,
+                       ROUND((? * ds.percentage / 100) + (? * (100 - ds.percentage) / 100), 2) as total_amount
+                FROM receipt_services rs
+                LEFT JOIN dental_services ds ON rs.service_name = ds.service_name
+                WHERE rs.receipt_id = ?
+            ");
+            $stmt->execute([
+                $receipt['doctor_fee'], $receipt['clinic_fee'],
+                $receipt['doctor_fee'], $receipt['clinic_fee'],
+                $_GET['receipt_id']
+            ]);
+            $dental_services = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Get additional charges for this receipt
             $stmt = $conn->prepare("SELECT description, amount FROM receipt_charges WHERE receipt_id = ?");
             $stmt->execute([$_GET['receipt_id']]);
             $charges = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
-            $receipt['services'] = $services;
+
+            $receipt['dental_services'] = $dental_services;
+            $receipt['services'] = array_column($dental_services, 'service_name'); // Keep for backward compatibility
             $receipt['charges'] = $charges;
             
             echo json_encode($receipt);
@@ -1272,17 +1285,33 @@ function displayReceiptData(receiptData) {
                     }
                     
                     <div class="services-section">
-                        <div class="services-title">📋 Services Provided</div>
-                        ${receiptData.charges && receiptData.charges.length > 0 ? 
-                            receiptData.charges.map(charge => 
+                        <div class="services-title">🦷 Dental Services Provided</div>
+                        ${receiptData.dental_services && receiptData.dental_services.length > 0 ?
+                            receiptData.dental_services.map(service =>
+                                `<div class="service-item">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                        <span style="font-weight: bold; color: #2563eb;">• ${service.service_name}</span>
+                                        <span style="font-weight: bold; color: #059669;">RM ${parseFloat(service.total_amount).toFixed(2)}</span>
+                                    </div>
+                                    <div style="font-size: 12px; color: #6b7280; margin-left: 12px;">
+                                        Doctor Fee: RM ${parseFloat(service.doctor_amount).toFixed(2)} |
+                                        Clinic Fee: RM ${parseFloat(service.clinic_amount).toFixed(2)}
+                                        (${parseFloat(service.percentage).toFixed(0)}% : ${(100-parseFloat(service.percentage)).toFixed(0)}%)
+                                    </div>
+                                </div>`
+                            ).join('') :
+                            '<div class="service-item">• General Consultation</div>'
+                        }
+                        ${receiptData.charges && receiptData.charges.length > 0 ?
+                            '<div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e5e7eb;"><div style="font-weight: bold; color: #7c3aed; margin-bottom: 8px;">📋 Additional Charges</div>' +
+                            receiptData.charges.map(charge =>
                                 `<div class="service-item">
                                     <div style="display: flex; justify-content: space-between; align-items: center;">
                                         <span>• ${charge.description}</span>
                                         <span style="font-weight: bold; color: #059669;">RM ${parseFloat(charge.amount).toFixed(2)}</span>
                                     </div>
                                 </div>`
-                            ).join('') : 
-                            '<div class="service-item">• General Consultation</div>'
+                            ).join('') + '</div>' : ''
                         }
                     </div>
                     
@@ -1511,12 +1540,33 @@ function generateReceiptPDF(receiptData) {
                     }
                     
                     <div class="services-section">
-                        <div class="services-title">Services Provided</div>
-                        ${receiptData.services && receiptData.services.length > 0 ? 
-                            receiptData.services.map(service => 
-                                `<div class="service-item">• ${service}</div>`
-                            ).join('') : 
+                        <div class="services-title">🦷 Dental Services Provided</div>
+                        ${receiptData.dental_services && receiptData.dental_services.length > 0 ?
+                            receiptData.dental_services.map(service =>
+                                `<div class="service-item">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                                        <span style="font-weight: bold; color: #2563eb;">• ${service.service_name}</span>
+                                        <span style="font-weight: bold; color: #059669;">RM ${parseFloat(service.total_amount).toFixed(2)}</span>
+                                    </div>
+                                    <div style="font-size: 10px; color: #666; margin-left: 12px;">
+                                        Doctor Fee: RM ${parseFloat(service.doctor_amount).toFixed(2)} |
+                                        Clinic Fee: RM ${parseFloat(service.clinic_amount).toFixed(2)}
+                                        (${parseFloat(service.percentage).toFixed(0)}% : ${(100-parseFloat(service.percentage)).toFixed(0)}%)
+                                    </div>
+                                </div>`
+                            ).join('') :
                             '<div class="service-item">• General Consultation</div>'
+                        }
+                        ${receiptData.charges && receiptData.charges.length > 0 ?
+                            '<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #ddd;"><div style="font-weight: bold; color: #7c3aed; margin-bottom: 5px; font-size: 12px;">📋 Additional Charges</div>' +
+                            receiptData.charges.map(charge =>
+                                `<div class="service-item">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span>• ${charge.description}</span>
+                                        <span style="font-weight: bold;">RM ${parseFloat(charge.amount).toFixed(2)}</span>
+                                    </div>
+                                </div>`
+                            ).join('') + '</div>' : ''
                         }
                     </div>
                     
