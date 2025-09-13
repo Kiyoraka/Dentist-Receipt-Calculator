@@ -163,7 +163,7 @@ try {
                 Sales Listing - All Time
             <?php endif; ?>
         </h2>
-        <p>Generated on: <?php echo date('F j, Y \a\t g:i A'); ?></p>
+        <p>Generated on: <?php echo date('j F, Y \a\t g:i A'); ?></p>
         <p>Total Records: <?php echo $total_visits; ?></p>
     </div>
     
