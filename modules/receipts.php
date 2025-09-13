@@ -1293,11 +1293,6 @@ function displayReceiptData(receiptData) {
                                         <span style="font-weight: bold; color: #2563eb;">• ${service.service_name}</span>
                                         <span style="font-weight: bold; color: #059669;">RM ${parseFloat(service.total_amount).toFixed(2)}</span>
                                     </div>
-                                    <div style="font-size: 12px; color: #6b7280; margin-left: 12px;">
-                                        Doctor Fee: RM ${parseFloat(service.doctor_amount).toFixed(2)} |
-                                        Clinic Fee: RM ${parseFloat(service.clinic_amount).toFixed(2)}
-                                        (${parseFloat(service.percentage).toFixed(0)}% : ${(100-parseFloat(service.percentage)).toFixed(0)}%)
-                                    </div>
                                 </div>`
                             ).join('') :
                             '<div class="service-item">• General Consultation</div>'
@@ -1547,11 +1542,6 @@ function generateReceiptPDF(receiptData) {
                                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
                                         <span style="font-weight: bold; color: #2563eb;">• ${service.service_name}</span>
                                         <span style="font-weight: bold; color: #059669;">RM ${parseFloat(service.total_amount).toFixed(2)}</span>
-                                    </div>
-                                    <div style="font-size: 10px; color: #666; margin-left: 12px;">
-                                        Doctor Fee: RM ${parseFloat(service.doctor_amount).toFixed(2)} |
-                                        Clinic Fee: RM ${parseFloat(service.clinic_amount).toFixed(2)}
-                                        (${parseFloat(service.percentage).toFixed(0)}% : ${(100-parseFloat(service.percentage)).toFixed(0)}%)
                                     </div>
                                 </div>`
                             ).join('') :
