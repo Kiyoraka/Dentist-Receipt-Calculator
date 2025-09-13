@@ -202,6 +202,7 @@ try {
                 <th>Terminal Invoice</th>
                 <th>Clinic Fee</th>
                 <th>Doctor Fee</th>
+                <th>Subtotal</th>
                 <th style="width: 80px;">Payment Method</th>
                 <th>Total Spent</th>
             </tr>
@@ -217,6 +218,7 @@ try {
                         <td><?php echo htmlspecialchars($patient['terminal_invoice_number'] ?? 'N/A'); ?></td>
                         <td>RM <?php echo number_format($patient['total_clinic_fee'], 2); ?></td>
                         <td>RM <?php echo number_format($patient['total_doctor_fee'], 2); ?></td>
+                        <td class="bold">RM <?php echo number_format($patient['total_clinic_fee'] + $patient['total_doctor_fee'], 2); ?></td>
                         <td class="text-left bold"><?php echo htmlspecialchars($patient['payment_method'] ?? 'N/A'); ?></td>
                         <td class="bold">RM <?php echo number_format($patient['total_spent'], 2); ?></td>
                     </tr>
@@ -227,12 +229,13 @@ try {
                     <td colspan="5" class="text-left"><strong>TOTAL</strong></td>
                     <td><strong>RM <?php echo number_format($total_clinic_fees, 2); ?></strong></td>
                     <td><strong>RM <?php echo number_format($total_doctor_fees, 2); ?></strong></td>
+                    <td><strong>RM <?php echo number_format($total_clinic_fees + $total_doctor_fees, 2); ?></strong></td>
                     <td></td>
                     <td><strong>RM <?php echo number_format($total_amount, 2); ?></strong></td>
                 </tr>
             <?php else: ?>
                 <tr>
-                    <td colspan="9">No patient data found</td>
+                    <td colspan="10">No patient data found</td>
                 </tr>
             <?php endif; ?>
         </tbody>
