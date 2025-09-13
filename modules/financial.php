@@ -165,12 +165,26 @@ if ($_POST && isset($_POST['action'])) {
                     ]);
                 }
             }
-            
+
+            // Insert main dental service charges
+            if (!empty($_POST['charges_list'])) {
+                $charges = json_decode($_POST['charges_list'], true);
+                $stmt = $conn->prepare("INSERT INTO receipt_charges (receipt_id, description, amount) VALUES (?, ?, ?)");
+
+                foreach ($charges as $charge) {
+                    $stmt->execute([
+                        $receipt_id,
+                        $charge['service'], // Use 'service' field for dental services
+                        $charge['amount']   // Use the original charge amount, not total
+                    ]);
+                }
+            }
+
             // Insert other charges
             if (!empty($_POST['other_charges_list'])) {
                 $charges = json_decode($_POST['other_charges_list'], true);
                 $stmt = $conn->prepare("INSERT INTO receipt_charges (receipt_id, description, amount) VALUES (?, ?, ?)");
-                
+
                 foreach ($charges as $charge) {
                     $stmt->execute([
                         $receipt_id,
