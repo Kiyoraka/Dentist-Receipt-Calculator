@@ -61,17 +61,53 @@ if (isset($_POST['action']) && $_POST['action'] === 'update_receipt') {
             // Update services - delete existing and insert new ones
             $stmt = $conn->prepare("DELETE FROM receipt_services WHERE receipt_id = ?");
             $stmt->execute([$_POST['receipt_id']]);
-            
+
+            // Delete existing charges
+            $stmt = $conn->prepare("DELETE FROM receipt_charges WHERE receipt_id = ?");
+            $stmt->execute([$_POST['receipt_id']]);
+
             // Insert new services
             if (!empty($_POST['selected_services'])) {
                 $services = json_decode($_POST['selected_services'], true);
                 if ($services && is_array($services)) {
                     $stmt = $conn->prepare("INSERT INTO receipt_services (receipt_id, service_name) VALUES (?, ?)");
-                    
+
                     foreach ($services as $service) {
                         $stmt->execute([
                             $_POST['receipt_id'],
                             $service['name']
+                        ]);
+                    }
+                }
+            }
+
+            // Insert main dental service charges
+            if (!empty($_POST['charges_list'])) {
+                $charges = json_decode($_POST['charges_list'], true);
+                if ($charges && is_array($charges)) {
+                    $stmt = $conn->prepare("INSERT INTO receipt_charges (receipt_id, description, amount) VALUES (?, ?, ?)");
+
+                    foreach ($charges as $charge) {
+                        $stmt->execute([
+                            $_POST['receipt_id'],
+                            $charge['service'], // Use 'service' field for dental services
+                            $charge['amount']   // Use the original charge amount, not total
+                        ]);
+                    }
+                }
+            }
+
+            // Insert other charges
+            if (!empty($_POST['other_charges_list'])) {
+                $charges = json_decode($_POST['other_charges_list'], true);
+                if ($charges && is_array($charges)) {
+                    $stmt = $conn->prepare("INSERT INTO receipt_charges (receipt_id, description, amount) VALUES (?, ?, ?)");
+
+                    foreach ($charges as $charge) {
+                        $stmt->execute([
+                            $_POST['receipt_id'],
+                            $charge['description'],
+                            $charge['amount']
                         ]);
                     }
                 }
