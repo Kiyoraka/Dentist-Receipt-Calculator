@@ -1320,44 +1320,61 @@ function displayReceiptData(receiptData) {
                     
                     <div class="services-section">
                         <div class="services-title">🦷 Dental Services Provided</div>
-                        ${receiptData.dental_services && receiptData.dental_services.length > 0 ?
-                            receiptData.dental_services.map(service =>
-                                `<div class="service-item">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                                        <span style="font-weight: bold; color: #2563eb;">• ${service.service_name}</span>
-                                        <span style="font-weight: bold; color: #059669;">RM ${parseFloat(service.total_amount).toFixed(2)}</span>
-                                    </div>
-                                </div>`
-                            ).join('') :
-                            '<div class="service-item">• General Consultation</div>'
-                        }
-                        ${receiptData.charges && receiptData.charges.length > 0 ? (() => {
-                            // Known dental service names
-                            const dentalServices = ['Extraction', 'Medication', 'Whitening', 'Filling', 'Scaling', 'Implant', 'Crown', 'Package', 'Braces', 'Denture', 'X-ray', 'Trauma', 'RCT', 'Surgery', 'Consult'];
-
-                            // Separate dental services from other charges
-                            const dentalCharges = receiptData.charges.filter(charge => dentalServices.includes(charge.description));
-                            const otherCharges = receiptData.charges.filter(charge => !dentalServices.includes(charge.description));
-
+                        ${(() => {
                             let html = '';
 
-                            // Add dental services section if any exist
-                            if (dentalCharges.length > 0) {
-                                html += '<div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e5e7eb;"><div style="font-weight: bold; color: #7c3aed; margin-bottom: 8px;">🦷 Dental Services Provided</div>';
-                                html += dentalCharges.map(charge =>
+                            // Check if we have individual charges data (edited/updated receipt)
+                            if (receiptData.charges && receiptData.charges.length > 0) {
+                                const dentalServices = ['Extraction', 'Medication', 'Whitening', 'Filling', 'Scaling', 'Implant', 'Crown', 'Package', 'Braces', 'Denture', 'X-ray', 'Trauma', 'RCT', 'Surgery', 'Consult'];
+                                const dentalCharges = receiptData.charges.filter(charge => dentalServices.includes(charge.description));
+
+                                if (dentalCharges.length > 0) {
+                                    // REPLACE with edited individual charges (don't use dental_services)
+                                    html = dentalCharges.map(charge =>
+                                        `<div class="service-item">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                                <span style="font-weight: bold; color: #2563eb;">• ${charge.description}</span>
+                                                <span style="font-weight: bold; color: #059669;">RM ${parseFloat(charge.amount).toFixed(2)}</span>
+                                            </div>
+                                        </div>`
+                                    ).join('');
+                                } else if (receiptData.dental_services && receiptData.dental_services.length > 0) {
+                                    // Fallback to dental_services if no individual charges
+                                    html = receiptData.dental_services.map(service =>
+                                        `<div class="service-item">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                                <span style="font-weight: bold; color: #2563eb;">• ${service.service_name}</span>
+                                                <span style="font-weight: bold; color: #059669;">RM ${parseFloat(service.total_amount).toFixed(2)}</span>
+                                            </div>
+                                        </div>`
+                                    ).join('');
+                                }
+                            } else if (receiptData.dental_services && receiptData.dental_services.length > 0) {
+                                // Use dental_services when no individual charges available
+                                html = receiptData.dental_services.map(service =>
                                     `<div class="service-item">
-                                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                                            <span>• ${charge.description}</span>
-                                            <span style="font-weight: bold; color: #059669;">RM ${parseFloat(charge.amount).toFixed(2)}</span>
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                            <span style="font-weight: bold; color: #2563eb;">• ${service.service_name}</span>
+                                            <span style="font-weight: bold; color: #059669;">RM ${parseFloat(service.total_amount).toFixed(2)}</span>
                                         </div>
                                     </div>`
                                 ).join('');
-                                html += '</div>';
                             }
 
-                            // Add additional charges section if any exist
+                            // If no services at all, show default
+                            if (!html) {
+                                html = '<div class="service-item">• General Consultation</div>';
+                            }
+
+                            return html;
+                        })()}
+                        ${receiptData.charges && receiptData.charges.length > 0 ? (() => {
+                            // Only show additional charges (non-dental services)
+                            const dentalServices = ['Extraction', 'Medication', 'Whitening', 'Filling', 'Scaling', 'Implant', 'Crown', 'Package', 'Braces', 'Denture', 'X-ray', 'Trauma', 'RCT', 'Surgery', 'Consult'];
+                            const otherCharges = receiptData.charges.filter(charge => !dentalServices.includes(charge.description));
+
                             if (otherCharges.length > 0) {
-                                html += '<div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e5e7eb;"><div style="font-weight: bold; color: #7c3aed; margin-bottom: 8px;">📋 Additional Charges</div>';
+                                let html = '<div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e5e7eb;"><div style="font-weight: bold; color: #7c3aed; margin-bottom: 8px;">📋 Additional Charges</div>';
                                 html += otherCharges.map(charge =>
                                     `<div class="service-item">
                                         <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -1367,9 +1384,9 @@ function displayReceiptData(receiptData) {
                                     </div>`
                                 ).join('');
                                 html += '</div>';
+                                return html;
                             }
-
-                            return html;
+                            return '';
                         })() : ''
                         }
                     </div>
@@ -1600,44 +1617,61 @@ function generateReceiptPDF(receiptData) {
                     
                     <div class="services-section">
                         <div class="services-title">🦷 Dental Services Provided</div>
-                        ${receiptData.dental_services && receiptData.dental_services.length > 0 ?
-                            receiptData.dental_services.map(service =>
-                                `<div class="service-item">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
-                                        <span style="font-weight: bold; color: #2563eb;">• ${service.service_name}</span>
-                                        <span style="font-weight: bold; color: #059669;">RM ${parseFloat(service.total_amount).toFixed(2)}</span>
-                                    </div>
-                                </div>`
-                            ).join('') :
-                            '<div class="service-item">• General Consultation</div>'
-                        }
-                        ${receiptData.charges && receiptData.charges.length > 0 ? (() => {
-                            // Known dental service names
-                            const dentalServices = ['Extraction', 'Medication', 'Whitening', 'Filling', 'Scaling', 'Implant', 'Crown', 'Package', 'Braces', 'Denture', 'X-ray', 'Trauma', 'RCT', 'Surgery', 'Consult'];
-
-                            // Separate dental services from other charges
-                            const dentalCharges = receiptData.charges.filter(charge => dentalServices.includes(charge.description));
-                            const otherCharges = receiptData.charges.filter(charge => !dentalServices.includes(charge.description));
-
+                        ${(() => {
                             let html = '';
 
-                            // Add dental services section if any exist
-                            if (dentalCharges.length > 0) {
-                                html += '<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #ddd;"><div style="font-weight: bold; color: #7c3aed; margin-bottom: 5px; font-size: 12px;">🦷 Dental Services Provided</div>';
-                                html += dentalCharges.map(charge =>
+                            // Check if we have individual charges data (edited/updated receipt)
+                            if (receiptData.charges && receiptData.charges.length > 0) {
+                                const dentalServices = ['Extraction', 'Medication', 'Whitening', 'Filling', 'Scaling', 'Implant', 'Crown', 'Package', 'Braces', 'Denture', 'X-ray', 'Trauma', 'RCT', 'Surgery', 'Consult'];
+                                const dentalCharges = receiptData.charges.filter(charge => dentalServices.includes(charge.description));
+
+                                if (dentalCharges.length > 0) {
+                                    // REPLACE with edited individual charges (don't use dental_services)
+                                    html = dentalCharges.map(charge =>
+                                        `<div class="service-item">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                                                <span style="font-weight: bold; color: #2563eb;">• ${charge.description}</span>
+                                                <span style="font-weight: bold; color: #059669;">RM ${parseFloat(charge.amount).toFixed(2)}</span>
+                                            </div>
+                                        </div>`
+                                    ).join('');
+                                } else if (receiptData.dental_services && receiptData.dental_services.length > 0) {
+                                    // Fallback to dental_services if no individual charges
+                                    html = receiptData.dental_services.map(service =>
+                                        `<div class="service-item">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                                                <span style="font-weight: bold; color: #2563eb;">• ${service.service_name}</span>
+                                                <span style="font-weight: bold; color: #059669;">RM ${parseFloat(service.total_amount).toFixed(2)}</span>
+                                            </div>
+                                        </div>`
+                                    ).join('');
+                                }
+                            } else if (receiptData.dental_services && receiptData.dental_services.length > 0) {
+                                // Use dental_services when no individual charges available
+                                html = receiptData.dental_services.map(service =>
                                     `<div class="service-item">
-                                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                                            <span>• ${charge.description}</span>
-                                            <span style="font-weight: bold;">RM ${parseFloat(charge.amount).toFixed(2)}</span>
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                                            <span style="font-weight: bold; color: #2563eb;">• ${service.service_name}</span>
+                                            <span style="font-weight: bold; color: #059669;">RM ${parseFloat(service.total_amount).toFixed(2)}</span>
                                         </div>
                                     </div>`
                                 ).join('');
-                                html += '</div>';
                             }
 
-                            // Add additional charges section if any exist
+                            // If no services at all, show default
+                            if (!html) {
+                                html = '<div class="service-item">• General Consultation</div>';
+                            }
+
+                            return html;
+                        })()}
+                        ${receiptData.charges && receiptData.charges.length > 0 ? (() => {
+                            // Only show additional charges (non-dental services)
+                            const dentalServices = ['Extraction', 'Medication', 'Whitening', 'Filling', 'Scaling', 'Implant', 'Crown', 'Package', 'Braces', 'Denture', 'X-ray', 'Trauma', 'RCT', 'Surgery', 'Consult'];
+                            const otherCharges = receiptData.charges.filter(charge => !dentalServices.includes(charge.description));
+
                             if (otherCharges.length > 0) {
-                                html += '<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #ddd;"><div style="font-weight: bold; color: #7c3aed; margin-bottom: 5px; font-size: 12px;">📋 Additional Charges</div>';
+                                let html = '<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #ddd;"><div style="font-weight: bold; color: #7c3aed; margin-bottom: 5px; font-size: 12px;">📋 Additional Charges</div>';
                                 html += otherCharges.map(charge =>
                                     `<div class="service-item">
                                         <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -1647,9 +1681,9 @@ function generateReceiptPDF(receiptData) {
                                     </div>`
                                 ).join('');
                                 html += '</div>';
+                                return html;
                             }
-
-                            return html;
+                            return '';
                         })() : ''
                         }
                     </div>
