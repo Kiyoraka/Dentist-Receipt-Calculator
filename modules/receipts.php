@@ -90,7 +90,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'update_receipt') {
                     foreach ($charges as $charge) {
                         $stmt->execute([
                             $_POST['receipt_id'],
-                            $charge['service'], // Use 'service' field for dental services
+                            $charge['name'], // Use 'name' field from editModalServices
                             $charge['amount']   // Use the original charge amount, not total
                         ]);
                     }
