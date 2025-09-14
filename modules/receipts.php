@@ -865,24 +865,21 @@ function editReceipt(receiptId) {
         editModalServices = [];
         
         if (data.services && data.services.length > 0) {
-            // Calculate individual service amounts based on total fees and service percentages
-            const totalDoctorFee = parseFloat(data.doctor_fee);
-            const totalClinicFee = parseFloat(data.clinic_fee);
-            const totalAmount = totalDoctorFee + totalClinicFee;
-            
-            // For simplicity, divide total amount equally among services (or you can store individual amounts in database)
-            const amountPerService = totalAmount / data.services.length;
-            
+            // Use individual service amounts from receipt_charges table
             data.services.forEach(serviceName => {
+                // Find the individual charge amount for this service
+                const serviceCharge = data.charges ? data.charges.find(charge => charge.description === serviceName) : null;
+                const serviceAmount = serviceCharge ? parseFloat(serviceCharge.amount) : 0;
+
                 // Find service percentage from dental services data
                 const servicePercentage = getServicePercentage(serviceName);
-                const doctorFee = (amountPerService * servicePercentage) / 100;
-                const clinicFee = amountPerService - doctorFee;
-                
+                const doctorFee = (serviceAmount * servicePercentage) / 100;
+                const clinicFee = serviceAmount - doctorFee;
+
                 editModalServices.push({
                     name: serviceName,
                     percentage: servicePercentage,
-                    amount: amountPerService,
+                    amount: serviceAmount,
                     doctorFee: doctorFee,
                     clinicFee: clinicFee
                 });
@@ -987,6 +984,7 @@ function saveEditedReceipt() {
     
     // Add services data
     formData.append('selected_services', JSON.stringify(editModalServices));
+    formData.append('charges_list', JSON.stringify(editModalServices)); // For receipt_charges table
     
     fetch('receipts.php', {
         method: 'POST',
